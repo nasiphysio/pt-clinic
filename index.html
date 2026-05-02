@@ -32,23 +32,24 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);font
 #appScreen{display:none}
 .wrap{display:flex;min-height:100vh}
 .side{width:230px;background:var(--pd);position:fixed;top:0;left:0;height:100vh;display:flex;flex-direction:column;z-index:100;transition:transform .3s}
-.side-logo{padding:22px 18px 14px;border-bottom:1px solid rgba(255,255,255,.1)}
+.side-logo{padding:20px 18px 12px;border-bottom:1px solid rgba(255,255,255,.1)}
 .side-logo h1{color:#fff;font-family:'DM Serif Display',serif;font-size:17px;line-height:1.4;font-weight:400}
 .side-logo span{color:var(--accl);font-size:11px;font-weight:500;letter-spacing:.5px}
-.side-user{padding:12px 18px;border-bottom:1px solid rgba(255,255,255,.1);font-size:12px;color:rgba(255,255,255,.6)}
-.side-user strong{color:#fff;display:block;font-size:13px}
+.side-user{padding:12px 18px;border-bottom:1px solid rgba(255,255,255,.1)}
+.side-user strong{color:#fff;display:block;font-size:13px;font-weight:700}
+.side-user span{color:rgba(255,255,255,.55);font-size:11px}
 .side-nav{padding:12px 10px;display:flex;flex-direction:column;gap:3px;flex:1}
 .ni{display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:var(--rs);color:rgba(255,255,255,.65);cursor:pointer;font-size:14px;font-weight:500;border:none;background:none;width:100%;text-align:left;transition:all .2s}
 .ni:hover{background:rgba(255,255,255,.1);color:#fff}
 .ni.on{background:var(--acc);color:var(--pd);font-weight:700}
-.ni.doc-only{opacity:.4;cursor:not-allowed}
-.ni.doc-only:hover{background:none;color:rgba(255,255,255,.65)}
-.side-logout{padding:14px 18px;border-top:1px solid rgba(255,255,255,.1)}
-.logout-btn{background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.15);border-radius:var(--rs);padding:9px 16px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;width:100%;transition:all .2s}
+.ni.locked{opacity:.4;cursor:not-allowed}
+.ni.locked:hover{background:none;color:rgba(255,255,255,.65)}
+.side-footer{padding:14px 18px;border-top:1px solid rgba(255,255,255,.1)}
+.logout-btn{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.08);color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.15);border-radius:var(--rs);padding:10px 16px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;width:100%;transition:all .2s}
 .logout-btn:hover{background:var(--red);color:#fff;border-color:var(--red)}
 .main{margin-left:230px;flex:1;padding:28px}
 
-/* HEADER */
+/* PAGE HEADER */
 .ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:10px}
 .pt{font-family:'DM Serif Display',serif;font-size:24px;color:var(--pd)}
 .ps{font-size:13px;color:var(--muted);margin-top:2px}
@@ -77,7 +78,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);font
 .ba{background:var(--acc);color:var(--pd)}.ba:hover{background:var(--accl)}
 .bd{background:var(--redl);color:var(--red)}.bd:hover{background:var(--red);color:#fff}
 .bg{background:transparent;color:var(--muted);border:1.5px solid var(--border)}.bg:hover{border-color:var(--p);color:var(--p)}
-.bxl{background:#1d6f42;color:#fff}.bxl:hover{background:#155235}
+.bpdf{background:#c0392b;color:#fff}.bpdf:hover{background:#a93226}
+.bcsv{background:#1d6f42;color:#fff}.bcsv:hover{background:#155235}
 .bs{padding:6px 12px;font-size:13px}
 
 /* MODAL */
@@ -99,7 +101,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);font
 .fr{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .sdiv{background:linear-gradient(90deg,var(--pd),var(--p));color:#fff;padding:9px 16px;border-radius:var(--rs);font-size:11px;font-weight:700;letter-spacing:.9px;text-transform:uppercase;margin:4px 0 6px}
 
-/* REGION TAB */
+/* REGION TABS */
 .rtabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
 .rtab{padding:8px 16px;border-radius:22px;font-size:13px;font-weight:600;cursor:pointer;border:2px solid var(--border);background:var(--bg);color:var(--muted);font-family:'DM Sans',sans-serif;transition:all .2s}
 .rtab.on{background:var(--p);color:#fff;border-color:var(--p)}
@@ -117,7 +119,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);font
 .add-row input{flex:1;border:1.5px dashed var(--border);border-radius:22px;padding:7px 16px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;background:transparent}
 .add-row input:focus{border-color:var(--p)}
 .add-row button{background:var(--p);color:#fff;border:none;border-radius:22px;padding:7px 16px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer}
-.add-row button:hover{background:var(--pl)}
 
 /* VAS */
 .vas-btn{width:38px;height:38px;border-radius:50%;border:2px solid var(--border);font-weight:700;font-size:13px;cursor:pointer;background:var(--bg);font-family:'DM Sans',sans-serif;transition:all .18s;color:var(--txt)}
@@ -129,24 +130,23 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);font
 .proftags{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
 .ptag{background:rgba(255,255,255,.15);border-radius:20px;padding:3px 12px;font-size:12px;font-weight:500}
 .ptag.gold{background:var(--acc);color:var(--pd);font-weight:700}
-
-/* ASSESSMENT VIEW */
-.asec{margin-bottom:16px}
-.asec-ttl{font-size:11px;font-weight:700;color:var(--p);letter-spacing:.8px;text-transform:uppercase;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid var(--border)}
+.asec{margin-bottom:14px}
+.asec-ttl{font-size:11px;font-weight:700;color:var(--p);letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px;padding-bottom:5px;border-bottom:2px solid var(--border)}
 .atags{display:flex;flex-wrap:wrap;gap:7px}
 .atag{background:var(--bg);border:1.5px solid var(--border);padding:4px 13px;border-radius:20px;font-size:13px;font-weight:500}
 .atag.key{background:var(--greenl);border-color:var(--green);color:#1a6b40}
 .atag.red{background:var(--redl);border-color:var(--red);color:var(--red)}
+.region-card{background:var(--bg);border-radius:var(--r);padding:18px;margin-bottom:14px;border-left:4px solid var(--p)}
+.region-title{font-family:'DM Serif Display',serif;font-size:16px;color:var(--pd);margin-bottom:12px}
 
-/* REGION CARD IN PROFILE */
-.region-card{background:var(--bg);border-radius:var(--r);padding:18px;margin-bottom:14px;border-right:4px solid var(--p)}
-.region-card-title{font-family:'DM Serif Display',serif;font-size:16px;color:var(--pd);margin-bottom:12px;display:flex;align-items:center;gap:8px}
-
-/* FOLLOW-UP CARD */
-.fu-card{background:var(--bg);border-radius:var(--r);padding:16px;margin-bottom:10px;border-right:4px solid var(--acc);position:relative}
-.fu-date{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:6px}
-.fu-del{position:absolute;top:12px;left:12px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px}
-.fu-del:hover{color:var(--red)}
+/* VISIT CARD in profile */
+.visit-card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:20px;margin-bottom:16px;border-top:3px solid var(--p);position:relative}
+.visit-card.followup{border-top-color:var(--acc)}
+.visit-label{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;margin-bottom:14px}
+.visit-label.initial{background:var(--greenl);color:var(--green)}
+.visit-label.followup{background:#fff3cd;color:#b07a00}
+.visit-del{position:absolute;top:14px;right:14px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px}
+.visit-del:hover{color:var(--red)}
 
 /* CONFIRM */
 .conf-o{position:fixed;inset:0;background:rgba(13,61,46,.5);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .2s}
@@ -188,6 +188,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);font
   .fr{grid-template-columns:1fr}.pgrid{grid-template-columns:1fr}
   .login-box{padding:32px 24px}
 }
+
+/* PDF PRINT STYLES */
+@media print{
+  body{background:#fff}
+  .no-print{display:none!important}
+  .pdf-page{page-break-after:always}
+}
 </style>
 </head>
 <body>
@@ -208,7 +215,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);font
       <label class="fl">Password</label>
       <input class="fc" type="password" id="lPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
     </div>
-    <button class="btn bp" style="width:100%;justify-content:center" onclick="doLogin()">Sign In</button>
+    <button class="btn bp" style="width:100%;justify-content:center;padding:12px" onclick="doLogin()">Sign In →</button>
   </div>
 </div>
 
@@ -219,21 +226,28 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);font
   <div class="wrap">
     <aside class="side" id="side">
       <div class="side-logo"><h1>Physiclinic</h1><span>PT Patient Archive</span></div>
-      <div class="side-user"><strong id="sideUserName">...</strong><span id="sideUserRole">...</span></div>
+      <div class="side-user">
+        <strong id="sideUserName">...</strong>
+        <span id="sideUserRole">...</span>
+      </div>
       <nav class="side-nav">
         <button class="ni on" onclick="goPage('patients')"><span>👥</span> Patients</button>
         <button class="ni" id="navManage" onclick="goPage('manage')"><span>⚙️</span> Manage Options</button>
         <button class="ni" id="navUsers" onclick="goPage('users')"><span>👤</span> Manage Users</button>
       </nav>
-      <div class="side-logout"><button class="logout-btn" onclick="doLogout()">Sign Out</button></div>
+      <div class="side-footer">
+        <button class="logout-btn" onclick="doLogout()">
+          <span>⇠</span> Sign Out
+        </button>
+      </div>
     </aside>
     <main class="main">
-      <!-- PATIENTS -->
+      <!-- PATIENTS PAGE -->
       <div id="pg-patients">
         <div class="ph">
           <div><div class="pt">Patient Archive</div><div class="ps" id="pcnt"></div></div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn bxl" id="btnExportAll" onclick="exportAll()">📊 Export All</button>
+            <button class="btn bcsv" id="btnExportAll" onclick="exportAll()">📊 Export All</button>
             <button class="btn bp" onclick="openAdd()">+ New Patient</button>
           </div>
         </div>
@@ -243,17 +257,17 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);font
         </div>
         <div class="pgrid" id="pgrid"></div>
       </div>
-      <!-- MANAGE -->
+      <!-- MANAGE PAGE -->
       <div id="pg-manage" style="display:none">
         <div class="ph"><div><div class="pt">Manage Options</div><div class="ps">Add or remove options from assessment lists</div></div></div>
         <div class="card"><div class="mtabs" id="mgTabs"></div><div id="mgBody"></div></div>
       </div>
-      <!-- USERS -->
+      <!-- USERS PAGE -->
       <div id="pg-users" style="display:none">
         <div class="ph"><div><div class="pt">Manage Users</div><div class="ps">Add or remove clinic staff accounts</div></div></div>
         <div class="card" id="usersBody"></div>
       </div>
-      <!-- PROFILE -->
+      <!-- PROFILE PAGE -->
       <div id="pg-profile" style="display:none"></div>
     </main>
   </div>
@@ -282,26 +296,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);font
   </div>
 </div>
 
-<!-- MODAL: INITIAL ASSESSMENT -->
-<div class="mo" id="moInitial">
+<!-- MODAL: ASSESSMENT (used for both initial & follow-up) -->
+<div class="mo" id="moAssess">
   <div class="mdl">
-    <div class="mhd"><div class="mtt" id="initialTitle">Initial Assessment</div><button class="mcl" onclick="closeM('moInitial')">✕</button></div>
-    <div class="mbody" id="initialBody"></div>
+    <div class="mhd"><div class="mtt" id="assessTitle">Assessment</div><button class="mcl" onclick="closeM('moAssess')">✕</button></div>
+    <div class="mbody" id="assessBody"></div>
     <div class="mft">
-      <button class="btn bg" onclick="closeM('moInitial')">Cancel</button>
-      <button class="btn bp" onclick="saveInitial()">💾 Save Assessment</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: FOLLOW-UP -->
-<div class="mo" id="moFollowUp">
-  <div class="mdl" style="max-width:560px">
-    <div class="mhd"><div class="mtt" id="fuTitle">Add Follow-up</div><button class="mcl" onclick="closeM('moFollowUp')">✕</button></div>
-    <div class="mbody" id="fuBody"></div>
-    <div class="mft">
-      <button class="btn bg" onclick="closeM('moFollowUp')">Cancel</button>
-      <button class="btn bp" onclick="saveFollowUp()">💾 Save Follow-up</button>
+      <button class="btn bg" onclick="closeM('moAssess')">Cancel</button>
+      <button class="btn bp" onclick="saveAssess()">💾 Save</button>
     </div>
   </div>
 </div>
@@ -345,7 +347,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);font
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBV6--Y8VTOIm0XhU1h-6GSJmJiWwbBMd8",
@@ -366,15 +368,16 @@ let PATIENTS  = [];
 let OPT_CACHE = null;
 let MG_TAB    = null;
 
-// current assessment editing state
+// Assessment editing state
 let AS_PID     = null;   // patient id
-let AS_DATE    = '';     // assessment date
-let AS_REGIONS = [];     // [{region, diagnoses, complaints, findings, problems, treatment, vas, notes}]
-let AS_CUR_REG = 0;      // active region tab index
-
-// follow-up state
-let FU_PID  = null;
-let FU_DATA = {};        // {date, vas, regions:[{region,complaints,findings,treatment}], notes}
+let AS_TYPE    = null;   // 'initial' | 'followup'
+let AS_FU_ID   = null;   // followup id if editing
+let AS_DATE    = '';
+let AS_REGIONS = [];     // [{region, diagnoses, complaints, findings, problems, treatment, vas, sessionsPlanned, freq}]
+let AS_CUR_REG = 0;
+let AS_DURATION = '';
+let AS_ONSET   = '';
+let AS_NOTES   = '';
 
 // ── AUTH ──
 window.doLogin = async () => {
@@ -385,7 +388,14 @@ window.doLogin = async () => {
   try { await signInWithEmailAndPassword(auth, email, pass); }
   catch(e) { errEl.textContent = 'Invalid email or password'; errEl.style.display = 'block'; }
 };
-window.doLogout = async () => await signOut(auth);
+
+window.doLogout = async () => {
+  await signOut(auth);
+  document.getElementById('appScreen').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('lEmail').value = '';
+  document.getElementById('lPass').value = '';
+};
 
 onAuthStateChanged(auth, async user => {
   if (user) {
@@ -395,13 +405,13 @@ onAuthStateChanged(auth, async user => {
       : { uid: user.uid, email: user.email, name: user.email, role: 'doctor' };
     if (!snap.exists()) await setDoc(doc(db, 'users', user.uid), { name: user.email, role: 'doctor', email: user.email });
     showApp();
-  } else { CUR_USER = null; showLogin(); }
+  } else {
+    CUR_USER = null;
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('appScreen').style.display = 'none';
+  }
 });
 
-function showLogin() {
-  document.getElementById('loginScreen').style.display = 'flex';
-  document.getElementById('appScreen').style.display = 'none';
-}
 function showApp() {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('appScreen').style.display = 'block';
@@ -410,7 +420,7 @@ function showApp() {
   if (CUR_USER.role !== 'doctor') {
     ['navManage','navUsers'].forEach(id => {
       const el = document.getElementById(id);
-      el.classList.add('doc-only');
+      el.classList.add('locked');
       el.onclick = () => toast('Doctor access only', true);
     });
     document.getElementById('btnExportAll').style.display = 'none';
@@ -431,7 +441,7 @@ window.renderList = () => {
   const q = (document.getElementById('search')?.value || '').toLowerCase();
   const pts = PATIENTS.filter(p =>
     p.name.toLowerCase().includes(q) ||
-    (p.initial?.regions||[]).map(r=>r.region+' '+(r.diagnoses||[]).join(' ')).join(' ').toLowerCase().includes(q)
+    (p.visits||[]).flatMap(v => (v.regions||[]).map(r => r.region + ' ' + (r.diagnoses||[]).join(' '))).join(' ').toLowerCase().includes(q)
   );
   document.getElementById('pcnt').textContent = `${PATIENTS.length} patient${PATIENTS.length!==1?'s':''}`;
   const g = document.getElementById('pgrid');
@@ -440,23 +450,24 @@ window.renderList = () => {
     return;
   }
   g.innerHTML = pts.map(p => {
-    const done = !!(p.initial?.date);
-    const regions = (p.initial?.regions||[]).map(r=>r.region).join(', ');
-    const fus = (p.followUps||[]).length;
+    const visits  = p.visits || [];
+    const initial = visits.find(v => v.type === 'initial');
+    const fus     = visits.filter(v => v.type === 'followup');
+    const regions = (initial?.regions||[]).map(r=>r.region).join(', ');
     const canEdit = CUR_USER.role === 'doctor';
     return `<div class="pcard">
       <div class="pcard-name">${p.name}</div>
-      <span class="badge ${done?'bdone':'bpend'}">${done?'✅ Assessment Complete':'⏳ Pending Assessment'}</span>
+      <span class="badge ${initial?'bdone':'bpend'}">${initial?'✅ Assessment Complete':'⏳ Pending Assessment'}</span>
       <div class="pcard-meta">
         <span>👤 ${p.age} y/o — ${p.gender||''}${p.job?' · '+p.job:''}</span>
         ${p.phone?`<span>📞 ${p.phone}</span>`:''}
         ${regions?`<span>📍 ${regions}</span>`:''}
-        ${done?`<span>📅 Initial: ${p.initial.date}</span>`:''}
-        ${fus?`<span>🔄 ${fus} Follow-up${fus!==1?'s':''}</span>`:''}
+        ${initial?`<span>📅 Initial: ${initial.date}</span>`:''}
+        ${fus.length?`<span>🔄 ${fus.length} Follow-up${fus.length!==1?'s':''}</span>`:''}
       </div>
       <div class="pcard-actions">
         <button class="btn bp bs" onclick="openProfile('${p.id}')">📋 View</button>
-        ${canEdit?`<button class="btn bg bs" onclick="openInitial('${p.id}')">✏️ Assessment</button>`:''}
+        ${canEdit?`<button class="btn bg bs" onclick="openAssessment('${p.id}','initial')">✏️ Assessment</button>`:''}
         ${canEdit?`<button class="btn bd bs" onclick="askDel('${p.id}')">🗑️</button>`:''}
       </div>
     </div>`;
@@ -481,11 +492,10 @@ window.saveNew = async () => {
       phone:  document.getElementById('iPhone').value.trim(),
       createdAt: Date.now(),
       createdBy: CUR_USER.uid,
-      initial: null,
-      followUps: [],
+      visits: [],
     });
     closeM('moAdd'); toast('Patient added ✅');
-    if (CUR_USER.role === 'doctor') setTimeout(() => openInitial(ref.id), 350);
+    if (CUR_USER.role === 'doctor') setTimeout(() => openAssessment(ref.id, 'initial'), 350);
   } catch(e) { toast('Error: ' + e.message, true); }
 };
 
@@ -498,437 +508,333 @@ async function getOpts() {
 }
 async function saveOpts(opts) { OPT_CACHE = opts; await setDoc(doc(db,'config','options'), opts); }
 
-// ── INITIAL ASSESSMENT ──
-window.openInitial = async (pid) => {
+// ── OPEN ASSESSMENT (initial or follow-up) ──
+window.openAssessment = async (pid, type, fuId = null) => {
   if (CUR_USER.role !== 'doctor') { toast('Doctor access only', true); return; }
-  AS_PID = pid;
+  AS_PID   = pid;
+  AS_TYPE  = type;
+  AS_FU_ID = fuId;
+
   const p = PATIENTS.find(x => x.id === pid);
   if (!p) return;
-  // load existing or start fresh
-  if (p.initial) {
-    AS_DATE    = p.initial.date || today();
-    AS_REGIONS = JSON.parse(JSON.stringify(p.initial.regions || []));
-  } else {
-    AS_DATE    = today();
-    AS_REGIONS = [];
+
+  // Load existing data
+  let existing = null;
+  if (type === 'initial') {
+    existing = (p.visits||[]).find(v => v.type === 'initial');
+  } else if (fuId) {
+    existing = (p.visits||[]).find(v => v.id === fuId);
   }
+
+  if (existing) {
+    AS_DATE     = existing.date || today();
+    AS_REGIONS  = JSON.parse(JSON.stringify(existing.regions || []));
+    AS_DURATION = existing.duration || '';
+    AS_ONSET    = existing.onset || '';
+    AS_NOTES    = existing.notes || '';
+  } else {
+    // for follow-up, pre-populate regions from initial
+    AS_DATE     = today();
+    AS_DURATION = '';
+    AS_ONSET    = '';
+    AS_NOTES    = '';
+    if (type === 'followup') {
+      const initial = (p.visits||[]).find(v => v.type === 'initial');
+      AS_REGIONS = (initial?.regions||[]).map(r => ({
+        region: r.region,
+        diagnoses: [], complaints: [], findings: [], problems: [], treatment: [], vas: null, sessionsPlanned: '', freq: ''
+      }));
+    } else {
+      AS_REGIONS = [];
+    }
+  }
+
   AS_CUR_REG = 0;
-  document.getElementById('initialTitle').textContent = `Initial Assessment — ${p.name}`;
-  document.getElementById('initialBody').innerHTML = `<div class="loading"><div class="spinner"></div><span>Loading...</span></div>`;
-  openM('moInitial');
+  const label = type === 'initial' ? 'Initial Assessment' : 'Follow-up';
+  document.getElementById('assessTitle').textContent = `${label} — ${p.name}`;
+  document.getElementById('assessBody').innerHTML = `<div class="loading"><div class="spinner"></div><span>Loading...</span></div>`;
+  openM('moAssess');
   const opts = await getOpts();
-  buildInitialForm(opts);
+  buildAssessForm(opts);
 };
 
-function buildInitialForm(opts) {
-  const b = document.getElementById('initialBody');
+function buildAssessForm(opts) {
+  const b = document.getElementById('assessBody');
   b.innerHTML = '';
 
   // Date
-  const dateWrap = document.createElement('div');
-  dateWrap.className = 'fg';
-  dateWrap.innerHTML = `<label class="fl">Assessment Date</label>`;
+  const dateFG = document.createElement('div'); dateFG.className = 'fg';
+  dateFG.innerHTML = '<label class="fl">Date</label>';
   const dateInp = document.createElement('input');
-  dateInp.className = 'fc'; dateInp.type = 'date'; dateInp.id = 'ia-date'; dateInp.value = AS_DATE;
+  dateInp.className = 'fc'; dateInp.type = 'date'; dateInp.id = 'as-date'; dateInp.value = AS_DATE;
   dateInp.addEventListener('change', () => AS_DATE = dateInp.value);
-  dateWrap.appendChild(dateInp);
-  b.appendChild(dateWrap);
+  dateFG.appendChild(dateInp); b.appendChild(dateFG);
 
   // Region tabs
   const tabsDiv = document.createElement('div');
-  tabsDiv.id = 'ia-tabs'; tabsDiv.className = 'rtabs';
-  AS_REGIONS.forEach((r, i) => tabsDiv.appendChild(mkRegionTab(r.region, i, opts)));
-  const addTabBtn = document.createElement('button');
-  addTabBtn.className = 'rtab-add'; addTabBtn.textContent = '+ Add Region';
-  addTabBtn.onclick = () => showRegionPicker(opts);
-  tabsDiv.appendChild(addTabBtn);
+  tabsDiv.id = 'as-tabs'; tabsDiv.className = 'rtabs';
+  AS_REGIONS.forEach((r, i) => tabsDiv.appendChild(mkRegionTab(r.region, i)));
+  const addBtn = document.createElement('button');
+  addBtn.className = 'rtab-add'; addBtn.textContent = '+ Add Region';
+  addBtn.onclick = () => showRegionPicker(opts);
+  tabsDiv.appendChild(addBtn);
   b.appendChild(tabsDiv);
 
   // Region panels
-  const panelsDiv = document.createElement('div');
-  panelsDiv.id = 'ia-panels';
+  const panelsDiv = document.createElement('div'); panelsDiv.id = 'as-panels';
   AS_REGIONS.forEach((r, i) => panelsDiv.appendChild(mkRegionPanel(r, i, opts)));
   b.appendChild(panelsDiv);
 
   if (AS_REGIONS.length === 0) {
     const hint = document.createElement('p');
     hint.style.cssText = 'font-size:13px;color:var(--muted);padding:20px;text-align:center';
-    hint.textContent = 'Click "+ Add Region" to start the assessment';
+    hint.textContent = 'Click "+ Add Region" to start';
     panelsDiv.appendChild(hint);
   }
 
-  // Duration & Onset (global)
+  // Duration & Onset
   b.appendChild(mkSdiv('⏱ Duration & Onset'));
   const durRow = document.createElement('div'); durRow.className = 'fr';
-  const durFG = document.createElement('div'); durFG.className = 'fg';
-  durFG.innerHTML = '<label class="fl">Duration</label>';
-  const durInp = document.createElement('input'); durInp.className = 'fc'; durInp.id = 'ia-dur'; durInp.placeholder = 'e.g. 3 months'; durInp.value = AS_REGIONS[0]?.duration||'';
-  durFG.appendChild(durInp); durRow.appendChild(durFG);
-  const onsFG = document.createElement('div'); onsFG.className = 'fg';
-  onsFG.innerHTML = '<label class="fl">Onset</label>';
-  const onsEl = mkSel('ia-onset', ['','Gradual','Sudden','Post-trauma','Post-surgical','Post-exercise','Unknown'], AS_REGIONS[0]?.onset||'');
-  onsFG.appendChild(onsEl); durRow.appendChild(onsFG);
-  b.appendChild(durRow);
+  const durFG = mkFGEl('Duration', mkInp('as-dur','e.g. 3 months', AS_DURATION));
+  const onsFG = mkFGEl('Onset', mkSel('as-onset',['','Gradual','Sudden','Post-trauma','Post-surgical','Post-exercise','Unknown'], AS_ONSET));
+  durRow.appendChild(durFG); durRow.appendChild(onsFG); b.appendChild(durRow);
 
-  // Notes (global)
-  b.appendChild(mkSdiv('📝 General Notes'));
-  const ta = document.createElement('textarea'); ta.className = 'fc'; ta.id = 'ia-notes'; ta.rows = 3;
-  ta.placeholder = 'Any general clinical notes...'; ta.value = AS_REGIONS[0]?.notes||'';
+  // Notes
+  b.appendChild(mkSdiv('📝 Notes'));
+  const ta = document.createElement('textarea');
+  ta.className='fc'; ta.id='as-notes'; ta.rows=3; ta.placeholder='Clinical notes...'; ta.value=AS_NOTES;
   b.appendChild(ta);
 
-  // activate first tab
   if (AS_REGIONS.length > 0) activateRegionTab(0);
 }
 
-function mkRegionTab(regionName, idx, opts) {
+function mkRegionTab(regionName, idx) {
   const btn = document.createElement('button');
   btn.className = 'rtab' + (idx === AS_CUR_REG ? ' on' : '');
-  btn.dataset.idx = idx;
-  btn.textContent = regionName;
+  btn.dataset.idx = idx; btn.textContent = regionName;
   btn.onclick = () => activateRegionTab(idx);
   return btn;
 }
 
 function activateRegionTab(idx) {
   AS_CUR_REG = idx;
-  document.querySelectorAll('#ia-tabs .rtab').forEach((t,i) => t.classList.toggle('on', i===idx));
-  document.querySelectorAll('#ia-panels .region-panel').forEach((p,i) => p.classList.toggle('on', i===idx));
+  document.querySelectorAll('#as-tabs .rtab').forEach((t,i) => t.classList.toggle('on', i===idx));
+  document.querySelectorAll('#as-panels .region-panel').forEach((p,i) => p.classList.toggle('on', i===idx));
 }
 
 function mkRegionPanel(regionData, idx, opts) {
   const panel = document.createElement('div');
   panel.className = 'region-panel' + (idx === AS_CUR_REG ? ' on' : '');
-  panel.dataset.idx = idx;
-  const r = regionData.region;
 
-  // Remove region button
+  // Remove button
   const removeBtn = document.createElement('button');
   removeBtn.className = 'btn bd bs'; removeBtn.style.marginBottom = '12px';
-  removeBtn.textContent = `🗑️ Remove ${r}`;
+  removeBtn.textContent = `🗑️ Remove ${regionData.region}`;
   removeBtn.onclick = () => removeRegion(idx, opts);
   panel.appendChild(removeBtn);
 
-  // Diagnosis
-  panel.appendChild(mkSdiv('🩺 Diagnosis'));
-  panel.appendChild(mkPillGroupWithAdd('diagnoses', opts.diagnoses[r]||[], regionData.diagnoses||[], r, opts, idx));
-
-  // Complaints
-  panel.appendChild(mkSdiv('💬 Chief Complaints'));
-  panel.appendChild(mkPillGroupWithAdd('complaints', opts.complaints[r]||[], regionData.complaints||[], r, opts, idx));
+  const r = regionData.region;
+  const sections = [
+    ['🩺 Diagnosis',         'diagnoses',  opts.diagnoses[r]||[]],
+    ['💬 Chief Complaints',  'complaints', opts.complaints[r]||[]],
+    ['🔬 Assessment Findings','findings',  opts.findings[r]||[]],
+    ['📌 Problem List',      'problems',   opts.problems],
+    ['💊 Treatment Plan',    'treatment',  opts.treatment[r]||[]],
+  ];
+  sections.forEach(([title, key, allOpts]) => {
+    panel.appendChild(mkSdiv(title));
+    panel.appendChild(mkPillGroupWithAdd(key, allOpts, regionData[key]||[], key==='problems'?null:r, opts, idx));
+  });
 
   // VAS
   panel.appendChild(mkSdiv('😣 Pain Level — VAS (0–10)'));
-  panel.appendChild(mkVas(regionData.vas, idx));
-
-  // Findings
-  panel.appendChild(mkSdiv('🔬 Assessment Findings'));
-  panel.appendChild(mkPillGroupWithAdd('findings', opts.findings[r]||[], regionData.findings||[], r, opts, idx));
-
-  // Problem List
-  panel.appendChild(mkSdiv('📌 Problem List'));
-  panel.appendChild(mkPillGroupWithAdd('problems', opts.problems, regionData.problems||[], null, opts, idx));
-
-  // Treatment
-  panel.appendChild(mkSdiv('💊 Treatment Plan'));
-  panel.appendChild(mkPillGroupWithAdd('treatment', opts.treatment[r]||[], regionData.treatment||[], r, opts, idx));
+  panel.appendChild(mkVasEl(regionData.vas, idx));
 
   // Sessions
   panel.appendChild(mkSdiv('📅 Session Plan'));
   const sessRow = document.createElement('div'); sessRow.className = 'fr';
-  const sessFG = document.createElement('div'); sessFG.className = 'fg';
-  sessFG.innerHTML = '<label class="fl">Sessions Planned</label>';
-  const sessInp = document.createElement('input'); sessInp.className = 'fc'; sessInp.type = 'number';
-  sessInp.id = `ia-sess-${idx}`; sessInp.placeholder = 'e.g. 12'; sessInp.value = regionData.sessionsPlanned||'';
-  sessFG.appendChild(sessInp); sessRow.appendChild(sessFG);
-  const freqFG = document.createElement('div'); freqFG.className = 'fg';
-  freqFG.innerHTML = '<label class="fl">Frequency</label>';
-  const freqEl = mkSel(`ia-freq-${idx}`, ['','Daily','3x/week','2x/week','Weekly'], regionData.freq||'');
-  freqFG.appendChild(freqEl); sessRow.appendChild(freqFG);
+  sessRow.appendChild(mkFGEl('Sessions Planned', mkInp(`as-sess-${idx}`,'e.g. 12', regionData.sessionsPlanned||'','number')));
+  sessRow.appendChild(mkFGEl('Frequency', mkSel(`as-freq-${idx}`,['','Daily','3x/week','2x/week','Weekly'], regionData.freq||'')));
   panel.appendChild(sessRow);
 
   return panel;
 }
 
 function showRegionPicker(opts) {
-  const existing = AS_REGIONS.map(r => r.region);
+  const existing  = AS_REGIONS.map(r => r.region);
   const available = opts.regions.filter(r => !existing.includes(r));
   if (!available.length) { toast('All regions already added', true); return; }
-  // simple inline picker
   const picker = document.createElement('div');
   picker.style.cssText = 'position:fixed;inset:0;background:rgba(13,61,46,.5);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px';
   picker.id = 'regionPicker';
   const box = document.createElement('div');
-  box.style.cssText = 'background:#fff;border-radius:14px;padding:24px;max-width:420px;width:100%;box-shadow:0 8px 36px rgba(13,61,46,.2)';
+  box.style.cssText = 'background:#fff;border-radius:14px;padding:24px;max-width:440px;width:100%;box-shadow:0 8px 36px rgba(13,61,46,.2)';
   box.innerHTML = `<div style="font-family:'DM Serif Display',serif;font-size:18px;color:#0d3d2e;margin-bottom:16px">Select Region</div>`;
   const pg = document.createElement('div'); pg.className = 'pill-group';
   available.forEach(r => {
-    const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'pill';
+    const btn = document.createElement('button'); btn.type='button'; btn.className='pill';
     btn.textContent = r;
-    btn.onclick = () => { addRegion(r, opts); document.getElementById('regionPicker').remove(); };
+    btn.onclick = () => { addRegion(r, opts); document.getElementById('regionPicker')?.remove(); };
     pg.appendChild(btn);
   });
   box.appendChild(pg);
-  const cancelBtn = document.createElement('button');
-  cancelBtn.className = 'btn bg bs'; cancelBtn.style.marginTop = '16px'; cancelBtn.textContent = 'Cancel';
-  cancelBtn.onclick = () => picker.remove();
-  box.appendChild(cancelBtn);
+  const cancel = document.createElement('button');
+  cancel.className = 'btn bg bs'; cancel.style.marginTop='16px'; cancel.textContent='Cancel';
+  cancel.onclick = () => picker.remove();
+  box.appendChild(cancel);
   picker.appendChild(box); document.body.appendChild(picker);
 }
 
 function addRegion(regionName, opts) {
-  AS_REGIONS.push({ region: regionName, diagnoses:[], complaints:[], findings:[], problems:[], treatment:[], vas:null });
+  AS_REGIONS.push({ region: regionName, diagnoses:[], complaints:[], findings:[], problems:[], treatment:[], vas:null, sessionsPlanned:'', freq:'' });
   const idx = AS_REGIONS.length - 1;
-  const tabsDiv = document.getElementById('ia-tabs');
+  const tabsDiv = document.getElementById('as-tabs');
   const addBtn  = tabsDiv.querySelector('.rtab-add');
-  tabsDiv.insertBefore(mkRegionTab(regionName, idx, opts), addBtn);
-  document.getElementById('ia-panels').appendChild(mkRegionPanel(AS_REGIONS[idx], idx, opts));
+  tabsDiv.insertBefore(mkRegionTab(regionName, idx), addBtn);
+  document.getElementById('as-panels').appendChild(mkRegionPanel(AS_REGIONS[idx], idx, opts));
   activateRegionTab(idx);
 }
 
 function removeRegion(idx, opts) {
   AS_REGIONS.splice(idx, 1);
-  buildInitialForm(opts);
+  buildAssessForm(opts);
 }
 
-window.saveInitial = async () => {
-  const date = document.getElementById('ia-date')?.value || today();
-  const dur   = document.getElementById('ia-dur')?.value.trim() || '';
-  const onset = document.getElementById('ia-onset')?.value || '';
-  const notes = document.getElementById('ia-notes')?.value.trim() || '';
+window.saveAssess = async () => {
+  AS_DATE     = document.getElementById('as-date')?.value || today();
+  AS_DURATION = document.getElementById('as-dur')?.value.trim() || '';
+  AS_ONSET    = document.getElementById('as-onset')?.value || '';
+  AS_NOTES    = document.getElementById('as-notes')?.value.trim() || '';
   AS_REGIONS.forEach((r, i) => {
-    r.duration = dur; r.onset = onset; r.notes = notes;
-    r.sessionsPlanned = document.getElementById(`ia-sess-${i}`)?.value || '';
-    r.freq = document.getElementById(`ia-freq-${i}`)?.value || '';
+    r.sessionsPlanned = document.getElementById(`as-sess-${i}`)?.value || '';
+    r.freq = document.getElementById(`as-freq-${i}`)?.value || '';
   });
-  try {
-    await updateDoc(doc(db,'patients',AS_PID), { initial: { date, regions: AS_REGIONS } });
-    closeM('moInitial'); toast('Assessment saved ✅'); openProfile(AS_PID);
-  } catch(e) { toast('Error: ' + e.message, true); }
-};
-
-// ── FOLLOW-UP ──
-window.openFollowUp = async (pid) => {
-  if (CUR_USER.role !== 'doctor') { toast('Doctor access only', true); return; }
-  FU_PID  = pid;
-  FU_DATA = { date: today(), vas: null, notes: '', regionUpdates: [] };
-  const p = PATIENTS.find(x => x.id === pid);
-  if (!p) return;
-  document.getElementById('fuTitle').textContent = `Add Follow-up — ${p.name}`;
-  const opts = await getOpts();
-  buildFollowUpForm(p, opts);
-  openM('moFollowUp');
-};
-
-function buildFollowUpForm(p, opts) {
-  const b = document.getElementById('fuBody');
-  b.innerHTML = '';
-  const regions = (p.initial?.regions || []).map(r => r.region);
-
-  // Date
-  const dateFG = document.createElement('div'); dateFG.className = 'fg';
-  dateFG.innerHTML = '<label class="fl">Follow-up Date</label>';
-  const dateInp = document.createElement('input'); dateInp.className = 'fc'; dateInp.type = 'date';
-  dateInp.id = 'fu-date'; dateInp.value = today();
-  dateFG.appendChild(dateInp); b.appendChild(dateFG);
-
-  // VAS overall
-  b.appendChild(mkSdiv('😣 Current Pain Level — VAS (0–10)'));
-  b.appendChild(mkVasFU());
-
-  // Per-region updates
-  if (regions.length > 0) {
-    b.appendChild(mkSdiv('📍 Region Updates'));
-    regions.forEach(r => {
-      const rDiv = document.createElement('div');
-      rDiv.style.cssText = 'background:var(--bg);border-radius:10px;padding:14px;margin-bottom:10px;border-right:3px solid var(--p)';
-      rDiv.innerHTML = `<div style="font-weight:700;color:var(--pd);margin-bottom:10px">📍 ${r}</div>`;
-
-      const compLabel = document.createElement('div'); compLabel.className = 'fl'; compLabel.style.marginBottom='6px'; compLabel.textContent = 'Complaints / Findings Today';
-      rDiv.appendChild(compLabel);
-      const pg = document.createElement('div'); pg.className = 'pill-group';
-      const compOpts = [...(opts.complaints[r]||[]), ...(opts.findings[r]||[])];
-      compOpts.forEach(opt => {
-        const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'pill';
-        btn.textContent = opt;
-        btn.onclick = function() {
-          this.classList.toggle('sel');
-          const ru = FU_DATA.regionUpdates.find(x=>x.region===r) || (() => { const o={region:r,items:[],treatment:[]}; FU_DATA.regionUpdates.push(o); return o; })();
-          if(this.classList.contains('sel')) { if(!ru.items.includes(opt)) ru.items.push(opt); }
-          else ru.items = ru.items.filter(x=>x!==opt);
-        };
-        pg.appendChild(btn);
-      });
-      rDiv.appendChild(pg);
-
-      const txLabel = document.createElement('div'); txLabel.className = 'fl'; txLabel.style.cssText = 'margin-top:10px;margin-bottom:6px'; txLabel.textContent = 'Treatment Today';
-      rDiv.appendChild(txLabel);
-      const txPg = document.createElement('div'); txPg.className = 'pill-group';
-      (opts.treatment[r]||[]).forEach(opt => {
-        const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'pill';
-        btn.textContent = opt;
-        btn.onclick = function() {
-          this.classList.toggle('sel');
-          const ru = FU_DATA.regionUpdates.find(x=>x.region===r) || (() => { const o={region:r,items:[],treatment:[]}; FU_DATA.regionUpdates.push(o); return o; })();
-          if(this.classList.contains('sel')) { if(!ru.treatment.includes(opt)) ru.treatment.push(opt); }
-          else ru.treatment = ru.treatment.filter(x=>x!==opt);
-        };
-        txPg.appendChild(btn);
-      });
-      rDiv.appendChild(txPg);
-      b.appendChild(rDiv);
-    });
-  }
-
-  // Notes
-  b.appendChild(mkSdiv('📝 Follow-up Notes'));
-  const ta = document.createElement('textarea'); ta.className = 'fc'; ta.id = 'fu-notes'; ta.rows = 3;
-  ta.placeholder = 'Progress notes, patient response, changes...'; b.appendChild(ta);
-}
-
-function mkVasFU() {
-  const w = document.createElement('div'); w.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-top:4px';
-  for (let i = 0; i <= 10; i++) {
-    const b = document.createElement('button'); b.type = 'button'; b.className = 'vas-btn'; b.textContent = i;
-    b.addEventListener('click', function() {
-      FU_DATA.vas = i;
-      w.querySelectorAll('.vas-btn').forEach(x => x.classList.remove('sel'));
-      this.classList.add('sel');
-    });
-    w.appendChild(b);
-  }
-  return w;
-}
-
-window.saveFollowUp = async () => {
-  const date  = document.getElementById('fu-date')?.value || today();
-  const notes = document.getElementById('fu-notes')?.value.trim() || '';
-  const fu = { id: uid(), date, vas: FU_DATA.vas, regionUpdates: FU_DATA.regionUpdates, notes, createdAt: Date.now() };
-  try {
-    const p = PATIENTS.find(x => x.id === FU_PID);
-    const updated = [...(p.followUps||[]), fu];
-    await updateDoc(doc(db,'patients',FU_PID), { followUps: updated });
-    closeM('moFollowUp'); toast('Follow-up saved ✅'); openProfile(FU_PID);
-  } catch(e) { toast('Error: ' + e.message, true); }
-};
-
-window.deleteFollowUp = async (pid, fuId) => {
-  document.getElementById('confTitle').textContent = 'Delete Follow-up';
-  document.getElementById('confMsg').textContent   = 'Delete this follow-up? Cannot be undone.';
-  document.getElementById('confBtn').onclick = async () => {
-    const p = PATIENTS.find(x => x.id === pid);
-    const updated = (p.followUps||[]).filter(f => f.id !== fuId);
-    await updateDoc(doc(db,'patients',pid), { followUps: updated });
-    toast('Follow-up deleted'); closeConf(); openProfile(pid);
+  const visitData = {
+    id:       AS_FU_ID || uid(),
+    type:     AS_TYPE,
+    date:     AS_DATE,
+    duration: AS_DURATION,
+    onset:    AS_ONSET,
+    notes:    AS_NOTES,
+    regions:  AS_REGIONS,
+    savedAt:  Date.now(),
   };
-  document.getElementById('confO').classList.add('open');
+  try {
+    const p = PATIENTS.find(x => x.id === AS_PID);
+    let visits = [...(p.visits || [])];
+    if (AS_TYPE === 'initial') {
+      // replace or add initial
+      const idx = visits.findIndex(v => v.type === 'initial');
+      if (idx >= 0) visits[idx] = visitData;
+      else visits.unshift(visitData);
+    } else {
+      // replace or add followup
+      const idx = visits.findIndex(v => v.id === visitData.id);
+      if (idx >= 0) visits[idx] = visitData;
+      else visits.push(visitData);
+    }
+    await updateDoc(doc(db,'patients',AS_PID), { visits });
+    closeM('moAssess'); toast('Saved ✅'); openProfile(AS_PID);
+  } catch(e) { toast('Error: ' + e.message, true); }
 };
 
 // ── PROFILE ──
 window.openProfile = (pid) => {
-  const p = PATIENTS.find(x => x.id === pid);
-  if (!p) return;
+  const p = PATIENTS.find(x => x.id === pid); if (!p) return;
   const canEdit = CUR_USER.role === 'doctor';
-  const pills = (arr, cls) => (arr||[]).map(x => `<span class="atag ${cls||''}">${x}</span>`).join('');
-  const regions = p.initial?.regions || [];
-  const followUps = [...(p.followUps||[])].sort((a,b) => b.date > a.date ? 1 : -1);
+  const pills   = (arr, cls) => (arr||[]).map(x=>`<span class="atag ${cls||''}">${x}</span>`).join('');
+  const visits  = [...(p.visits||[])].sort((a,b) => {
+    if (a.type==='initial') return -1;
+    if (b.type==='initial') return 1;
+    return a.date > b.date ? -1 : 1;
+  });
+  const initial = visits.find(v => v.type === 'initial');
+  const fus     = visits.filter(v => v.type === 'followup');
 
   let html = `
-    <button class="btn bg bs" onclick="goPage('patients')" style="margin-bottom:14px">← Back</button>
-    <div class="profhd">
+    <button class="btn bg bs no-print" onclick="goPage('patients')" style="margin-bottom:14px">← Back</button>
+    <div class="profhd no-print">
       <div>
         <div class="profname">${p.name}</div>
         <div style="opacity:.8;font-size:14px">${p.age} y/o — ${p.gender||''}${p.job?' · '+p.job:''}${p.phone?' · '+p.phone:''}</div>
         <div class="proftags">
-          ${regions.map(r=>`<span class="ptag gold">${r.region}</span>`).join('')}
-          ${p.initial?.date?`<span class="ptag">📅 ${p.initial.date}</span>`:''}
-          ${followUps.length?`<span class="ptag">🔄 ${followUps.length} Follow-up${followUps.length!==1?'s':''}</span>`:''}
+          ${(initial?.regions||[]).map(r=>`<span class="ptag gold">${r.region}</span>`).join('')}
+          ${initial?`<span class="ptag">📅 ${initial.date}</span>`:''}
+          ${fus.length?`<span class="ptag">🔄 ${fus.length} Follow-up${fus.length!==1?'s':''}</span>`:''}
         </div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
-        ${canEdit?`<button class="btn ba bs" onclick="openInitial('${p.id}')">✏️ Edit Assessment</button>`:''}
-        ${canEdit?`<button class="btn bp bs" onclick="openFollowUp('${p.id}')">+ Follow-up</button>`:''}
-        ${canEdit?`<button class="btn bxl bs" onclick="exportOne('${p.id}')">📊 Export</button>`:''}
-        <button class="btn bg bs" style="color:#fff;border-color:rgba(255,255,255,.3)" onclick="printPt('${p.id}')">🖨️ Print</button>
+        ${canEdit?`<button class="btn ba bs" onclick="openAssessment('${p.id}','initial')">✏️ Edit Assessment</button>`:''}
+        ${canEdit?`<button class="btn bp bs" onclick="openAssessment('${p.id}','followup')">+ Follow-up</button>`:''}
+        ${canEdit?`<button class="btn bpdf bs" onclick="exportPDF('${p.id}')">📄 PDF</button>`:''}
+        ${canEdit?`<button class="btn bcsv bs" onclick="exportCSV('${p.id}')">📊 CSV</button>`:''}
       </div>
     </div>`;
 
-  // Initial Assessment
-  if (!p.initial?.date) {
+  if (!initial) {
     html += `<div class="card" style="text-align:center;padding:44px;color:var(--muted)">
       <div style="font-size:42px;margin-bottom:12px">📋</div>
-      <p style="font-weight:600">No initial assessment recorded yet</p>
-      ${canEdit?`<button class="btn bp" style="margin-top:16px" onclick="openInitial('${p.id}')">Start Assessment</button>`:''}
+      <p style="font-weight:600">No assessment yet</p>
+      ${canEdit?`<button class="btn bp" style="margin-top:16px" onclick="openAssessment('${p.id}','initial')">Start Assessment</button>`:''}
     </div>`;
   } else {
-    html += `<div class="card" style="margin-bottom:18px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-        <div style="font-family:'DM Serif Display',serif;font-size:18px;color:var(--pd)">📋 Initial Assessment</div>
-        <div style="font-size:13px;color:var(--muted)">📅 ${p.initial.date}</div>
-      </div>`;
-
-    regions.forEach(r => {
-      html += `<div class="region-card">
-        <div class="region-card-title">📍 ${r.region}
-          ${r.sessionsPlanned?`<span style="font-size:12px;color:var(--muted);font-weight:500">💪 ${r.sessionsPlanned} sessions${r.freq?' · '+r.freq:''}</span>`:''}
+    // render all visits
+    visits.forEach(v => {
+      const isInitial = v.type === 'initial';
+      html += `<div class="visit-card ${isInitial?'':'followup'}">
+        ${canEdit && !isInitial ? `<button class="visit-del no-print" onclick="askDelVisit('${p.id}','${v.id}')">🗑️</button>` : ''}
+        ${canEdit && !isInitial ? `<button class="btn bg bs no-print" style="position:absolute;top:14px;right:42px;padding:4px 10px;font-size:12px" onclick="openAssessment('${p.id}','followup','${v.id}')">✏️</button>` : ''}
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+          <span class="visit-label ${isInitial?'initial':'followup'}">${isInitial?'📋 Initial Assessment':'🔄 Follow-up'}</span>
+          <span style="font-size:13px;color:var(--muted);font-weight:600">📅 ${v.date}</span>
+          ${v.duration?`<span style="font-size:13px;color:var(--muted)">⏱ ${v.duration}${v.onset?' — '+v.onset:''}</span>`:''}
         </div>`;
-      if (r.diagnoses?.length)  html += `<div class="asec"><div class="asec-ttl">🩺 Diagnosis</div><div class="atags">${pills(r.diagnoses,'key')}</div></div>`;
-      if (r.complaints?.length) html += `<div class="asec"><div class="asec-ttl">💬 Chief Complaints</div><div class="atags">${pills(r.complaints)}</div></div>`;
-      if (r.vas != null) {
-        const c = r.vas<=3?'#27ae60':r.vas<=6?'#e8a020':'#d94f4f';
-        html += `<div class="asec"><div class="asec-ttl">😣 VAS</div>
-          <div style="display:inline-flex;align-items:center;gap:10px;background:white;padding:8px 16px;border-radius:24px;border:1.5px solid var(--border)">
-            <span style="font-size:24px;font-weight:700;color:${c}">${r.vas}</span>
-            <span style="color:var(--muted);font-size:13px">/10</span>
-            <div style="height:6px;width:100px;background:#ddd;border-radius:6px;overflow:hidden"><div style="height:100%;width:${r.vas*10}%;background:${c}"></div></div>
-          </div></div>`;
-      }
-      if (r.findings?.length)  html += `<div class="asec"><div class="asec-ttl">🔬 Findings</div><div class="atags">${pills(r.findings)}</div></div>`;
-      if (r.problems?.length)  html += `<div class="asec"><div class="asec-ttl">📌 Problem List</div><div class="atags">${pills(r.problems,'red')}</div></div>`;
-      if (r.treatment?.length) html += `<div class="asec"><div class="asec-ttl">💊 Treatment Plan</div><div class="atags">${pills(r.treatment)}</div></div>`;
-      html += `</div>`;
-    });
 
-    if (regions[0]?.duration) html += `<div style="font-size:13px;color:var(--muted);margin-top:8px">⏱ Duration: ${regions[0].duration}${regions[0].onset?' — '+regions[0].onset:''}</div>`;
-    if (regions[0]?.notes)    html += `<div style="font-size:13px;margin-top:8px;background:var(--bg);padding:10px;border-radius:var(--rs)">${regions[0].notes}</div>`;
-    html += `</div>`;
-  }
-
-  // Follow-ups
-  if (followUps.length > 0) {
-    html += `<div class="card">
-      <div style="font-family:'DM Serif Display',serif;font-size:18px;color:var(--pd);margin-bottom:14px">🔄 Follow-ups (${followUps.length})</div>`;
-    followUps.forEach(fu => {
-      html += `<div class="fu-card">
-        ${canEdit?`<button class="fu-del" onclick="deleteFollowUp('${p.id}','${fu.id}')">🗑️</button>`:''}
-        <div class="fu-date">📅 ${fu.date}</div>`;
-      if (fu.vas != null) {
-        const c = fu.vas<=3?'#27ae60':fu.vas<=6?'#e8a020':'#d94f4f';
-        html += `<div style="display:inline-flex;align-items:center;gap:8px;background:white;padding:6px 14px;border-radius:20px;margin-bottom:8px;border:1.5px solid var(--border)">
-          <span style="font-weight:700;color:${c};font-size:18px">${fu.vas}</span><span style="font-size:12px;color:var(--muted)">/10</span>
-        </div>`;
-      }
-      (fu.regionUpdates||[]).forEach(ru => {
-        if (ru.items?.length || ru.treatment?.length) {
-          html += `<div style="font-size:12px;font-weight:700;color:var(--p);margin:6px 0 4px">📍 ${ru.region}</div>`;
-          if (ru.items?.length)     html += `<div class="atags" style="margin-bottom:4px">${pills(ru.items)}</div>`;
-          if (ru.treatment?.length) html += `<div class="atags">${pills(ru.treatment)}</div>`;
+      (v.regions||[]).forEach(r => {
+        html += `<div class="region-card">
+          <div class="region-title">📍 ${r.region}${r.sessionsPlanned?` <span style="font-size:12px;color:var(--muted);font-weight:500">💪 ${r.sessionsPlanned}${r.freq?' · '+r.freq:''}</span>`:''}</div>`;
+        if (r.diagnoses?.length)  html += `<div class="asec"><div class="asec-ttl">🩺 Diagnosis</div><div class="atags">${pills(r.diagnoses,'key')}</div></div>`;
+        if (r.complaints?.length) html += `<div class="asec"><div class="asec-ttl">💬 Complaints</div><div class="atags">${pills(r.complaints)}</div></div>`;
+        if (r.vas != null) {
+          const c = r.vas<=3?'#27ae60':r.vas<=6?'#e8a020':'#d94f4f';
+          html += `<div class="asec"><div class="asec-ttl">😣 VAS</div>
+            <div style="display:inline-flex;align-items:center;gap:10px;background:var(--bg);padding:8px 16px;border-radius:24px">
+              <span style="font-size:24px;font-weight:700;color:${c}">${r.vas}</span><span style="color:var(--muted);font-size:13px">/10</span>
+              <div style="height:6px;width:100px;background:#ddd;border-radius:6px;overflow:hidden"><div style="height:100%;width:${r.vas*10}%;background:${c}"></div></div>
+            </div></div>`;
         }
+        if (r.findings?.length)  html += `<div class="asec"><div class="asec-ttl">🔬 Findings</div><div class="atags">${pills(r.findings)}</div></div>`;
+        if (r.problems?.length)  html += `<div class="asec"><div class="asec-ttl">📌 Problem List</div><div class="atags">${pills(r.problems,'red')}</div></div>`;
+        if (r.treatment?.length) html += `<div class="asec"><div class="asec-ttl">💊 Treatment</div><div class="atags">${pills(r.treatment)}</div></div>`;
+        html += `</div>`;
       });
-      if (fu.notes) html += `<div style="font-size:13px;margin-top:8px;color:var(--txt)">${fu.notes}</div>`;
+
+      if (v.notes) html += `<div style="font-size:13px;background:var(--bg);padding:10px;border-radius:var(--rs);margin-top:8px">${v.notes}</div>`;
       html += `</div>`;
     });
-    html += `</div>`;
   }
 
   document.getElementById('pg-profile').innerHTML = html;
   goPage('profile');
 };
 
+// ── DELETE VISIT ──
+window.askDelVisit = (pid, visitId) => {
+  document.getElementById('confTitle').textContent = 'Delete Follow-up';
+  document.getElementById('confMsg').textContent   = 'Delete this follow-up? Cannot be undone.';
+  document.getElementById('confBtn').onclick = async () => {
+    const p = PATIENTS.find(x => x.id === pid);
+    await updateDoc(doc(db,'patients',pid), { visits: (p.visits||[]).filter(v => v.id !== visitId) });
+    toast('Deleted'); closeConf(); openProfile(pid);
+  };
+  document.getElementById('confO').classList.add('open');
+};
+
 // ── DELETE PATIENT ──
 window.askDel = (pid) => {
   const p = PATIENTS.find(x => x.id === pid);
   document.getElementById('confTitle').textContent = 'Delete Patient';
-  document.getElementById('confMsg').textContent   = `Delete "${p?.name}"? This cannot be undone.`;
+  document.getElementById('confMsg').textContent   = `Delete "${p?.name}"? Cannot be undone.`;
   document.getElementById('confBtn').onclick = async () => {
     await deleteDoc(doc(db,'patients',pid));
     toast('Patient deleted'); closeConf(); goPage('patients');
@@ -936,106 +842,70 @@ window.askDel = (pid) => {
   document.getElementById('confO').classList.add('open');
 };
 
-// ── NAV ──
-window.goPage = (n) => {
-  ['patients','manage','profile','users'].forEach(p => document.getElementById('pg-'+p).style.display = 'none');
-  document.getElementById('pg-'+n).style.display = 'block';
-  document.querySelectorAll('.ni').forEach(x => x.classList.remove('on'));
-  if(n==='patients') document.querySelectorAll('.ni')[0].classList.add('on');
-  if(n==='manage')   { document.querySelectorAll('.ni')[1].classList.add('on'); renderManage(); }
-  if(n==='users')    { document.querySelectorAll('.ni')[2].classList.add('on'); renderUsers(); }
-  closeSide();
-};
+// ── PDF EXPORT ──
+window.exportPDF = (pid) => {
+  const p = PATIENTS.find(x => x.id === pid); if (!p) return;
+  const visits = [...(p.visits||[])].sort((a,b) => {
+    if(a.type==='initial') return -1; if(b.type==='initial') return 1;
+    return a.date > b.date ? -1 : 1;
+  });
 
-// ── USERS ──
-async function renderUsers() {
-  const body = document.getElementById('usersBody');
-  body.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
-  const snap  = await getDocs(collection(db,'users'));
-  const users = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  body.innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-      <div style="font-size:15px;font-weight:700;color:var(--pd)">${users.length} staff account${users.length!==1?'s':''}</div>
-      <button class="btn bp bs" onclick="openM('moUser')">+ Add Staff</button>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:10px">
-      ${users.map(u=>`
-        <div style="display:flex;align-items:center;gap:14px;background:var(--bg);padding:14px 16px;border-radius:var(--rs)">
-          <div style="width:40px;height:40px;border-radius:50%;background:var(--p);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;flex-shrink:0">${(u.name||u.email).charAt(0).toUpperCase()}</div>
-          <div style="flex:1">
-            <div style="font-weight:700">${u.name||u.email}</div>
-            <div style="font-size:12px;color:var(--muted)">${u.email} · <span style="color:${u.role==='doctor'?'var(--p)':'var(--acc)'};font-weight:600">${u.role==='doctor'?'👨‍⚕️ Doctor':'🗂️ Receptionist'}</span></div>
-          </div>
-          ${u.id!==CUR_USER.uid?`<button class="btn bd bs" onclick="delUser('${u.id}','${u.name||u.email}')">Remove</button>`:'<span style="font-size:12px;color:var(--muted)">(you)</span>'}
-        </div>`).join('')}
-    </div>`;
-}
-window.saveUser = async () => {
-  const email = document.getElementById('uEmail').value.trim();
-  const pass  = document.getElementById('uPass').value;
-  const name  = document.getElementById('uName').value.trim();
-  const role  = document.getElementById('uRole').value;
-  if(!email||!pass){ toast('Email and password required',true); return; }
-  if(pass.length<6){ toast('Password must be at least 6 characters',true); return; }
-  try {
-    const cred = await createUserWithEmailAndPassword(auth, email, pass);
-    await setDoc(doc(db,'users',cred.user.uid), { name:name||email, email, role, createdAt:Date.now() });
-    closeM('moUser'); toast('Staff account created ✅'); renderUsers();
-  } catch(e) { toast(e.message, true); }
-};
-window.delUser = (uid, name) => {
-  document.getElementById('confTitle').textContent = 'Remove Staff';
-  document.getElementById('confMsg').textContent   = `Remove "${name}"?`;
-  document.getElementById('confBtn').onclick = async () => {
-    await deleteDoc(doc(db,'users',uid));
-    toast('User removed'); closeConf(); renderUsers();
-  };
-  document.getElementById('confO').classList.add('open');
-};
+  const sec = (t, arr, cls='') => arr?.length ? `
+    <div style="margin-bottom:10px">
+      <div style="font-size:10px;font-weight:700;color:#1a5c4a;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;border-bottom:1px solid #d0e4de;padding-bottom:3px">${t}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px">${arr.map(x=>`<span style="background:${cls==='key'?'#eafaf1':cls==='red'?'#fdeaea':'#eef2f0'};border:1px solid ${cls==='key'?'#27ae60':cls==='red'?'#d94f4f':'#ccddd6'};padding:3px 10px;border-radius:14px;font-size:12px;color:${cls==='key'?'#1a6b40':cls==='red'?'#d94f4f':'#162820'}">${x}</span>`).join('')}</div>
+    </div>` : '';
 
-// ── MANAGE OPTIONS ──
-window.renderManage = async () => {
-  const tabs = ['regions','diagnoses','complaints','findings','treatment','problems'];
-  const labels = {regions:'Regions',diagnoses:'Diagnoses',complaints:'Complaints',findings:'Findings',treatment:'Treatment',problems:'Problem List'};
-  if(!MG_TAB) MG_TAB = 'regions';
-  document.getElementById('mgTabs').innerHTML = tabs.map(t => `<button class="mtab ${MG_TAB===t?'on':''}" onclick="setMgTab('${t}')">${labels[t]}</button>`).join('');
-  renderMgBody();
-};
-window.setMgTab = (t) => { MG_TAB=t; document.querySelectorAll('.mtab').forEach(b=>b.classList.remove('on')); event.target.classList.add('on'); renderMgBody(); };
-async function renderMgBody() {
-  const opts = await getOpts(); const c = document.getElementById('mgBody');
-  if(MG_TAB==='regions'){
-    c.innerHTML = `<div class="opt-list">${opts.regions.map(r=>`<div class="opt-row"><span>${r}</span><button class="opt-del" onclick="delOpt('regions',null,${JSON.stringify(r)})">✕</button></div>`).join('')}</div>
-    <div class="add-row" style="margin-top:12px"><input type="text" id="mg-inp" placeholder="New region..."><button onclick="mgAdd()">+ Add</button></div>`;
-  } else if(MG_TAB==='problems'){
-    c.innerHTML = `<div class="opt-list">${opts.problems.map(p=>`<div class="opt-row"><span>${p}</span><button class="opt-del" onclick="delOpt('problems',null,${JSON.stringify(p)})">✕</button></div>`).join('')}</div>
-    <div class="add-row" style="margin-top:12px"><input type="text" id="mg-inp" placeholder="New problem..."><button onclick="mgAdd()">+ Add</button></div>`;
-  } else {
-    const sel = c.dataset.selReg || opts.regions[0];
-    const items = opts[MG_TAB]?.[sel] || [];
-    c.innerHTML = `<div style="margin-bottom:12px"><label class="fl" style="display:block;margin-bottom:5px">Region</label>
-      <select class="fc" style="width:auto" onchange="document.getElementById('mgBody').dataset.selReg=this.value;renderMgBody()">
-        ${opts.regions.map(r=>`<option value="${r}" ${r===sel?'selected':''}>${r}</option>`).join('')}
-      </select></div>
-    <div class="opt-list">${items.map(item=>`<div class="opt-row"><span>${item}</span><button class="opt-del" onclick="delOpt(${JSON.stringify(MG_TAB)},${JSON.stringify(sel)},${JSON.stringify(item)})">✕</button></div>`).join('')}</div>
-    <div class="add-row" style="margin-top:10px"><input type="text" id="mg-inp" placeholder="Add new option..."><button onclick="mgAdd()">+ Add</button></div>`;
-    c.dataset.selReg = sel;
-  }
-}
-window.mgAdd = async () => {
-  const val = document.getElementById('mg-inp')?.value?.trim(); if(!val) return;
-  const opts = await getOpts();
-  if(MG_TAB==='regions'){ if(!opts.regions.includes(val)){ opts.regions.push(val); ['diagnoses','complaints','findings','treatment'].forEach(k=>{ opts[k][val]=[]; }); }}
-  else if(MG_TAB==='problems'){ if(!opts.problems.includes(val)) opts.problems.push(val); }
-  else { const sel=document.getElementById('mgBody').dataset.selReg||opts.regions[0]; if(!opts[MG_TAB][sel])opts[MG_TAB][sel]=[]; if(!opts[MG_TAB][sel].includes(val))opts[MG_TAB][sel].push(val); }
-  await saveOpts(opts); toast('Added ✅'); renderMgBody();
-};
-window.delOpt = async (cat, region, val) => {
-  const opts = await getOpts();
-  if(cat==='regions') opts.regions=opts.regions.filter(x=>x!==val);
-  else if(cat==='problems') opts.problems=opts.problems.filter(x=>x!==val);
-  else if(region&&opts[cat]?.[region]) opts[cat][region]=opts[cat][region].filter(x=>x!==val);
-  await saveOpts(opts); toast('Removed'); renderMgBody();
+  let body = `
+  <div style="border-bottom:3px solid #0d3d2e;padding-bottom:16px;margin-bottom:20px">
+    <h1 style="font-family:'DM Serif Display',serif;font-weight:400;color:#0d3d2e;font-size:22px;margin-bottom:4px">PT Assessment Report</h1>
+    <div style="font-size:15px;font-weight:700;color:#162820">${p.name}</div>
+    <div style="font-size:13px;color:#5a7a6e;margin-top:2px">${p.age} y/o — ${p.gender||''}${p.job?' · '+p.job:''}${p.phone?' · '+p.phone:''}</div>
+  </div>`;
+
+  visits.forEach(v => {
+    const isInitial = v.type === 'initial';
+    body += `<div style="margin-bottom:24px;border-left:4px solid ${isInitial?'#1a5c4a':'#e8a020'};padding-left:14px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <span style="background:${isInitial?'#eafaf1':'#fff3cd'};color:${isInitial?'#27ae60':'#b07a00'};padding:3px 12px;border-radius:20px;font-size:12px;font-weight:700">${isInitial?'📋 Initial Assessment':'🔄 Follow-up'}</span>
+        <span style="font-size:13px;font-weight:600;color:#5a7a6e">📅 ${v.date}</span>
+        ${v.duration?`<span style="font-size:12px;color:#5a7a6e">⏱ ${v.duration}${v.onset?' — '+v.onset:''}</span>`:''}
+      </div>`;
+
+    (v.regions||[]).forEach(r => {
+      body += `<div style="background:#f8faf9;border-radius:8px;padding:14px;margin-bottom:10px;border-right:3px solid #1a5c4a">
+        <div style="font-weight:700;color:#0d3d2e;font-size:14px;margin-bottom:10px">📍 ${r.region}${r.sessionsPlanned?` <span style="font-size:11px;color:#5a7a6e;font-weight:400">— ${r.sessionsPlanned} sessions${r.freq?' · '+r.freq:''}</span>`:''}</div>
+        ${sec('Diagnosis', r.diagnoses, 'key')}
+        ${sec('Chief Complaints', r.complaints)}
+        ${r.vas!=null?`<div style="margin-bottom:10px"><div style="font-size:10px;font-weight:700;color:#1a5c4a;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">Pain Level (VAS)</div><div style="display:inline-flex;align-items:center;gap:10px;background:#fff;border:1px solid #ccddd6;padding:6px 14px;border-radius:20px"><span style="font-size:20px;font-weight:700;color:${r.vas<=3?'#27ae60':r.vas<=6?'#e8a020':'#d94f4f'}">${r.vas}</span><span style="font-size:12px;color:#5a7a6e">/10</span></div></div>`:''}
+        ${sec('Assessment Findings', r.findings)}
+        ${sec('Problem List', r.problems, 'red')}
+        ${sec('Treatment Plan', r.treatment)}
+      </div>`;
+    });
+
+    if (v.notes) body += `<div style="font-size:12px;color:#5a7a6e;font-style:italic;margin-top:6px;padding:8px 12px;background:#f8faf9;border-radius:6px">📝 ${v.notes}</div>`;
+    body += `</div>`;
+  });
+
+  const w = window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>PT Report — ${p.name}</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'DM Sans',sans-serif;color:#162820;padding:32px;max-width:800px;margin:0 auto;font-size:13px;line-height:1.5}
+    .print-btn{position:fixed;top:20px;right:20px;background:#0d3d2e;color:#fff;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px}
+    .print-btn:hover{background:#1a5c4a}
+    @media print{.print-btn{display:none}body{padding:0}}
+  </style>
+  </head><body>
+  <button class="print-btn" onclick="window.print()">🖨️ Print / Save as PDF</button>
+  ${body}
+  <div style="margin-top:32px;padding-top:12px;border-top:1px solid #d0e4de;font-size:11px;color:#5a7a6e;text-align:center">
+    Generated by Physiclinic PT Archive · ${today()}
+  </div>
+  </body></html>`);
+  w.document.close();
 };
 
 // ── CSV EXPORT ──
@@ -1054,175 +924,202 @@ function csvDL(filename, rows){
   setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(url); }, 1000);
 }
 
+window.exportCSV = (pid) => {
+  const p = PATIENTS.find(x => x.id === pid); if (!p) return;
+  const visits = [...(p.visits||[])].sort((a,b)=>{if(a.type==='initial')return -1;if(b.type==='initial')return 1;return a.date>b.date?1:-1;});
+  const rows = [['Patient','Age','Gender','Occupation','Phone','Visit Type','Date','Duration','Onset','Region','Diagnosis','Complaints','VAS','Findings','Problem List','Treatment','Sessions','Frequency','Notes']];
+  visits.forEach(v => {
+    (v.regions||[]).forEach((r,i) => {
+      rows.push([
+        i===0?p.name:'', i===0?p.age:'', i===0?p.gender:'', i===0?p.job:'', i===0?p.phone:'',
+        i===0?(v.type==='initial'?'Initial Assessment':'Follow-up'):'',
+        i===0?v.date:'', i===0?(v.duration||''):'', i===0?(v.onset||''):'',
+        r.region,
+        (r.diagnoses||[]).join(' | '), (r.complaints||[]).join(' | '),
+        r.vas!=null?r.vas+'/10':'',
+        (r.findings||[]).join(' | '), (r.problems||[]).join(' | '), (r.treatment||[]).join(' | '),
+        r.sessionsPlanned||'', r.freq||'',
+        i===0?(v.notes||''):'',
+      ]);
+    });
+    if (!(v.regions||[]).length) {
+      rows.push([p.name,p.age,p.gender,p.job,p.phone,v.type==='initial'?'Initial Assessment':'Follow-up',v.date,v.duration||'',v.onset||'','','','','','','','','','',v.notes||'']);
+    }
+  });
+  csvDL(`PT_${p.name.replace(/\s+/g,'_')}_${today()}.csv`, rows);
+  toast('CSV downloaded ✅');
+};
+
 window.exportAll = () => {
-  if(!PATIENTS.length){ toast('No patients to export',true); return; }
-  const headers = ['Name','Age','Gender','Occupation','Phone','Region','Diagnosis','Complaints','Findings','Problems','Treatment','Sessions','VAS','Duration','Onset','Initial Date','Follow-up Count'];
-  const rows = [headers];
+  if (!PATIENTS.length) { toast('No patients to export', true); return; }
+  const rows = [['Patient','Age','Gender','Occupation','Phone','Visit Type','Date','Region','Diagnosis','VAS','Complaints','Findings','Problems','Treatment']];
   PATIENTS.forEach(p => {
-    const regions = p.initial?.regions || [];
-    if (!regions.length) {
-      rows.push([p.name,p.age,p.gender,p.job,p.phone,'','','','','','','','','','',p.initial?.date||'', (p.followUps||[]).length]);
-    } else {
-      regions.forEach((r,i) => {
+    const visits = p.visits || [];
+    if (!visits.length) { rows.push([p.name,p.age,p.gender,p.job,p.phone,'No assessment yet','','','','','','','','']); return; }
+    visits.forEach((v,vi) => {
+      (v.regions||[]).forEach((r,ri) => {
         rows.push([
-          i===0?p.name:'', i===0?p.age:'', i===0?p.gender:'', i===0?p.job:'', i===0?p.phone:'',
-          r.region,
-          (r.diagnoses||[]).join(' | '),
-          (r.complaints||[]).join(' | '),
-          (r.findings||[]).join(' | '),
-          (r.problems||[]).join(' | '),
-          (r.treatment||[]).join(' | '),
-          r.sessionsPlanned||'',
-          r.vas!=null?r.vas+'/10':'',
-          r.duration||'', r.onset||'',
-          i===0?(p.initial?.date||''):'',
-          i===0?(p.followUps||[]).length:'',
+          vi===0&&ri===0?p.name:'', vi===0&&ri===0?p.age:'', vi===0&&ri===0?p.gender:'',
+          vi===0&&ri===0?p.job:'', vi===0&&ri===0?p.phone:'',
+          ri===0?(v.type==='initial'?'Initial':'Follow-up '+vi):'',
+          ri===0?v.date:'', r.region,
+          (r.diagnoses||[]).join(' | '), r.vas!=null?r.vas+'/10':'',
+          (r.complaints||[]).join(' | '), (r.findings||[]).join(' | '),
+          (r.problems||[]).join(' | '), (r.treatment||[]).join(' | '),
         ]);
       });
-    }
+    });
   });
   csvDL(`Physiclinic_All_${today()}.csv`, rows);
   toast(`Exported ${PATIENTS.length} patients ✅`);
 };
 
-window.exportOne = (pid) => {
-  const p = PATIENTS.find(x => x.id === pid); if(!p) return;
-  const allSheets = [];
-
-  // Sheet 1: Patient Info + Initial
-  const sheet1 = [
-    ['PT Report — '+p.name],
-    [],
-    ['Name',p.name],['Age',p.age],['Gender',p.gender],['Occupation',p.job],['Phone',p.phone],
-    ['Initial Assessment Date', p.initial?.date||''],
-    [],
-  ];
-  (p.initial?.regions||[]).forEach(r => {
-    sheet1.push([`--- Region: ${r.region} ---`]);
-    sheet1.push(['Diagnosis',       (r.diagnoses||[]).join(' | ')]);
-    sheet1.push(['Chief Complaints',(r.complaints||[]).join(' | ')]);
-    sheet1.push(['VAS',             r.vas!=null?r.vas+'/10':'']);
-    sheet1.push(['Findings',        (r.findings||[]).join(' | ')]);
-    sheet1.push(['Problem List',    (r.problems||[]).join(' | ')]);
-    sheet1.push(['Treatment Plan',  (r.treatment||[]).join(' | ')]);
-    sheet1.push(['Sessions Planned',r.sessionsPlanned||'']);
-    sheet1.push(['Frequency',       r.freq||'']);
-    sheet1.push([]);
-  });
-  if ((p.initial?.regions||[])[0]?.duration) sheet1.push(['Duration', p.initial.regions[0].duration]);
-  if ((p.initial?.regions||[])[0]?.notes)    sheet1.push(['Notes',    p.initial.regions[0].notes]);
-  allSheets.push(sheet1);
-
-  // Sheet 2+: Follow-ups
-  const fus = [...(p.followUps||[])].sort((a,b) => a.date > b.date ? 1 : -1);
-  fus.forEach((fu, i) => {
-    const sheet = [
-      [`Follow-up ${i+1} — ${fu.date}`], [],
-      ['Date', fu.date],
-      ['VAS', fu.vas!=null ? fu.vas+'/10' : ''],
-      [],
-    ];
-    (fu.regionUpdates||[]).forEach(ru => {
-      sheet.push([`--- ${ru.region} ---`]);
-      if(ru.items?.length)    sheet.push(['Complaints / Findings', (ru.items).join(' | ')]);
-      if(ru.treatment?.length) sheet.push(['Treatment Today',       (ru.treatment).join(' | ')]);
-      sheet.push([]);
-    });
-    if (fu.notes) sheet.push(['Notes', fu.notes]);
-    allSheets.push(sheet);
-  });
-
-  // combine all sheets into one CSV with separators
-  const allRows = [];
-  allSheets.forEach((sheet, i) => {
-    if (i > 0) { allRows.push([]); allRows.push([`===== Follow-up ${i} =====`]); allRows.push([]); }
-    sheet.forEach(row => allRows.push(row));
-  });
-
-  csvDL(`PT_${p.name.replace(/\s+/g,'_')}_${today()}.csv`, allRows);
-  toast('CSV downloaded ✅');
+// ── NAV ──
+window.goPage = (n) => {
+  ['patients','manage','profile','users'].forEach(p => document.getElementById('pg-'+p).style.display='none');
+  document.getElementById('pg-'+n).style.display = 'block';
+  document.querySelectorAll('.ni').forEach(x => x.classList.remove('on'));
+  if(n==='patients') document.querySelectorAll('.ni')[0].classList.add('on');
+  if(n==='manage')   { document.querySelectorAll('.ni')[1].classList.add('on'); renderManage(); }
+  if(n==='users')    { document.querySelectorAll('.ni')[2].classList.add('on'); renderUsers(); }
+  closeSide();
 };
 
-// ── PRINT ──
-window.printPt = (pid) => {
-  const p = PATIENTS.find(x => x.id === pid); if(!p) return;
-  const sec = (t,arr) => arr?.length ? `<h4 style="color:#1a5c4a;font-size:11px;text-transform:uppercase;letter-spacing:.5px;margin:10px 0 5px;border-bottom:1px solid #ccc;padding-bottom:2px">${t}</h4><div style="display:flex;flex-wrap:wrap;gap:5px">${arr.map(x=>`<span style="background:#eef2f0;padding:3px 10px;border-radius:12px;font-size:12px">${x}</span>`).join('')}</div>` : '';
-  const w = window.open('','_blank');
-  let body = `<h1>PT Assessment — ${p.name}</h1>
-  <p style="color:#5a7a6e;margin-bottom:16px">${p.age} y/o ${p.gender||''} ${p.job?'· '+p.job:''} ${p.phone?'· '+p.phone:''}</p>
-  ${p.initial?.date?`<p><b>Initial Assessment Date:</b> ${p.initial.date}</p>`:''}`;
-  (p.initial?.regions||[]).forEach(r => {
-    body += `<div style="border:1px solid #ccddd6;border-radius:8px;padding:14px;margin:12px 0;border-right:4px solid #1a5c4a">
-      <h3 style="color:#0d3d2e;margin-bottom:8px">📍 ${r.region}</h3>
-      ${sec('Diagnosis',r.diagnoses)}${sec('Chief Complaints',r.complaints)}
-      ${r.vas!=null?`<p style="margin:6px 0"><b>VAS:</b> ${r.vas}/10</p>`:''}
-      ${sec('Findings',r.findings)}${sec('Problem List',r.problems)}${sec('Treatment Plan',r.treatment)}
-      ${r.sessionsPlanned?`<p style="margin-top:6px"><b>Sessions:</b> ${r.sessionsPlanned}${r.freq?' — '+r.freq:''}</p>`:''}
+// ── USERS ──
+async function renderUsers() {
+  const body = document.getElementById('usersBody');
+  body.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+  const snap  = await getDocs(collection(db,'users'));
+  const users = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  body.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-weight:700;color:var(--pd)">${users.length} staff account${users.length!==1?'s':''}</div>
+      <button class="btn bp bs" onclick="openM('moUser')">+ Add Staff</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      ${users.map(u=>`<div style="display:flex;align-items:center;gap:14px;background:var(--bg);padding:14px 16px;border-radius:var(--rs)">
+        <div style="width:40px;height:40px;border-radius:50%;background:var(--p);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;flex-shrink:0">${(u.name||u.email).charAt(0).toUpperCase()}</div>
+        <div style="flex:1">
+          <div style="font-weight:700">${u.name||u.email}</div>
+          <div style="font-size:12px;color:var(--muted)">${u.email} · <span style="color:${u.role==='doctor'?'var(--p)':'var(--acc)'};font-weight:600">${u.role==='doctor'?'👨‍⚕️ Doctor':'🗂️ Receptionist'}</span></div>
+        </div>
+        ${u.id!==CUR_USER.uid?`<button class="btn bd bs" onclick="delUser('${u.id}','${u.name||u.email}')">Remove</button>`:'<span style="font-size:12px;color:var(--muted)">(you)</span>'}
+      </div>`).join('')}
     </div>`;
-  });
-  const fus = [...(p.followUps||[])].sort((a,b) => a.date > b.date ? 1 : -1);
-  if (fus.length) {
-    body += `<h2 style="color:#0d3d2e;margin:20px 0 10px">Follow-ups</h2>`;
-    fus.forEach((fu,i) => {
-      body += `<div style="border:1px solid #ccddd6;border-radius:8px;padding:12px;margin:8px 0;border-right:4px solid #e8a020">
-        <div style="font-weight:700;color:#0d3d2e">Follow-up ${i+1} — ${fu.date}</div>
-        ${fu.vas!=null?`<p style="margin:4px 0"><b>VAS:</b> ${fu.vas}/10</p>`:''}
-        ${(fu.regionUpdates||[]).map(ru=>`<div style="margin-top:6px"><b>${ru.region}:</b> ${[...(ru.items||[]),...(ru.treatment||[])].join(', ')}</div>`).join('')}
-        ${fu.notes?`<p style="margin-top:6px;color:#5a7a6e">${fu.notes}</p>`:''}
-      </div>`;
-    });
+}
+window.saveUser = async () => {
+  const email = document.getElementById('uEmail').value.trim();
+  const pass  = document.getElementById('uPass').value;
+  const name  = document.getElementById('uName').value.trim();
+  const role  = document.getElementById('uRole').value;
+  if(!email||!pass){ toast('Email and password required',true); return; }
+  if(pass.length<6){ toast('Password must be at least 6 characters',true); return; }
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    await setDoc(doc(db,'users',cred.user.uid), { name:name||email, email, role, createdAt:Date.now() });
+    closeM('moUser'); toast('Staff account created ✅'); renderUsers();
+  } catch(e) { toast(e.message, true); }
+};
+window.delUser = (uid2, name) => {
+  document.getElementById('confTitle').textContent = 'Remove Staff';
+  document.getElementById('confMsg').textContent   = `Remove "${name}"?`;
+  document.getElementById('confBtn').onclick = async () => {
+    await deleteDoc(doc(db,'users',uid2));
+    toast('Removed'); closeConf(); renderUsers();
+  };
+  document.getElementById('confO').classList.add('open');
+};
+
+// ── MANAGE OPTIONS ──
+window.renderManage = async () => {
+  const tabs   = ['regions','diagnoses','complaints','findings','treatment','problems'];
+  const labels = {regions:'Regions',diagnoses:'Diagnoses',complaints:'Complaints',findings:'Findings',treatment:'Treatment',problems:'Problem List'};
+  if (!MG_TAB) MG_TAB = 'regions';
+  document.getElementById('mgTabs').innerHTML = tabs.map(t=>`<button class="mtab ${MG_TAB===t?'on':''}" onclick="setMgTab('${t}')">${labels[t]}</button>`).join('');
+  renderMgBody();
+};
+window.setMgTab = (t) => { MG_TAB=t; document.querySelectorAll('.mtab').forEach(b=>b.classList.remove('on')); event.target.classList.add('on'); renderMgBody(); };
+async function renderMgBody() {
+  const opts = await getOpts(); const c = document.getElementById('mgBody');
+  if (MG_TAB==='regions') {
+    c.innerHTML = `<div class="opt-list">${opts.regions.map(r=>`<div class="opt-row"><span>${r}</span><button class="opt-del" onclick="delOpt('regions',null,${JSON.stringify(r)})">✕</button></div>`).join('')}</div>
+    <div class="add-row" style="margin-top:12px"><input type="text" id="mg-inp" placeholder="New region..."><button onclick="mgAdd()">+ Add</button></div>`;
+  } else if (MG_TAB==='problems') {
+    c.innerHTML = `<div class="opt-list">${opts.problems.map(p=>`<div class="opt-row"><span>${p}</span><button class="opt-del" onclick="delOpt('problems',null,${JSON.stringify(p)})">✕</button></div>`).join('')}</div>
+    <div class="add-row" style="margin-top:12px"><input type="text" id="mg-inp" placeholder="New problem..."><button onclick="mgAdd()">+ Add</button></div>`;
+  } else {
+    const sel = c.dataset.selReg || opts.regions[0];
+    const items = opts[MG_TAB]?.[sel] || [];
+    c.innerHTML = `<div style="margin-bottom:12px"><label class="fl" style="display:block;margin-bottom:5px">Region</label>
+      <select class="fc" style="width:auto" onchange="document.getElementById('mgBody').dataset.selReg=this.value;renderMgBody()">
+        ${opts.regions.map(r=>`<option value="${r}" ${r===sel?'selected':''}>${r}</option>`).join('')}
+      </select></div>
+    <div class="opt-list">${items.map(item=>`<div class="opt-row"><span>${item}</span><button class="opt-del" onclick="delOpt(${JSON.stringify(MG_TAB)},${JSON.stringify(sel)},${JSON.stringify(item)})">✕</button></div>`).join('')}</div>
+    <div class="add-row" style="margin-top:10px"><input type="text" id="mg-inp" placeholder="Add new option..."><button onclick="mgAdd()">+ Add</button></div>`;
+    c.dataset.selReg = sel;
   }
-  w.document.write(`<html><head><meta charset="UTF-8"><title>PT — ${p.name}</title>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
-  <style>body{font-family:'DM Sans',sans-serif;padding:28px;color:#162820;font-size:13px}h1{font-family:'DM Serif Display',serif;font-weight:400;color:#0d3d2e;font-size:20px}</style>
-  </head><body>${body}</body></html>`);
-  w.document.close(); w.print();
+}
+window.mgAdd = async () => {
+  const val = document.getElementById('mg-inp')?.value?.trim(); if(!val) return;
+  const opts = await getOpts();
+  if(MG_TAB==='regions'){if(!opts.regions.includes(val)){opts.regions.push(val);['diagnoses','complaints','findings','treatment'].forEach(k=>{opts[k][val]=[];});}}
+  else if(MG_TAB==='problems'){if(!opts.problems.includes(val))opts.problems.push(val);}
+  else{const sel=document.getElementById('mgBody').dataset.selReg||opts.regions[0];if(!opts[MG_TAB][sel])opts[MG_TAB][sel]=[];if(!opts[MG_TAB][sel].includes(val))opts[MG_TAB][sel].push(val);}
+  await saveOpts(opts); toast('Added ✅'); renderMgBody();
+};
+window.delOpt = async (cat, region, val) => {
+  const opts = await getOpts();
+  if(cat==='regions')opts.regions=opts.regions.filter(x=>x!==val);
+  else if(cat==='problems')opts.problems=opts.problems.filter(x=>x!==val);
+  else if(region&&opts[cat]?.[region])opts[cat][region]=opts[cat][region].filter(x=>x!==val);
+  await saveOpts(opts); toast('Removed'); renderMgBody();
 };
 
 // ── DOM HELPERS ──
 function mkSdiv(txt){ const d=document.createElement('div'); d.className='sdiv'; d.textContent=txt; return d; }
-function mkSel(id, opts, val){
-  const s=document.createElement('select'); s.className='fc'; s.id=id;
-  opts.forEach(o=>{ const op=document.createElement('option'); op.value=o; op.textContent=o||'Select...'; if(o===val)op.selected=true; s.appendChild(op); });
+function mkInp(id,ph,val='',type='text'){ const i=document.createElement('input'); i.className='fc';i.id=id;i.type=type;i.placeholder=ph;i.value=val; return i; }
+function mkSel(id,opts,val){
+  const s=document.createElement('select');s.className='fc';s.id=id;
+  opts.forEach(o=>{const op=document.createElement('option');op.value=o;op.textContent=o||'Select...';if(o===val)op.selected=true;s.appendChild(op);});
   return s;
 }
+function mkFGEl(label, el){ const w=document.createElement('div');w.className='fg'; const l=document.createElement('label');l.className='fl';l.textContent=label;w.appendChild(l);w.appendChild(el);return w; }
 function mkOnePill(key, opt, selected, regionIdx){
-  const b=document.createElement('button'); b.type='button'; b.className='pill'+(selected?' sel':''); b.textContent=opt;
+  const b=document.createElement('button');b.type='button';b.className='pill'+(selected?' sel':'');b.textContent=opt;
   b.addEventListener('click',function(){
-    if(!AS_REGIONS[regionIdx][key]) AS_REGIONS[regionIdx][key]=[];
-    if(AS_REGIONS[regionIdx][key].includes(opt)){
-      AS_REGIONS[regionIdx][key]=AS_REGIONS[regionIdx][key].filter(x=>x!==opt); this.classList.remove('sel');
-    } else { AS_REGIONS[regionIdx][key].push(opt); this.classList.add('sel'); }
+    if(!AS_REGIONS[regionIdx][key])AS_REGIONS[regionIdx][key]=[];
+    if(AS_REGIONS[regionIdx][key].includes(opt)){AS_REGIONS[regionIdx][key]=AS_REGIONS[regionIdx][key].filter(x=>x!==opt);this.classList.remove('sel');}
+    else{AS_REGIONS[regionIdx][key].push(opt);this.classList.add('sel');}
   });
   return b;
 }
 function mkPillGroupWithAdd(key, allOpts, selected, region, opts, regionIdx){
   const wrap=document.createElement('div');
-  const pg=document.createElement('div'); pg.className='pill-group';
+  const pg=document.createElement('div');pg.className='pill-group';
   allOpts.forEach(opt=>pg.appendChild(mkOnePill(key,opt,selected.includes(opt),regionIdx)));
   wrap.appendChild(pg);
-  const row=document.createElement('div'); row.className='add-row';
-  const inp=document.createElement('input'); inp.type='text'; inp.placeholder='Add new option (saves permanently)...';
-  const btn=document.createElement('button'); btn.type='button'; btn.textContent='+ Add';
+  const row=document.createElement('div');row.className='add-row';
+  const inp=document.createElement('input');inp.type='text';inp.placeholder='Add new option (saves permanently)...';
+  const btn=document.createElement('button');btn.type='button';btn.textContent='+ Add';
   btn.addEventListener('click',async()=>{
-    const val=inp.value.trim(); if(!val){toast('Type an option first',true);return;}
-    if(region&&opts[key]&&opts[key][region]!==undefined){ if(!opts[key][region].includes(val)) opts[key][region].push(val); }
-    else if(key==='problems'){ if(!opts.problems.includes(val)) opts.problems.push(val); }
+    const val=inp.value.trim();if(!val){toast('Type an option first',true);return;}
+    if(region&&opts[key]&&opts[key][region]!==undefined){if(!opts[key][region].includes(val))opts[key][region].push(val);}
+    else if(key==='problems'){if(!opts.problems.includes(val))opts.problems.push(val);}
     await saveOpts(opts);
-    if(!AS_REGIONS[regionIdx][key]) AS_REGIONS[regionIdx][key]=[];
-    if(!AS_REGIONS[regionIdx][key].includes(val)) AS_REGIONS[regionIdx][key].push(val);
+    if(!AS_REGIONS[regionIdx][key])AS_REGIONS[regionIdx][key]=[];
+    if(!AS_REGIONS[regionIdx][key].includes(val))AS_REGIONS[regionIdx][key].push(val);
     pg.appendChild(mkOnePill(key,val,true,regionIdx));
-    inp.value=''; toast('Option added ✅');
+    inp.value='';toast('Option added ✅');
   });
-  row.appendChild(inp); row.appendChild(btn); wrap.appendChild(row); return wrap;
+  row.appendChild(inp);row.appendChild(btn);wrap.appendChild(row);return wrap;
 }
-function mkVas(currentVal, regionIdx){
-  const w=document.createElement('div'); w.style.cssText='display:flex;gap:6px;flex-wrap:wrap;margin-top:4px';
+function mkVasEl(currentVal, regionIdx){
+  const w=document.createElement('div');w.style.cssText='display:flex;gap:6px;flex-wrap:wrap;margin-top:4px';
   for(let i=0;i<=10;i++){
-    const b=document.createElement('button'); b.type='button'; b.className='vas-btn'+(currentVal===i?' sel':''); b.textContent=i;
+    const b=document.createElement('button');b.type='button';b.className='vas-btn'+(currentVal===i?' sel':'');b.textContent=i;
     b.addEventListener('click',function(){
       AS_REGIONS[regionIdx].vas=i;
-      w.querySelectorAll('.vas-btn').forEach(x=>x.classList.remove('sel')); this.classList.add('sel');
+      w.querySelectorAll('.vas-btn').forEach(x=>x.classList.remove('sel'));this.classList.add('sel');
     });
     w.appendChild(b);
   }
@@ -1231,75 +1128,27 @@ function mkVas(currentVal, regionIdx){
 
 // ── UTILS ──
 function today(){ return new Date().toISOString().split('T')[0]; }
-function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2); }
+function uid()  { return Date.now().toString(36)+Math.random().toString(36).slice(2); }
 window.openM    = id => document.getElementById(id).classList.add('open');
 window.closeM   = id => document.getElementById(id).classList.remove('open');
-window.closeConf= ()  => document.getElementById('confO').classList.remove('open');
+window.closeConf= () => document.getElementById('confO').classList.remove('open');
 window.toggleSide = () => {
-  const s=document.getElementById('side'); const ov=document.getElementById('ovcl');
-  s.classList.toggle('open'); ov.style.display=s.classList.contains('open')?'block':'none';
+  const s=document.getElementById('side');const ov=document.getElementById('ovcl');
+  s.classList.toggle('open');ov.style.display=s.classList.contains('open')?'block':'none';
 };
-function closeSide(){ if(window.innerWidth<=768){ document.getElementById('side').classList.remove('open'); document.getElementById('ovcl').style.display='none'; }}
-window.toast = (msg, err=false) => {
-  const t=document.getElementById('toast'); t.textContent=msg; t.className='toast show'+(err?' err':'');
+function closeSide(){ if(window.innerWidth<=768){document.getElementById('side').classList.remove('open');document.getElementById('ovcl').style.display='none';}}
+window.toast = (msg,err=false) => {
+  const t=document.getElementById('toast');t.textContent=msg;t.className='toast show'+(err?' err':'');
   setTimeout(()=>t.classList.remove('show'),2800);
 };
 
 // ── DEFAULT OPTIONS ──
 function defaultOpts(){return{
   regions:['Cervical Spine','Thoracic Spine','Lumbar Spine','Shoulder','Elbow','Wrist & Hand','Hip','Knee','Ankle & Foot','TMJ','Sacroiliac Joint'],
-  diagnoses:{
-    'Cervical Spine':['Cervical Disc Herniation','Cervical Spondylosis','Cervical Radiculopathy','Cervical Myelopathy','Neck Strain / Whiplash','Cervicogenic Headache','Cervical Facet Syndrome','Torticollis','Cervical Stenosis','Thoracic Outlet Syndrome'],
-    'Thoracic Spine':['Thoracic Disc Herniation','Thoracic Spondylosis','Scheuermann\'s Disease','Costochondritis','Thoracic Facet Syndrome'],
-    'Lumbar Spine':['Lumbar Disc Herniation','Lumbar Spondylosis','Lumbar Radiculopathy (Sciatica)','Spinal Stenosis','Spondylolisthesis','Spondylolysis','Lumbar Strain','Piriformis Syndrome','SI Joint Dysfunction','Facet Syndrome','Post-Surgical Lumbar'],
-    'Shoulder':['Rotator Cuff Tear','Rotator Cuff Tendinopathy','Shoulder Impingement','Frozen Shoulder (Adhesive Capsulitis)','Shoulder Dislocation / Instability','AC Joint Sprain','Biceps Tendinopathy','SLAP Tear','Shoulder Bursitis','Post-Surgical Shoulder'],
-    'Elbow':['Tennis Elbow (Lateral Epicondylitis)','Golfer\'s Elbow (Medial Epicondylitis)','Elbow Bursitis','Radial Tunnel Syndrome','Cubital Tunnel Syndrome','Elbow Fracture (Post-Surgical)','Elbow Stiffness'],
-    'Wrist & Hand':['Carpal Tunnel Syndrome','De Quervain\'s Tenosynovitis','Trigger Finger','Wrist Sprain','TFCC Tear','Wrist Fracture (Post-Surgical)','Wrist Tendinopathy','Finger Stiffness'],
-    'Hip':['Hip Osteoarthritis','Hip Impingement (FAI)','Trochanteric Bursitis','Hip Labral Tear','Hip Flexor Strain','Piriformis Syndrome','Hip Fracture (Post-Surgical)','Gluteal Tendinopathy'],
-    'Knee':['Knee Osteoarthritis','Patellofemoral Pain Syndrome','ACL Tear / Post-Surgical','Meniscal Tear','PCL Injury','MCL / LCL Sprain','Patellar Tendinopathy','IT Band Syndrome','Total Knee Replacement (Post-Surgical)'],
-    'Ankle & Foot':['Lateral Ankle Sprain','Achilles Tendinopathy','Plantar Fasciitis','Ankle OA','Peroneal Tendinopathy','Ankle Fracture (Post-Surgical)','Metatarsalgia','Hallux Valgus'],
-    'TMJ':['TMJ Dysfunction','TMJ Disc Displacement','Bruxism-Related TMJ','Myofascial TMJ Pain'],
-    'Sacroiliac Joint':['SI Joint Dysfunction','Sacroiliitis','Ankylosing Spondylitis','Pelvic Girdle Pain','Post-Partum SI Pain'],
-  },
-  complaints:{
-    'Cervical Spine':['Neck pain','Morning stiffness','Cervicogenic headache','Radiating arm pain','Finger numbness / tingling','Dizziness','Interscapular pain','Limited ROM','Pain on rotation','Pain on extension'],
-    'Thoracic Spine':['Mid-back pain','Thoracic stiffness','Pain on breathing','Postural kyphosis','Pain with prolonged sitting'],
-    'Lumbar Spine':['Low back pain','Radiating leg pain (Sciatica)','Morning stiffness','Leg weakness','Foot numbness / tingling','Pain on standing','Pain on prolonged sitting','Pain on bending forward','Pain on extension','Night pain'],
-    'Shoulder':['Shoulder pain','Limited ROM','Night pain','Weakness','Clicking / crepitus','Pain on overhead activities','Pain on reaching behind back'],
-    'Elbow':['Lateral elbow pain','Medial elbow pain','Pain on gripping','Pain on wrist extension','Stiffness','Swelling'],
-    'Wrist & Hand':['Wrist pain','Hand numbness','Thumb pain','Trigger finger locking','Grip weakness','Morning stiffness','Swelling'],
-    'Hip':['Hip pain','Groin pain','Lateral hip pain','Pain on walking','Limited ROM','Pain on stairs','Night pain'],
-    'Knee':['Knee pain','Swelling','Crepitus','Limited flexion','Pain on stairs','Pain on squatting','Morning stiffness','Locking / giving way'],
-    'Ankle & Foot':['Heel pain','Ankle pain','Morning heel pain','Swelling','Pain on walking','Limited dorsiflexion','Weakness','Instability'],
-    'TMJ':['Jaw pain','Clicking on opening','Limited mouth opening','Difficulty chewing','Facial headache'],
-    'Sacroiliac Joint':['Sacral pain','Pain radiating to buttock','Pain on prolonged standing','Pain on transitional movements','Pelvic asymmetry'],
-  },
-  findings:{
-    'Cervical Spine':['Limited Flexion','Limited Extension','Limited Rotation R','Limited Rotation L','Limited Lat. Flexion R','Limited Lat. Flexion L','Spurling Test +','Distraction Test +','Muscle weakness','Forward Head Posture','Upper Crossed Syndrome','Trigger points'],
-    'Thoracic Spine':['Kyphosis','Limited thoracic rotation','Weak thoracic extensors','Hypomobility T-spine','Rib restriction'],
-    'Lumbar Spine':['SLR +','Slump Test +','Limited Flexion','Limited Extension','Limited Lat. Flexion','Quad weakness','Hamstring tightness','Tight Hip Flexors','Pelvic Tilt','Reduced Lumbar Lordosis','Muscle spasm','Neurological deficits'],
-    'Shoulder':['Neer Test +','Hawkins-Kennedy +','Empty Can +','Drop Arm +','Speed Test +','Apprehension Test +','Limited Abduction','Limited Flexion','Limited IR','Limited ER','Rotator cuff weakness','Scapular dyskinesia'],
-    'Elbow':['Pain on resisted wrist extension','Pain on resisted wrist flexion','Limited Pronation','Limited Supination','Cozen Test +','Mill\'s Test +','Tinel at elbow'],
-    'Wrist & Hand':['Phalen Test +','Tinel Test +','Limited wrist flexion','Limited wrist extension','Grip weakness','Finkelstein Test +'],
-    'Hip':['FABER +','FADIR +','Thomas Test +','Trendelenburg +','Limited IR','Limited ER','Limited Flexion','Gluteal weakness'],
-    'Knee':['Lachman Test +','Anterior Drawer +','McMurray +','Valgus Stress +','Varus Stress +','Patellar Grind +','Limited Flexion','Quad weakness','VMO atrophy','Joint effusion','Crepitus'],
-    'Ankle & Foot':['Anterior Drawer +','Talar Tilt +','Thompson Test +','Limited Dorsiflexion','Calf weakness','Tight Achilles','Plantar tenderness'],
-    'TMJ':['Limited mouth opening','Jaw deviation','TMJ Clicking','Joint tenderness','Masticatory muscle tightness'],
-    'Sacroiliac Joint':['FABER +','Gaenslen Test +','Compression Test +','Distraction Test +','SI joint tenderness','Pelvic asymmetry'],
-  },
-  treatment:{
-    'Cervical Spine':['TENS','Ultrasound','Hot Pack','Cervical Traction','Manual Therapy','Mobilization','Strengthening','Stretching','Postural Correction','Dry Needling','Kinesio Taping','DNF Strengthening','Home Exercise Program'],
-    'Thoracic Spine':['Hot Pack','Thoracic Mobilization','Manual Therapy','Strengthening','Stretching','Postural Correction','TENS','Breathing Exercises'],
-    'Lumbar Spine':['TENS','Ultrasound','Hot Pack','Lumbar Traction','Manual Therapy','McKenzie Exercises','Core Stabilization','Stretching','Mobilization','Dry Needling','SWD','Kinesio Taping','Neural Mobilization','Home Exercise Program'],
-    'Shoulder':['TENS','Ultrasound','Hot Pack','Joint Mobilization','Codman Exercises','Rotator Cuff Strengthening','Scapular Stabilization','Stretching','Manual Therapy','Kinesio Taping','Pulley Exercises','Home Exercise Program'],
-    'Elbow':['TENS','Ultrasound','Friction Massage','Stretching','Eccentric Strengthening','Bracing','Ice','Kinesio Taping'],
-    'Wrist & Hand':['TENS','Ultrasound','Splinting','Strengthening','Stretching','Mobilization','Nerve Gliding','Tendon Gliding'],
-    'Hip':['TENS','Hot Pack','Hip Strengthening','Stretching','Manual Therapy','Gait Training','Mobilization','Core Stabilization','Home Exercise Program'],
-    'Knee':['TENS','Ultrasound','Hot Pack','Quad Strengthening','VMO Exercises','Hamstring Stretching','Patellar Taping','Mobilization','Kinesio Taping','Balance Training','Gait Training','Home Exercise Program'],
-    'Ankle & Foot':['TENS','Ultrasound','Ice','Calf Strengthening','Stretching','Balance Training','Taping','Orthotics Advice','Manual Therapy','Proprioception Training'],
-    'TMJ':['TENS','Ultrasound','Manual Therapy','TMJ Mobilization','Jaw Stretching','Postural Correction','Patient Education'],
-    'Sacroiliac Joint':['TENS','Manual Therapy','SI Belt','Stabilization Exercises','Stretching','Hot Pack','Pelvic Floor Exercises'],
-  },
+  diagnoses:{'Cervical Spine':['Cervical Disc Herniation','Cervical Spondylosis','Cervical Radiculopathy','Cervical Myelopathy','Neck Strain / Whiplash','Cervicogenic Headache','Cervical Facet Syndrome','Torticollis','Cervical Stenosis','Thoracic Outlet Syndrome'],'Thoracic Spine':['Thoracic Disc Herniation','Thoracic Spondylosis','Scheuermann\'s Disease','Costochondritis','Thoracic Facet Syndrome'],'Lumbar Spine':['Lumbar Disc Herniation','Lumbar Spondylosis','Lumbar Radiculopathy (Sciatica)','Spinal Stenosis','Spondylolisthesis','Spondylolysis','Lumbar Strain','Piriformis Syndrome','SI Joint Dysfunction','Facet Syndrome','Post-Surgical Lumbar'],'Shoulder':['Rotator Cuff Tear','Rotator Cuff Tendinopathy','Shoulder Impingement','Frozen Shoulder (Adhesive Capsulitis)','Shoulder Dislocation / Instability','AC Joint Sprain','Biceps Tendinopathy','SLAP Tear','Shoulder Bursitis','Post-Surgical Shoulder'],'Elbow':['Tennis Elbow (Lateral Epicondylitis)','Golfer\'s Elbow (Medial Epicondylitis)','Elbow Bursitis','Radial Tunnel Syndrome','Cubital Tunnel Syndrome','Elbow Fracture (Post-Surgical)','Elbow Stiffness'],'Wrist & Hand':['Carpal Tunnel Syndrome','De Quervain\'s Tenosynovitis','Trigger Finger','Wrist Sprain','TFCC Tear','Wrist Fracture (Post-Surgical)','Wrist Tendinopathy','Finger Stiffness'],'Hip':['Hip Osteoarthritis','Hip Impingement (FAI)','Trochanteric Bursitis','Hip Labral Tear','Hip Flexor Strain','Piriformis Syndrome','Hip Fracture (Post-Surgical)','Gluteal Tendinopathy'],'Knee':['Knee Osteoarthritis','Patellofemoral Pain Syndrome','ACL Tear / Post-Surgical','Meniscal Tear','PCL Injury','MCL / LCL Sprain','Patellar Tendinopathy','IT Band Syndrome','Total Knee Replacement (Post-Surgical)'],'Ankle & Foot':['Lateral Ankle Sprain','Achilles Tendinopathy','Plantar Fasciitis','Ankle OA','Peroneal Tendinopathy','Ankle Fracture (Post-Surgical)','Metatarsalgia','Hallux Valgus'],'TMJ':['TMJ Dysfunction','TMJ Disc Displacement','Bruxism-Related TMJ','Myofascial TMJ Pain'],'Sacroiliac Joint':['SI Joint Dysfunction','Sacroiliitis','Ankylosing Spondylitis','Pelvic Girdle Pain','Post-Partum SI Pain']},
+  complaints:{'Cervical Spine':['Neck pain','Morning stiffness','Cervicogenic headache','Radiating arm pain','Finger numbness / tingling','Dizziness','Interscapular pain','Limited ROM','Pain on rotation','Pain on extension'],'Thoracic Spine':['Mid-back pain','Thoracic stiffness','Pain on breathing','Postural kyphosis','Pain with prolonged sitting'],'Lumbar Spine':['Low back pain','Radiating leg pain (Sciatica)','Morning stiffness','Leg weakness','Foot numbness / tingling','Pain on standing','Pain on prolonged sitting','Pain on bending forward','Pain on extension','Night pain'],'Shoulder':['Shoulder pain','Limited ROM','Night pain','Weakness','Clicking / crepitus','Pain on overhead activities','Pain on reaching behind back'],'Elbow':['Lateral elbow pain','Medial elbow pain','Pain on gripping','Pain on wrist extension','Stiffness','Swelling'],'Wrist & Hand':['Wrist pain','Hand numbness','Thumb pain','Trigger finger locking','Grip weakness','Morning stiffness','Swelling'],'Hip':['Hip pain','Groin pain','Lateral hip pain','Pain on walking','Limited ROM','Pain on stairs','Night pain'],'Knee':['Knee pain','Swelling','Crepitus','Limited flexion','Pain on stairs','Pain on squatting','Morning stiffness','Locking / giving way'],'Ankle & Foot':['Heel pain','Ankle pain','Morning heel pain','Swelling','Pain on walking','Limited dorsiflexion','Weakness','Instability'],'TMJ':['Jaw pain','Clicking on opening','Limited mouth opening','Difficulty chewing','Facial headache'],'Sacroiliac Joint':['Sacral pain','Pain radiating to buttock','Pain on prolonged standing','Pain on transitional movements','Pelvic asymmetry']},
+  findings:{'Cervical Spine':['Limited Flexion','Limited Extension','Limited Rotation R','Limited Rotation L','Limited Lat. Flexion R','Limited Lat. Flexion L','Spurling Test +','Distraction Test +','Muscle weakness','Forward Head Posture','Upper Crossed Syndrome','Trigger points'],'Thoracic Spine':['Kyphosis','Limited thoracic rotation','Weak thoracic extensors','Hypomobility T-spine','Rib restriction'],'Lumbar Spine':['SLR +','Slump Test +','Limited Flexion','Limited Extension','Limited Lat. Flexion','Quad weakness','Hamstring tightness','Tight Hip Flexors','Pelvic Tilt','Reduced Lumbar Lordosis','Muscle spasm','Neurological deficits'],'Shoulder':['Neer Test +','Hawkins-Kennedy +','Empty Can +','Drop Arm +','Speed Test +','Apprehension Test +','Limited Abduction','Limited Flexion','Limited IR','Limited ER','Rotator cuff weakness','Scapular dyskinesia'],'Elbow':['Pain on resisted wrist extension','Pain on resisted wrist flexion','Limited Pronation','Limited Supination','Cozen Test +','Mill\'s Test +','Tinel at elbow'],'Wrist & Hand':['Phalen Test +','Tinel Test +','Limited wrist flexion','Limited wrist extension','Grip weakness','Finkelstein Test +'],'Hip':['FABER +','FADIR +','Thomas Test +','Trendelenburg +','Limited IR','Limited ER','Limited Flexion','Gluteal weakness'],'Knee':['Lachman Test +','Anterior Drawer +','McMurray +','Valgus Stress +','Varus Stress +','Patellar Grind +','Limited Flexion','Quad weakness','VMO atrophy','Joint effusion','Crepitus'],'Ankle & Foot':['Anterior Drawer +','Talar Tilt +','Thompson Test +','Limited Dorsiflexion','Calf weakness','Tight Achilles','Plantar tenderness'],'TMJ':['Limited mouth opening','Jaw deviation','TMJ Clicking','Joint tenderness','Masticatory muscle tightness'],'Sacroiliac Joint':['FABER +','Gaenslen Test +','Compression Test +','Distraction Test +','SI joint tenderness','Pelvic asymmetry']},
+  treatment:{'Cervical Spine':['TENS','Ultrasound','Hot Pack','Cervical Traction','Manual Therapy','Mobilization','Strengthening','Stretching','Postural Correction','Dry Needling','Kinesio Taping','DNF Strengthening','Home Exercise Program'],'Thoracic Spine':['Hot Pack','Thoracic Mobilization','Manual Therapy','Strengthening','Stretching','Postural Correction','TENS','Breathing Exercises'],'Lumbar Spine':['TENS','Ultrasound','Hot Pack','Lumbar Traction','Manual Therapy','McKenzie Exercises','Core Stabilization','Stretching','Mobilization','Dry Needling','SWD','Kinesio Taping','Neural Mobilization','Home Exercise Program'],'Shoulder':['TENS','Ultrasound','Hot Pack','Joint Mobilization','Codman Exercises','Rotator Cuff Strengthening','Scapular Stabilization','Stretching','Manual Therapy','Kinesio Taping','Pulley Exercises','Home Exercise Program'],'Elbow':['TENS','Ultrasound','Friction Massage','Stretching','Eccentric Strengthening','Bracing','Ice','Kinesio Taping'],'Wrist & Hand':['TENS','Ultrasound','Splinting','Strengthening','Stretching','Mobilization','Nerve Gliding','Tendon Gliding'],'Hip':['TENS','Hot Pack','Hip Strengthening','Stretching','Manual Therapy','Gait Training','Mobilization','Core Stabilization','Home Exercise Program'],'Knee':['TENS','Ultrasound','Hot Pack','Quad Strengthening','VMO Exercises','Hamstring Stretching','Patellar Taping','Mobilization','Kinesio Taping','Balance Training','Gait Training','Home Exercise Program'],'Ankle & Foot':['TENS','Ultrasound','Ice','Calf Strengthening','Stretching','Balance Training','Taping','Orthotics Advice','Manual Therapy','Proprioception Training'],'TMJ':['TENS','Ultrasound','Manual Therapy','TMJ Mobilization','Jaw Stretching','Postural Correction','Patient Education'],'Sacroiliac Joint':['TENS','Manual Therapy','SI Belt','Stabilization Exercises','Stretching','Hot Pack','Pelvic Floor Exercises']},
   problems:['Pain','Stiffness','Limited ROM','Muscle weakness','Balance deficit','Gait impairment','Swelling / Oedema','Numbness / Tingling','Functional limitation','Postural dysfunction','Nerve Entrapment','Muscle Imbalance','Reduced proprioception','Decreased endurance'],
 };}
 
