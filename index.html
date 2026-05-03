@@ -843,8 +843,10 @@ window.askDel = (pid) => {
 };
 
 // ── PDF EXPORT ──
-window.exportPDF = (pid) => {
+window.exportPDF = async (pid) => {
   const p = PATIENTS.find(x => x.id === pid); if (!p) return;
+  toast('Generating PDF...');
+
   const visits = [...(p.visits||[])].sort((a,b) => {
     if(a.type==='initial') return -1; if(b.type==='initial') return 1;
     return a.date > b.date ? -1 : 1;
@@ -852,68 +854,95 @@ window.exportPDF = (pid) => {
 
   const sec = (t, arr, cls='') => arr?.length ? `
     <div style="margin-bottom:10px">
-      <div style="font-size:10px;font-weight:700;color:#1a5c4a;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;border-bottom:1px solid #d0e4de;padding-bottom:3px">${t}</div>
-      <div style="display:flex;flex-wrap:wrap;gap:5px">${arr.map(x=>`<span style="background:${cls==='key'?'#eafaf1':cls==='red'?'#fdeaea':'#eef2f0'};border:1px solid ${cls==='key'?'#27ae60':cls==='red'?'#d94f4f':'#ccddd6'};padding:3px 10px;border-radius:14px;font-size:12px;color:${cls==='key'?'#1a6b40':cls==='red'?'#d94f4f':'#162820'}">${x}</span>`).join('')}</div>
+      <div style="font-size:10px;font-weight:700;color:#1a5c4a;text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px">${t}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px">${arr.map(x=>`<span style="background:${cls==='key'?'#eafaf1':cls==='red'?'#fdeaea':'#eef2f0'};border:1px solid ${cls==='key'?'#27ae60':cls==='red'?'#d94f4f':'#ccddd6'};padding:3px 10px;border-radius:14px;font-size:11px;color:${cls==='key'?'#1a6b40':cls==='red'?'#d94f4f':'#162820'}">${x}</span>`).join('')}</div>
     </div>` : '';
 
-  let body = `
-  <div style="border-bottom:3px solid #0d3d2e;padding-bottom:16px;margin-bottom:20px">
-    <h1 style="font-family:'DM Serif Display',serif;font-weight:400;color:#0d3d2e;font-size:22px;margin-bottom:4px">PT Assessment Report</h1>
-    <div style="font-size:15px;font-weight:700;color:#162820">${p.name}</div>
-    <div style="font-size:13px;color:#5a7a6e;margin-top:2px">${p.age} y/o — ${p.gender||''}${p.job?' · '+p.job:''}${p.phone?' · '+p.phone:''}</div>
-  </div>`;
+  let content = `
+  <div style="font-family:Arial,sans-serif;padding:20px;max-width:750px;color:#162820">
+    <div style="border-bottom:3px solid #0d3d2e;padding-bottom:14px;margin-bottom:18px">
+      <div style="font-size:20px;font-weight:700;color:#0d3d2e">PT Assessment Report</div>
+      <div style="font-size:14px;font-weight:700;color:#162820;margin-top:4px">${p.name}</div>
+      <div style="font-size:12px;color:#5a7a6e;margin-top:2px">${p.age} y/o — ${p.gender||''}${p.job?' · '+p.job:''}${p.phone?' · '+p.phone:''}</div>
+    </div>`;
 
   visits.forEach(v => {
     const isInitial = v.type === 'initial';
-    body += `<div style="margin-bottom:24px;border-left:4px solid ${isInitial?'#1a5c4a':'#e8a020'};padding-left:14px">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-        <span style="background:${isInitial?'#eafaf1':'#fff3cd'};color:${isInitial?'#27ae60':'#b07a00'};padding:3px 12px;border-radius:20px;font-size:12px;font-weight:700">${isInitial?'📋 Initial Assessment':'🔄 Follow-up'}</span>
-        <span style="font-size:13px;font-weight:600;color:#5a7a6e">📅 ${v.date}</span>
-        ${v.duration?`<span style="font-size:12px;color:#5a7a6e">⏱ ${v.duration}${v.onset?' — '+v.onset:''}</span>`:''}
+    content += `<div style="margin-bottom:20px;border-left:3px solid ${isInitial?'#1a5c4a':'#e8a020'};padding-left:12px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <span style="background:${isInitial?'#eafaf1':'#fff3cd'};color:${isInitial?'#27ae60':'#b07a00'};padding:2px 10px;border-radius:14px;font-size:11px;font-weight:700">${isInitial?'Initial Assessment':'Follow-up'}</span>
+        <span style="font-size:12px;font-weight:600;color:#5a7a6e">📅 ${v.date}</span>
+        ${v.duration?`<span style="font-size:11px;color:#5a7a6e">⏱ ${v.duration}${v.onset?' — '+v.onset:''}</span>`:''}
       </div>`;
-
     (v.regions||[]).forEach(r => {
-      body += `<div style="background:#f8faf9;border-radius:8px;padding:14px;margin-bottom:10px;border-right:3px solid #1a5c4a">
-        <div style="font-weight:700;color:#0d3d2e;font-size:14px;margin-bottom:10px">📍 ${r.region}${r.sessionsPlanned?` <span style="font-size:11px;color:#5a7a6e;font-weight:400">— ${r.sessionsPlanned} sessions${r.freq?' · '+r.freq:''}</span>`:''}</div>
+      content += `<div style="background:#f8faf9;border-radius:6px;padding:12px;margin-bottom:8px;border-right:3px solid #1a5c4a">
+        <div style="font-weight:700;color:#0d3d2e;font-size:12px;margin-bottom:8px">📍 ${r.region}${r.sessionsPlanned?` <span style="font-size:10px;color:#5a7a6e;font-weight:400">— ${r.sessionsPlanned} sessions${r.freq?' · '+r.freq:''}</span>`:''}</div>
         ${sec('Diagnosis', r.diagnoses, 'key')}
         ${sec('Chief Complaints', r.complaints)}
-        ${r.vas!=null?`<div style="margin-bottom:10px"><div style="font-size:10px;font-weight:700;color:#1a5c4a;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">Pain Level (VAS)</div><div style="display:inline-flex;align-items:center;gap:10px;background:#fff;border:1px solid #ccddd6;padding:6px 14px;border-radius:20px"><span style="font-size:20px;font-weight:700;color:${r.vas<=3?'#27ae60':r.vas<=6?'#e8a020':'#d94f4f'}">${r.vas}</span><span style="font-size:12px;color:#5a7a6e">/10</span></div></div>`:''}
+        ${r.vas!=null?`<div style="margin-bottom:8px"><div style="font-size:10px;font-weight:700;color:#1a5c4a;text-transform:uppercase;margin-bottom:4px">Pain Level (VAS)</div><span style="font-size:18px;font-weight:700;color:${r.vas<=3?'#27ae60':r.vas<=6?'#e8a020':'#d94f4f'}">${r.vas}/10</span></div>`:''}
         ${sec('Assessment Findings', r.findings)}
         ${sec('Problem List', r.problems, 'red')}
         ${sec('Treatment Plan', r.treatment)}
       </div>`;
     });
-
-    if (v.notes) body += `<div style="font-size:12px;color:#5a7a6e;font-style:italic;margin-top:6px;padding:8px 12px;background:#f8faf9;border-radius:6px">📝 ${v.notes}</div>`;
-    body += `</div>`;
+    if (v.notes) content += `<div style="font-size:11px;color:#5a7a6e;font-style:italic;margin-top:4px;padding:6px 10px;background:#f8faf9;border-radius:5px">📝 ${v.notes}</div>`;
+    content += `</div>`;
   });
+  content += `<div style="margin-top:24px;padding-top:10px;border-top:1px solid #d0e4de;font-size:10px;color:#5a7a6e;text-align:center">Generated by Physiclinic PT Archive · ${today()}</div></div>`;
 
-  const fullHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>PT Report — ${p.name}</title>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'DM Sans',sans-serif;color:#162820;padding:32px;max-width:800px;margin:0 auto;font-size:13px;line-height:1.6}
-    .print-btn{position:fixed;top:16px;right:16px;background:#0d3d2e;color:#fff;border:none;padding:10px 18px;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;box-shadow:0 2px 10px rgba(0,0,0,.2)}
-    .print-btn:hover{background:#1a5c4a}
-    @media print{.print-btn{display:none!important}body{padding:16px}}
-  </style>
-  </head><body>
-  <button class="print-btn" onclick="window.print()">🖨️ Print / Save as PDF</button>
-  ${body}
-  <div style="margin-top:32px;padding-top:12px;border-top:1px solid #d0e4de;font-size:11px;color:#5a7a6e;text-align:center">
-    Generated by Physiclinic PT Archive · ${today()}
-  </div>
-  </body></html>`;
+  // Create hidden div, render, then use print dialog to save as PDF
+  const div = document.createElement('div');
+  div.innerHTML = content;
+  div.style.cssText = 'position:fixed;left:-9999px;top:0;background:#fff;width:750px';
+  document.body.appendChild(div);
 
-  // Download as HTML file — open in browser then Print → Save as PDF
-  const blob = new Blob([fullHtml], {type:'text/html;charset=utf-8'});
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href = url;
-  a.download = `PT_Report_${p.name.replace(/\s+/g,'_')}_${today()}.html`;
-  document.body.appendChild(a); a.click();
-  setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(url); }, 1000);
-  toast('تم تحميل التقرير — افتحه واضغط Print لحفظه PDF ✅');
+  // Load html2canvas + jsPDF
+  if (!window.html2canvas) {
+    const s1 = document.createElement('script');
+    s1.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+    document.head.appendChild(s1);
+    await new Promise(r => s1.onload = r);
+  }
+  if (!window.jspdf) {
+    const s2 = document.createElement('script');
+    s2.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+    document.head.appendChild(s2);
+    await new Promise(r => s2.onload = r);
+  }
+
+  try {
+    const canvas = await html2canvas(div, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const pageW = pdf.internal.pageSize.getWidth();
+    const pageH = pdf.internal.pageSize.getHeight();
+    const imgW  = pageW - 20;
+    const imgH  = (canvas.height * imgW) / canvas.width;
+    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+    let y = 10;
+    let remaining = imgH;
+    let srcY = 0;
+    while (remaining > 0) {
+      const sliceH = Math.min(remaining, pageH - 20);
+      const sliceCanvas = document.createElement('canvas');
+      sliceCanvas.width  = canvas.width;
+      sliceCanvas.height = (sliceH / imgH) * canvas.height;
+      const ctx = sliceCanvas.getContext('2d');
+      ctx.drawImage(canvas, 0, srcY * canvas.height / imgH, canvas.width, sliceCanvas.height, 0, 0, canvas.width, sliceCanvas.height);
+      if (srcY > 0) pdf.addPage();
+      pdf.addImage(sliceCanvas.toDataURL('image/jpeg', 0.95), 'JPEG', 10, y, imgW, sliceH);
+      remaining -= sliceH;
+      srcY += sliceH;
+      y = 10;
+    }
+    pdf.save(`PT_${p.name.replace(/\s+/g,'_')}_${today()}.pdf`);
+    toast('PDF downloaded ✅');
+  } catch(e) {
+    toast('PDF error: ' + e.message, true);
+  } finally {
+    document.body.removeChild(div);
+  }
+};
 };
 
 // ── CSV EXPORT ──
