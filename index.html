@@ -812,25 +812,37 @@ window.setMgTab=async(t)=>{
   await renderMgBody();
 };
 function renderMgBodyFromOpts(opts){
-  const c=document.getElementById('mgBody');
-  if(MG_TAB==='regions'){
-    c.innerHTML=`<div class="optlist">${opts.regions.map(r=>`<div class="optrow"><span>${r}</span><button class="optdel" onclick="delOpt('regions',null,${JSON.stringify(r)})">✕</button></div>`).join('')}</div>
-    <div class="addrow" style="margin-top:12px"><input type="text" id="mg-i" placeholder="New region..."><button onclick="mgAdd()">+ Add</button></div>`;
-  } else if(MG_TAB==='problems'){
-    c.innerHTML=`<div class="optlist">${opts.problems.map(p=>`<div class="optrow"><span>${p}</span><button class="optdel" onclick="delOpt('problems',null,${JSON.stringify(p)})">✕</button></div>`).join('')}</div>
-    <div class="addrow" style="margin-top:12px"><input type="text" id="mg-i" placeholder="New problem..."><button onclick="mgAdd()">+ Add</button></div>`;
+  const c = document.getElementById('mgBody');
+  const selReg = c.dataset.selReg || (opts.regions[0] || '');
+  let html = '';
+  if (MG_TAB === 'regions') {
+    html += '<div class="optlist">';
+    opts.regions.forEach(r => {
+      html += '<div class="optrow"><span>' + r + '</span><button class="optdel" onclick="delOpt(\'regions\',null,\''+r+'\')">✕</button></div>';
+    });
+    html += '</div><div class="addrow" style="margin-top:12px"><input type="text" id="mg-i" placeholder="New region..."><button onclick="mgAdd()">+ Add</button></div>';
+  } else if (MG_TAB === 'problems') {
+    html += '<div class="optlist">';
+    opts.problems.forEach(p => {
+      html += '<div class="optrow"><span>' + p + '</span><button class="optdel" onclick="delOpt(\'problems\',null,\'' + p.replace(/'/g,"\\'") + '\')">✕</button></div>';
+    });
+    html += '</div><div class="addrow" style="margin-top:12px"><input type="text" id="mg-i" placeholder="New problem..."><button onclick="mgAdd()">+ Add</button></div>';
   } else {
-    const sel=c.dataset.selReg||opts.regions[0];
-    const items=opts[MG_TAB]?.[sel]||[];
-    c.innerHTML=`<div style="margin-bottom:12px"><label class="fl" style="display:block;margin-bottom:5px">Region</label>
-    <select class="fc" style="width:auto" onchange="document.getElementById('mgBody').dataset.selReg=this.value;renderMgBody()">
-      ${opts.regions.map(r=>`<option value="${r}" ${r===sel?'selected':''}}>${r}</option>`).join('')}
-    </select></div>
-    <div class="optlist">${items.map(x=>`<div class="optrow"><span>${x}</span><button class="optdel" onclick="delOpt(${JSON.stringify(MG_TAB)},${JSON.stringify(sel)},${JSON.stringify(x)})">✕</button></div>`).join('')}</div>
-    <div class="addrow" style="margin-top:10px"><input type="text" id="mg-i" placeholder="Add option..."><button onclick="mgAdd()">+ Add</button></div>`;
-    c.dataset.selReg=sel;
+    const items = (opts[MG_TAB] && opts[MG_TAB][selReg]) ? opts[MG_TAB][selReg] : [];
+    let selOpts = '';
+    opts.regions.forEach(r => { selOpts += '<option value="' + r + '"' + (r===selReg?' selected':'') + '>' + r + '</option>'; });
+    html += '<div style="margin-bottom:12px"><label class="fl" style="display:block;margin-bottom:5px">Region</label><select class="fc" style="width:auto" onchange="document.getElementById('mgBody').dataset.selReg=this.value;renderMgBody()">' + selOpts + '</select></div>';
+    html += '<div class="optlist">';
+    items.forEach(x => {
+      html += '<div class="optrow"><span>' + x + '</span><button class="optdel" onclick="delOpt(\'' + MG_TAB + '\',\'' + selReg + '\',\'' + x.replace(/'/g,"\\'") + '\')">✕</button></div>';
+    });
+    html += '</div><div class="addrow" style="margin-top:10px"><input type="text" id="mg-i" placeholder="Add option..."><button onclick="mgAdd()">+ Add</button></div>';
+    c.dataset.selReg = selReg;
   }
+  c.innerHTML = html;
+  if (MG_TAB !== 'regions' && MG_TAB !== 'problems') c.dataset.selReg = selReg;
 }
+
 async function renderMgBody(){
   const opts=await getOpts();
   renderMgBodyFromOpts(opts);
