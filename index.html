@@ -3,13 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Physiclinic — PT Patient Archive</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<title>Physiclinic</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --p:#1a5c4a;--pl:#22776a;--pd:#0d3d2e;
-  --acc:#e8a020;--accl:#f5c45a;
-  --bg:#eef2f0;--card:#fff;
+  --acc:#e8a020;--bg:#eef2f0;--card:#fff;
   --txt:#162820;--muted:#5a7a6e;--border:#ccddd6;
   --red:#d94f4f;--redl:#fdeaea;
   --green:#27ae60;--greenl:#eafaf1;
@@ -21,37 +22,36 @@
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);font-size:15px}
 
 /* LOGIN */
-#loginScreen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--pd);background-image:radial-gradient(circle at 20% 80%,rgba(34,119,106,.3) 0%,transparent 50%),radial-gradient(circle at 80% 20%,rgba(232,160,32,.15) 0%,transparent 50%)}
-.login-box{background:#fff;border-radius:20px;padding:44px 40px;width:100%;max-width:400px;box-shadow:var(--shl)}
-.login-logo{text-align:center;margin-bottom:32px}
-.login-logo h1{font-family:'DM Serif Display',serif;font-size:28px;color:var(--pd);font-weight:400}
-.login-logo p{font-size:13px;color:var(--muted);margin-top:4px}
-.login-error{background:var(--redl);color:var(--red);padding:10px 14px;border-radius:var(--rs);font-size:13px;margin-bottom:14px;display:none}
+#loginScreen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--pd)}
+.lbox{background:#fff;border-radius:20px;padding:44px 40px;width:100%;max-width:380px;box-shadow:var(--shl)}
+.lbox h1{font-size:26px;font-weight:700;color:var(--pd);margin-bottom:4px;text-align:center}
+.lbox p{font-size:13px;color:var(--muted);text-align:center;margin-bottom:28px}
+.lerr{background:var(--redl);color:var(--red);padding:10px 14px;border-radius:var(--rs);font-size:13px;margin-bottom:14px;display:none}
 
 /* APP */
 #appScreen{display:none}
 .wrap{display:flex;min-height:100vh}
 .side{width:230px;background:var(--pd);position:fixed;top:0;left:0;height:100vh;display:flex;flex-direction:column;z-index:100;transition:transform .3s}
-.side-logo{padding:20px 18px 12px;border-bottom:1px solid rgba(255,255,255,.1)}
-.side-logo h1{color:#fff;font-family:'DM Serif Display',serif;font-size:17px;line-height:1.4;font-weight:400}
-.side-logo span{color:var(--accl);font-size:11px;font-weight:500;letter-spacing:.5px}
-.side-user{padding:12px 18px;border-bottom:1px solid rgba(255,255,255,.1)}
-.side-user strong{color:#fff;display:block;font-size:13px;font-weight:700}
-.side-user span{color:rgba(255,255,255,.55);font-size:11px}
-.side-nav{padding:12px 10px;display:flex;flex-direction:column;gap:3px;flex:1}
-.ni{display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:var(--rs);color:rgba(255,255,255,.65);cursor:pointer;font-size:14px;font-weight:500;border:none;background:none;width:100%;text-align:left;transition:all .2s}
+.slogo{padding:22px 18px 14px;border-bottom:1px solid rgba(255,255,255,.1)}
+.slogo h2{color:#fff;font-size:17px;font-weight:700}
+.slogo span{color:rgba(255,255,255,.4);font-size:11px}
+.suser{padding:12px 18px;border-bottom:1px solid rgba(255,255,255,.1)}
+.suser strong{color:#fff;display:block;font-size:13px;font-weight:700}
+.suser small{color:rgba(255,255,255,.5);font-size:11px}
+.snav{padding:12px 10px;flex:1;display:flex;flex-direction:column;gap:3px}
+.ni{display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:var(--rs);color:rgba(255,255,255,.6);cursor:pointer;font-size:14px;font-weight:500;border:none;background:none;width:100%;text-align:left;transition:all .2s}
 .ni:hover{background:rgba(255,255,255,.1);color:#fff}
 .ni.on{background:var(--acc);color:var(--pd);font-weight:700}
-.ni.locked{opacity:.4;cursor:not-allowed}
-.ni.locked:hover{background:none;color:rgba(255,255,255,.65)}
-.side-footer{padding:14px 18px;border-top:1px solid rgba(255,255,255,.1)}
-.logout-btn{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.08);color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.15);border-radius:var(--rs);padding:10px 16px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;width:100%;transition:all .2s}
-.logout-btn:hover{background:var(--red);color:#fff;border-color:var(--red)}
+.ni.locked{opacity:.35;cursor:not-allowed}
+.ni.locked:hover{background:none;color:rgba(255,255,255,.6)}
+.sfooter{padding:14px 18px;border-top:1px solid rgba(255,255,255,.1)}
+.signout{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.07);color:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.12);border-radius:var(--rs);padding:10px 16px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;width:100%;transition:all .2s}
+.signout:hover{background:var(--red);color:#fff;border-color:var(--red)}
 .main{margin-left:230px;flex:1;padding:28px}
 
-/* PAGE HEADER */
+/* COMMON */
 .ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:10px}
-.pt{font-family:'DM Serif Display',serif;font-size:24px;color:var(--pd)}
+.pt{font-size:22px;font-weight:700;color:var(--pd)}
 .ps{font-size:13px;color:var(--muted);margin-top:2px}
 .card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:22px}
 
@@ -60,12 +60,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);font
 .pcard{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:18px;border:2px solid transparent;transition:all .2s;position:relative;overflow:hidden}
 .pcard::after{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--p)}
 .pcard:hover{box-shadow:var(--shl);border-color:var(--p);transform:translateY(-2px)}
-.pcard-name{font-family:'DM Serif Display',serif;font-size:17px;color:var(--pd);margin-bottom:4px}
-.pcard-meta{font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:3px;margin-bottom:10px}
+.pname{font-size:16px;font-weight:700;color:var(--pd);margin-bottom:4px}
+.pmeta{font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:3px;margin-bottom:10px}
 .badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;margin-bottom:8px}
 .bdone{background:var(--greenl);color:var(--green)}
 .bpend{background:#fff8e6;color:#b07a00}
-.pcard-actions{display:flex;gap:7px;padding-top:10px;border-top:1px solid var(--border);flex-wrap:wrap}
+.pactions{display:flex;gap:7px;padding-top:10px;border-top:1px solid var(--border);flex-wrap:wrap}
 
 /* SEARCH */
 .sbar{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:var(--rs);padding:10px 14px;box-shadow:var(--sh);border:1.5px solid var(--border);margin-bottom:16px}
@@ -75,7 +75,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);font
 /* BUTTONS */
 .btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;white-space:nowrap}
 .bp{background:var(--p);color:#fff}.bp:hover{background:var(--pl)}
-.ba{background:var(--acc);color:var(--pd)}.ba:hover{background:var(--accl)}
+.ba{background:var(--acc);color:var(--pd)}.ba:hover{opacity:.9}
 .bd{background:var(--redl);color:var(--red)}.bd:hover{background:var(--red);color:#fff}
 .bg{background:transparent;color:var(--muted);border:1.5px solid var(--border)}.bg:hover{border-color:var(--p);color:var(--p)}
 .bpdf{background:#c0392b;color:#fff}.bpdf:hover{background:#a93226}
@@ -88,9 +88,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);font
 .mdl{background:#fff;border-radius:var(--r);width:100%;max-width:720px;max-height:92vh;overflow-y:auto;box-shadow:var(--shl);transform:translateY(24px);transition:transform .25s}
 .mo.open .mdl{transform:translateY(0)}
 .mhd{padding:20px 22px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:1}
-.mtt{font-family:'DM Serif Display',serif;font-size:18px;color:var(--pd)}
-.mcl{background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted);line-height:1}
-.mbody{padding:20px 22px;display:flex;flex-direction:column;gap:16px}
+.mtt{font-size:17px;font-weight:700;color:var(--pd)}
+.mcl{background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted)}
+.mbody{padding:20px 22px;display:flex;flex-direction:column;gap:14px}
 .mft{padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end}
 
 /* FORM */
@@ -99,101 +99,97 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);font
 .fc{border:1.5px solid var(--border);border-radius:var(--rs);padding:9px 13px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--txt);outline:none;transition:border-color .2s;background:var(--bg);width:100%}
 .fc:focus{border-color:var(--p);background:#fff}
 .fr{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.sdiv{background:linear-gradient(90deg,var(--pd),var(--p));color:#fff;padding:9px 16px;border-radius:var(--rs);font-size:11px;font-weight:700;letter-spacing:.9px;text-transform:uppercase;margin:4px 0 6px}
+.sdiv{background:linear-gradient(90deg,var(--pd),var(--p));color:#fff;padding:8px 15px;border-radius:var(--rs);font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;margin:4px 0 5px}
 
 /* REGION TABS */
-.rtabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
-.rtab{padding:8px 16px;border-radius:22px;font-size:13px;font-weight:600;cursor:pointer;border:2px solid var(--border);background:var(--bg);color:var(--muted);font-family:'DM Sans',sans-serif;transition:all .2s}
+.rtabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.rtab{padding:7px 15px;border-radius:22px;font-size:13px;font-weight:600;cursor:pointer;border:2px solid var(--border);background:var(--bg);color:var(--muted);font-family:'DM Sans',sans-serif;transition:all .2s}
 .rtab.on{background:var(--p);color:#fff;border-color:var(--p)}
-.rtab-add{padding:8px 14px;border-radius:22px;font-size:13px;font-weight:600;cursor:pointer;border:2px dashed var(--border);background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;transition:all .2s}
+.rtab-add{padding:7px 13px;border-radius:22px;font-size:13px;font-weight:600;cursor:pointer;border:2px dashed var(--border);background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;transition:all .2s}
 .rtab-add:hover{border-color:var(--p);color:var(--p)}
-.region-panel{display:none}.region-panel.on{display:block}
+.rpanel{display:none}.rpanel.on{display:block}
 
 /* PILLS */
-.pill-group{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:4px}
-.pill{display:inline-flex;align-items:center;padding:7px 15px;border-radius:22px;border:2px solid var(--border);background:var(--bg);color:var(--txt);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .18s;-webkit-appearance:none;appearance:none}
+.pg{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:4px}
+.pill{display:inline-flex;align-items:center;padding:6px 14px;border-radius:22px;border:2px solid var(--border);background:var(--bg);color:var(--txt);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .18s;-webkit-appearance:none;appearance:none}
 .pill:hover{border-color:var(--p);background:#e0ede8;color:var(--p)}
-.pill.sel{background:var(--p)!important;color:#fff!important;border-color:var(--p)!important;font-weight:700;box-shadow:0 2px 10px rgba(26,92,74,.3)}
-.pill.sel::before{content:"✓  "}
-.add-row{display:flex;gap:8px;margin-top:10px}
-.add-row input{flex:1;border:1.5px dashed var(--border);border-radius:22px;padding:7px 16px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;background:transparent}
-.add-row input:focus{border-color:var(--p)}
-.add-row button{background:var(--p);color:#fff;border:none;border-radius:22px;padding:7px 16px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer}
+.pill.sel{background:var(--p)!important;color:#fff!important;border-color:var(--p)!important;font-weight:700}
+.pill.sel::before{content:"✓ "}
+.addrow{display:flex;gap:8px;margin-top:8px}
+.addrow input{flex:1;border:1.5px dashed var(--border);border-radius:22px;padding:6px 14px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;background:transparent}
+.addrow input:focus{border-color:var(--p)}
+.addrow button{background:var(--p);color:#fff;border:none;border-radius:22px;padding:6px 14px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer}
 
 /* VAS */
-.vas-btn{width:38px;height:38px;border-radius:50%;border:2px solid var(--border);font-weight:700;font-size:13px;cursor:pointer;background:var(--bg);font-family:'DM Sans',sans-serif;transition:all .18s;color:var(--txt)}
+.vas-btn{width:36px;height:36px;border-radius:50%;border:2px solid var(--border);font-weight:700;font-size:12px;cursor:pointer;background:var(--bg);font-family:'DM Sans',sans-serif;transition:all .18s;color:var(--txt)}
 .vas-btn.sel{background:var(--p);color:#fff;border-color:var(--p);transform:scale(1.15)}
 
 /* PROFILE */
-.profhd{background:linear-gradient(135deg,var(--pd),var(--pl));border-radius:var(--r);padding:24px;color:#fff;margin-bottom:18px;display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap}
-.profname{font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:4px}
-.proftags{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
-.ptag{background:rgba(255,255,255,.15);border-radius:20px;padding:3px 12px;font-size:12px;font-weight:500}
+.profhd{background:linear-gradient(135deg,var(--pd),var(--pl));border-radius:var(--r);padding:22px;color:#fff;margin-bottom:16px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.profname{font-size:20px;font-weight:700;margin-bottom:3px}
+.proftags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.ptag{background:rgba(255,255,255,.15);border-radius:20px;padding:3px 11px;font-size:12px;font-weight:500}
 .ptag.gold{background:var(--acc);color:var(--pd);font-weight:700}
-.asec{margin-bottom:14px}
-.asec-ttl{font-size:11px;font-weight:700;color:var(--p);letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px;padding-bottom:5px;border-bottom:2px solid var(--border)}
-.atags{display:flex;flex-wrap:wrap;gap:7px}
-.atag{background:var(--bg);border:1.5px solid var(--border);padding:4px 13px;border-radius:20px;font-size:13px;font-weight:500}
+
+/* VISIT CARD */
+.vcard{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:18px;margin-bottom:14px;border-top:3px solid var(--p);position:relative}
+.vcard.fu{border-top-color:var(--acc)}
+.vlabel{display:inline-flex;align-items:center;gap:5px;padding:3px 11px;border-radius:20px;font-size:12px;font-weight:700;margin-bottom:12px}
+.vlabel.ini{background:var(--greenl);color:var(--green)}
+.vlabel.fup{background:#fff3cd;color:#b07a00}
+.vdel{position:absolute;top:14px;right:14px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:15px}
+.vdel:hover{color:var(--red)}
+.vedit{position:absolute;top:12px;right:40px;background:none;border:1.5px solid var(--border);color:var(--muted);cursor:pointer;font-size:12px;padding:3px 8px;border-radius:6px;font-family:'DM Sans',sans-serif;font-weight:600}
+.vedit:hover{border-color:var(--p);color:var(--p)}
+.rcard{background:var(--bg);border-radius:var(--rs);padding:14px;margin-bottom:10px;border-left:3px solid var(--p)}
+.rtitle{font-size:14px;font-weight:700;color:var(--pd);margin-bottom:10px}
+.asec{margin-bottom:12px}
+.attl{font-size:10px;font-weight:700;color:var(--p);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;border-bottom:1px solid var(--border);padding-bottom:4px}
+.atags{display:flex;flex-wrap:wrap;gap:6px}
+.atag{background:var(--bg);border:1.5px solid var(--border);padding:3px 11px;border-radius:20px;font-size:12px;font-weight:500}
 .atag.key{background:var(--greenl);border-color:var(--green);color:#1a6b40}
 .atag.red{background:var(--redl);border-color:var(--red);color:var(--red)}
-.region-card{background:var(--bg);border-radius:var(--r);padding:18px;margin-bottom:14px;border-left:4px solid var(--p)}
-.region-title{font-family:'DM Serif Display',serif;font-size:16px;color:var(--pd);margin-bottom:12px}
-
-/* VISIT CARD in profile */
-.visit-card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:20px;margin-bottom:16px;border-top:3px solid var(--p);position:relative}
-.visit-card.followup{border-top-color:var(--acc)}
-.visit-label{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;margin-bottom:14px}
-.visit-label.initial{background:var(--greenl);color:var(--green)}
-.visit-label.followup{background:#fff3cd;color:#b07a00}
-.visit-del{position:absolute;top:14px;right:14px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px}
-.visit-del:hover{color:var(--red)}
 
 /* CONFIRM */
 .conf-o{position:fixed;inset:0;background:rgba(13,61,46,.5);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .2s}
 .conf-o.open{opacity:1;pointer-events:all}
-.conf-b{background:#fff;border-radius:var(--r);padding:28px;max-width:330px;width:100%;text-align:center;box-shadow:var(--shl);transform:scale(.9);transition:transform .2s}
+.conf-b{background:#fff;border-radius:var(--r);padding:26px;max-width:320px;width:100%;text-align:center;box-shadow:var(--shl);transform:scale(.9);transition:transform .2s}
 .conf-o.open .conf-b{transform:scale(1)}
 
-/* LOADING */
-.loading{display:flex;align-items:center;justify-content:center;padding:60px;flex-direction:column;gap:14px;color:var(--muted)}
-.spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--p);border-radius:50%;animation:spin .8s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-
 /* MANAGE */
-.opt-list{display:flex;flex-direction:column;gap:6px;max-height:340px;overflow-y:auto}
-.opt-row{display:flex;align-items:center;gap:8px;background:var(--bg);padding:8px 12px;border-radius:var(--rs)}
-.opt-row span{flex:1;font-size:14px}
-.opt-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:15px;padding:2px 6px;border-radius:4px}
-.opt-del:hover{background:var(--redl);color:var(--red)}
+.optlist{display:flex;flex-direction:column;gap:6px;max-height:320px;overflow-y:auto}
+.optrow{display:flex;align-items:center;gap:8px;background:var(--bg);padding:8px 12px;border-radius:var(--rs)}
+.optrow span{flex:1;font-size:14px}
+.optdel{background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:2px 6px;border-radius:4px}
+.optdel:hover{background:var(--redl);color:var(--red)}
 .mtabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:14px}
-.mtab{padding:7px 14px;border-radius:var(--rs);font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:none;color:var(--muted);font-family:'DM Sans',sans-serif;transition:all .2s}
+.mtab{padding:6px 13px;border-radius:var(--rs);font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:none;color:var(--muted);font-family:'DM Sans',sans-serif;transition:all .2s}
 .mtab.on{background:var(--p);color:#fff;border-color:var(--p)}
-.note-box{background:#f0f7f4;border-left:3px solid var(--p);padding:10px 14px;border-radius:0 var(--rs) var(--rs) 0;font-size:13px;color:var(--muted)}
+.nbox{background:#f0f7f4;border-left:3px solid var(--p);padding:10px 14px;border-radius:0 var(--rs) var(--rs) 0;font-size:13px;color:var(--muted)}
+
+/* LOADING */
+.loading{display:flex;align-items:center;justify-content:center;padding:50px;flex-direction:column;gap:12px;color:var(--muted)}
+.spin{width:34px;height:34px;border:3px solid var(--border);border-top-color:var(--p);border-radius:50%;animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
 
 /* TOAST */
-.toast{position:fixed;bottom:22px;right:22px;background:var(--pd);color:#fff;padding:12px 20px;border-radius:var(--rs);font-size:14px;font-weight:600;z-index:999;transform:translateY(80px);transition:transform .3s;box-shadow:var(--shl)}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--pd);color:#fff;padding:11px 18px;border-radius:var(--rs);font-size:14px;font-weight:600;z-index:999;transform:translateY(80px);transition:transform .3s;box-shadow:var(--shl)}
 .toast.show{transform:translateY(0)}
 .toast.err{background:var(--red)}
+
 .empty{text-align:center;padding:50px 20px;color:var(--muted)}
-.empty .ico{font-size:44px;display:block;margin-bottom:12px}
+.empty .ico{font-size:42px;display:block;margin-bottom:10px}
 
 /* MOBILE */
-.mtoggle{display:none;position:fixed;top:13px;left:13px;z-index:300;background:var(--pd);color:#fff;border:none;border-radius:var(--rs);padding:9px 11px;font-size:18px;cursor:pointer}
+.mtoggle{display:none;position:fixed;top:12px;left:12px;z-index:300;background:var(--pd);color:#fff;border:none;border-radius:var(--rs);padding:9px 11px;font-size:18px;cursor:pointer}
 .ovcl{display:none}
 @media(max-width:768px){
   .side{transform:translateX(-100%)}.side.open{transform:translateX(0)}
-  .main{margin-left:0;padding:14px;padding-top:58px}
+  .main{margin-left:0;padding:14px;padding-top:56px}
   .mtoggle{display:block}
   .ovcl{display:block;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:99}
   .fr{grid-template-columns:1fr}.pgrid{grid-template-columns:1fr}
-  .login-box{padding:32px 24px}
-}
-
-/* PDF PRINT STYLES */
-@media print{
-  body{background:#fff}
-  .no-print{display:none!important}
-  .pdf-page{page-break-after:always}
+  .lbox{padding:32px 22px}
 }
 </style>
 </head>
@@ -201,21 +197,19 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);font
 
 <!-- LOGIN -->
 <div id="loginScreen">
-  <div class="login-box">
-    <div class="login-logo">
-      <h1>Physiclinic</h1>
-      <p>PT Patient Archive — Ortho</p>
-    </div>
-    <div class="login-error" id="loginErr"></div>
-    <div class="fg" style="margin-bottom:14px">
+  <div class="lbox">
+    <h1>Physiclinic</h1>
+    <p>PT Patient Archive — Ortho</p>
+    <div class="lerr" id="lerr"></div>
+    <div class="fg" style="margin-bottom:12px">
       <label class="fl">Email</label>
-      <input class="fc" type="email" id="lEmail" placeholder="your@email.com">
+      <input class="fc" type="email" id="lEmail" placeholder="your@email.com" onkeydown="if(event.key==='Enter')doLogin()">
     </div>
     <div class="fg" style="margin-bottom:22px">
       <label class="fl">Password</label>
       <input class="fc" type="password" id="lPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
     </div>
-    <button class="btn bp" style="width:100%;justify-content:center;padding:12px" onclick="doLogin()">Sign In →</button>
+    <button class="btn bp" id="loginBtn" style="width:100%;justify-content:center;padding:12px" onclick="doLogin()">Sign In →</button>
   </div>
 </div>
 
@@ -225,49 +219,37 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);font
   <div class="ovcl" id="ovcl" onclick="toggleSide()"></div>
   <div class="wrap">
     <aside class="side" id="side">
-      <div class="side-logo"><h1>Physiclinic</h1><span>PT Patient Archive</span></div>
-      <div class="side-user">
-        <strong id="sideUserName">...</strong>
-        <span id="sideUserRole">...</span>
-      </div>
-      <nav class="side-nav">
-        <button class="ni on" onclick="goPage('patients')"><span>👥</span> Patients</button>
-        <button class="ni" id="navManage" onclick="goPage('manage')"><span>⚙️</span> Manage Options</button>
-        <button class="ni" id="navUsers" onclick="goPage('users')"><span>👤</span> Manage Users</button>
+      <div class="slogo"><h2>Physiclinic</h2><span>PT Patient Archive</span></div>
+      <div class="suser"><strong id="suName">...</strong><small id="suRole">...</small></div>
+      <nav class="snav">
+        <button class="ni on" onclick="goPage('patients')">👥 Patients</button>
+        <button class="ni" id="navManage" onclick="goPage('manage')">⚙️ Manage Options</button>
+        <button class="ni" id="navUsers" onclick="goPage('users')">👤 Manage Users</button>
       </nav>
-      <div class="side-footer">
-        <button class="logout-btn" onclick="doLogout()">
-          <span>⇠</span> Sign Out
-        </button>
+      <div class="sfooter">
+        <button class="signout" onclick="doLogout()">⇠ Sign Out</button>
       </div>
     </aside>
     <main class="main">
-      <!-- PATIENTS PAGE -->
       <div id="pg-patients">
         <div class="ph">
           <div><div class="pt">Patient Archive</div><div class="ps" id="pcnt"></div></div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn bcsv" id="btnExportAll" onclick="exportAll()">📊 Export All</button>
+            <button class="btn bcsv" id="btnAll" onclick="exportAll()">📊 Export All</button>
             <button class="btn bp" onclick="openAdd()">+ New Patient</button>
           </div>
         </div>
-        <div class="sbar">
-          <span style="color:var(--muted)">🔍</span>
-          <input type="text" id="search" placeholder="Search by name, diagnosis, or region..." oninput="renderList()">
-        </div>
+        <div class="sbar"><span style="color:var(--muted)">🔍</span><input type="text" id="srch" placeholder="Search..." oninput="renderList()"></div>
         <div class="pgrid" id="pgrid"></div>
       </div>
-      <!-- MANAGE PAGE -->
       <div id="pg-manage" style="display:none">
-        <div class="ph"><div><div class="pt">Manage Options</div><div class="ps">Add or remove options from assessment lists</div></div></div>
+        <div class="ph"><div><div class="pt">Manage Options</div><div class="ps">Add or remove options from lists</div></div></div>
         <div class="card"><div class="mtabs" id="mgTabs"></div><div id="mgBody"></div></div>
       </div>
-      <!-- USERS PAGE -->
       <div id="pg-users" style="display:none">
-        <div class="ph"><div><div class="pt">Manage Users</div><div class="ps">Add or remove clinic staff accounts</div></div></div>
+        <div class="ph"><div><div class="pt">Manage Users</div></div></div>
         <div class="card" id="usersBody"></div>
       </div>
-      <!-- PROFILE PAGE -->
       <div id="pg-profile" style="display:none"></div>
     </main>
   </div>
@@ -278,7 +260,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);font
   <div class="mdl" style="max-width:460px">
     <div class="mhd"><div class="mtt">New Patient</div><button class="mcl" onclick="closeM('moAdd')">✕</button></div>
     <div class="mbody">
-      <div class="note-box">📝 Basic info — entered by receptionist</div>
+      <div class="nbox">📝 Basic info — entered by receptionist</div>
       <div class="fr">
         <div class="fg"><label class="fl">Full Name *</label><input class="fc" id="iName" placeholder="Patient name"></div>
         <div class="fg"><label class="fl">Age *</label><input class="fc" id="iAge" type="number" placeholder="Age"></div>
@@ -296,10 +278,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);font
   </div>
 </div>
 
-<!-- MODAL: ASSESSMENT (used for both initial & follow-up) -->
+<!-- MODAL: ASSESSMENT -->
 <div class="mo" id="moAssess">
   <div class="mdl">
-    <div class="mhd"><div class="mtt" id="assessTitle">Assessment</div><button class="mcl" onclick="closeM('moAssess')">✕</button></div>
+    <div class="mhd"><div class="mtt" id="assessTtl">Assessment</div><button class="mcl" onclick="closeM('moAssess')">✕</button></div>
     <div class="mbody" id="assessBody"></div>
     <div class="mft">
       <button class="btn bg" onclick="closeM('moAssess')">Cancel</button>
@@ -310,7 +292,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);font
 
 <!-- MODAL: ADD USER -->
 <div class="mo" id="moUser">
-  <div class="mdl" style="max-width:440px">
+  <div class="mdl" style="max-width:430px">
     <div class="mhd"><div class="mtt">Add Staff Account</div><button class="mcl" onclick="closeM('moUser')">✕</button></div>
     <div class="mbody">
       <div class="fg"><label class="fl">Full Name</label><input class="fc" id="uName" placeholder="Staff name"></div>
@@ -333,8 +315,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);font
 <!-- CONFIRM -->
 <div class="conf-o" id="confO">
   <div class="conf-b">
-    <div style="font-size:36px;margin-bottom:10px">⚠️</div>
-    <div style="font-family:'DM Serif Display',serif;font-size:17px;color:var(--pd);margin-bottom:7px" id="confTitle">Confirm</div>
+    <div style="font-size:34px;margin-bottom:10px">⚠️</div>
+    <div style="font-size:16px;font-weight:700;color:var(--pd);margin-bottom:7px" id="confTitle">Confirm</div>
     <div style="font-size:13px;color:var(--muted);margin-bottom:18px" id="confMsg"></div>
     <div style="display:flex;gap:10px;justify-content:center">
       <button class="btn bg bs" onclick="closeConf()">Cancel</button>
@@ -345,130 +327,117 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);font
 <div class="toast" id="toast"></div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { initializeApp }       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-const firebaseConfig = {
+// ── CONFIG ──
+const app  = initializeApp({
   apiKey: "AIzaSyBV6--Y8VTOIm0XhU1h-6GSJmJiWwbBMd8",
   authDomain: "physiclinic-4a8d1.firebaseapp.com",
   projectId: "physiclinic-4a8d1",
   storageBucket: "physiclinic-4a8d1.firebasestorage.app",
   messagingSenderId: "581907813652",
   appId: "1:581907813652:web:c203369bb92e63d01b1e01"
-};
-
-const app  = initializeApp(firebaseConfig);
+});
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
 // ── STATE ──
-let CUR_USER  = null;
-let PATIENTS  = [];
-let OPT_CACHE = null;
-let MG_TAB    = null;
-
-// Assessment editing state
-let AS_PID     = null;   // patient id
-let AS_TYPE    = null;   // 'initial' | 'followup'
-let AS_FU_ID   = null;   // followup id if editing
-let AS_DATE    = '';
-let AS_REGIONS = [];     // [{region, diagnoses, complaints, findings, problems, treatment, vas, sessionsPlanned, freq}]
-let AS_CUR_REG = 0;
-let AS_DURATION = '';
-let AS_ONSET   = '';
-let AS_NOTES   = '';
+let ME = null, PTS = [], OPTS = null, MG_TAB = null;
+let AS_PID='', AS_TYPE='', AS_FU_ID=null;
+let AS_DATE='', AS_REGIONS=[], AS_CUR=0, AS_DUR='', AS_ONSET='', AS_NOTES='';
 
 // ── AUTH ──
 window.doLogin = async () => {
+  const btn = document.getElementById('loginBtn');
+  btn.textContent = 'Signing in...'; btn.disabled = true;
   const email = document.getElementById('lEmail').value.trim();
   const pass  = document.getElementById('lPass').value;
-  const errEl = document.getElementById('loginErr');
-  errEl.style.display = 'none';
-  try { await signInWithEmailAndPassword(auth, email, pass); }
-  catch(e) { errEl.textContent = 'Invalid email or password'; errEl.style.display = 'block'; }
+  const err   = document.getElementById('lerr');
+  err.style.display = 'none';
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch(e) {
+    err.textContent = 'Invalid email or password';
+    err.style.display = 'block';
+  } finally {
+    btn.textContent = 'Sign In →'; btn.disabled = false;
+  }
 };
 
 window.doLogout = async () => {
   await signOut(auth);
+  PTS = []; OPTS = null; ME = null;
   document.getElementById('appScreen').style.display = 'none';
   document.getElementById('loginScreen').style.display = 'flex';
   document.getElementById('lEmail').value = '';
   document.getElementById('lPass').value = '';
+  document.getElementById('lerr').style.display = 'none';
 };
 
 onAuthStateChanged(auth, async user => {
-  if (user) {
-    const snap = await getDoc(doc(db, 'users', user.uid));
-    CUR_USER = snap.exists()
-      ? { uid: user.uid, email: user.email, ...snap.data() }
-      : { uid: user.uid, email: user.email, name: user.email, role: 'doctor' };
-    if (!snap.exists()) await setDoc(doc(db, 'users', user.uid), { name: user.email, role: 'doctor', email: user.email });
-    showApp();
-  } else {
-    CUR_USER = null;
-    document.getElementById('loginScreen').style.display = 'flex';
-    document.getElementById('appScreen').style.display = 'none';
-  }
-});
-
-function showApp() {
+  if (!user) return;
+  const snap = await getDoc(doc(db, 'users', user.uid));
+  ME = snap.exists() ? { uid:user.uid, email:user.email, ...snap.data() }
+                     : { uid:user.uid, email:user.email, name:user.email, role:'doctor' };
+  if (!snap.exists()) await setDoc(doc(db,'users',user.uid), { name:user.email, role:'doctor', email:user.email });
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('appScreen').style.display = 'block';
-  document.getElementById('sideUserName').textContent = CUR_USER.name || CUR_USER.email;
-  document.getElementById('sideUserRole').textContent = CUR_USER.role === 'doctor' ? '👨‍⚕️ Doctor' : '🗂️ Receptionist';
-  if (CUR_USER.role !== 'doctor') {
+  document.getElementById('suName').textContent = ME.name || ME.email;
+  document.getElementById('suRole').textContent = ME.role==='doctor' ? '👨‍⚕️ Doctor' : '🗂️ Receptionist';
+  if (ME.role !== 'doctor') {
     ['navManage','navUsers'].forEach(id => {
       const el = document.getElementById(id);
       el.classList.add('locked');
       el.onclick = () => toast('Doctor access only', true);
     });
-    document.getElementById('btnExportAll').style.display = 'none';
+    document.getElementById('btnAll').style.display = 'none';
   }
-  loadPatients();
-}
+  loadPts();
+});
 
 // ── PATIENTS ──
-function loadPatients() {
-  const q = query(collection(db, 'patients'), orderBy('createdAt', 'desc'));
-  onSnapshot(q, snap => {
-    PATIENTS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+function loadPts() {
+  onSnapshot(query(collection(db,'patients'), orderBy('createdAt','desc')), snap => {
+    PTS = snap.docs.map(d => ({id:d.id,...d.data()}));
     renderList();
   });
 }
 
 window.renderList = () => {
-  const q = (document.getElementById('search')?.value || '').toLowerCase();
-  const pts = PATIENTS.filter(p =>
+  const q = (document.getElementById('srch')?.value||'').toLowerCase();
+  const pts = PTS.filter(p =>
     p.name.toLowerCase().includes(q) ||
-    (p.visits||[]).flatMap(v => (v.regions||[]).map(r => r.region + ' ' + (r.diagnoses||[]).join(' '))).join(' ').toLowerCase().includes(q)
+    (p.visits||[]).flatMap(v=>(v.regions||[]).map(r=>r.region+' '+(r.diagnoses||[]).join(' '))).join(' ').toLowerCase().includes(q)
   );
-  document.getElementById('pcnt').textContent = `${PATIENTS.length} patient${PATIENTS.length!==1?'s':''}`;
+  document.getElementById('pcnt').textContent = `${PTS.length} patient${PTS.length!==1?'s':''}`;
   const g = document.getElementById('pgrid');
   if (!pts.length) {
-    g.innerHTML = `<div class="empty" style="grid-column:1/-1"><span class="ico">👥</span><h3>${q?'No results':'No patients yet'}</h3><p>${q?'Try a different search':'Click New Patient to get started'}</p></div>`;
+    g.innerHTML=`<div class="empty" style="grid-column:1/-1"><span class="ico">👥</span><h3>${q?'No results':'No patients yet'}</h3></div>`;
     return;
   }
   g.innerHTML = pts.map(p => {
-    const visits  = p.visits || [];
-    const initial = visits.find(v => v.type === 'initial');
-    const fus     = visits.filter(v => v.type === 'followup');
-    const regions = (initial?.regions||[]).map(r=>r.region).join(', ');
-    const canEdit = CUR_USER.role === 'doctor';
+    const ini = (p.visits||[]).find(v=>v.type==='initial');
+    const fus = (p.visits||[]).filter(v=>v.type==='followup');
+    const regs = (ini?.regions||[]).map(r=>r.region).join(', ');
+    const doc_ = ME.role==='doctor';
     return `<div class="pcard">
-      <div class="pcard-name">${p.name}</div>
-      <span class="badge ${initial?'bdone':'bpend'}">${initial?'✅ Assessment Complete':'⏳ Pending Assessment'}</span>
-      <div class="pcard-meta">
+      <div class="pname">${p.name}</div>
+      <span class="badge ${ini?'bdone':'bpend'}">${ini?'✅ Complete':'⏳ Pending'}</span>
+      <div class="pmeta">
         <span>👤 ${p.age} y/o — ${p.gender||''}${p.job?' · '+p.job:''}</span>
         ${p.phone?`<span>📞 ${p.phone}</span>`:''}
-        ${regions?`<span>📍 ${regions}</span>`:''}
-        ${initial?`<span>📅 Initial: ${initial.date}</span>`:''}
-        ${fus.length?`<span>🔄 ${fus.length} Follow-up${fus.length!==1?'s':''}</span>`:''}
+        ${regs?`<span>📍 ${regs}</span>`:''}
+        ${ini?`<span>📅 ${ini.date}</span>`:''}
+        ${fus.length?`<span>🔄 ${fus.length} follow-up${fus.length>1?'s':''}</span>`:''}
       </div>
-      <div class="pcard-actions">
+      <div class="pactions">
         <button class="btn bp bs" onclick="openProfile('${p.id}')">📋 View</button>
-        ${canEdit?`<button class="btn bg bs" onclick="openAssessment('${p.id}','initial')">✏️ Assessment</button>`:''}
-        ${canEdit?`<button class="btn bd bs" onclick="askDel('${p.id}')">🗑️</button>`:''}
+        ${doc_?`<button class="btn bg bs" onclick="openAssess('${p.id}','initial')">✏️ Assessment</button>`:''}
+        ${doc_?`<button class="btn bd bs" onclick="askDel('${p.id}')">🗑️</button>`:''}
       </div>
     </div>`;
   }).join('');
@@ -476,711 +445,529 @@ window.renderList = () => {
 
 // ── ADD PATIENT ──
 window.openAdd = () => {
-  ['iName','iAge','iJob','iPhone'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('iGender').value = 'Male';
+  ['iName','iAge','iJob','iPhone'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('iGender').value='Male';
   openM('moAdd');
 };
 window.saveNew = async () => {
-  const name = document.getElementById('iName').value.trim();
-  const age  = document.getElementById('iAge').value.trim();
-  if (!name || !age) { toast('Name and age are required', true); return; }
+  const name=document.getElementById('iName').value.trim();
+  const age=document.getElementById('iAge').value.trim();
+  if(!name||!age){toast('Name and age required',true);return;}
   try {
-    const ref = await addDoc(collection(db, 'patients'), {
+    const ref = await addDoc(collection(db,'patients'),{
       name, age,
-      gender: document.getElementById('iGender').value,
-      job:    document.getElementById('iJob').value.trim(),
-      phone:  document.getElementById('iPhone').value.trim(),
-      createdAt: Date.now(),
-      createdBy: CUR_USER.uid,
-      visits: [],
+      gender:document.getElementById('iGender').value,
+      job:document.getElementById('iJob').value.trim(),
+      phone:document.getElementById('iPhone').value.trim(),
+      createdAt:Date.now(), createdBy:ME.uid, visits:[],
     });
     closeM('moAdd'); toast('Patient added ✅');
-    if (CUR_USER.role === 'doctor') setTimeout(() => openAssessment(ref.id, 'initial'), 350);
-  } catch(e) { toast('Error: ' + e.message, true); }
+    if (ME.role==='doctor') setTimeout(()=>openAssess(ref.id,'initial'),300);
+  } catch(e){toast('Error: '+e.message,true);}
 };
 
 // ── OPTIONS ──
-async function getOpts() {
-  if (OPT_CACHE) return OPT_CACHE;
-  const snap = await getDoc(doc(db, 'config', 'options'));
-  OPT_CACHE = snap.exists() ? snap.data() : defaultOpts();
-  return OPT_CACHE;
+async function getOpts(){
+  if(OPTS)return OPTS;
+  const snap=await getDoc(doc(db,'config','options'));
+  OPTS=snap.exists()?snap.data():defOpts();
+  return OPTS;
 }
-async function saveOpts(opts) { OPT_CACHE = opts; await setDoc(doc(db,'config','options'), opts); }
+async function saveOpts(o){OPTS=o;await setDoc(doc(db,'config','options'),o);}
 
-// ── OPEN ASSESSMENT (initial or follow-up) ──
-window.openAssessment = async (pid, type, fuId = null) => {
-  if (CUR_USER.role !== 'doctor') { toast('Doctor access only', true); return; }
-  AS_PID   = pid;
-  AS_TYPE  = type;
-  AS_FU_ID = fuId;
-
-  const p = PATIENTS.find(x => x.id === pid);
-  if (!p) return;
-
-  // Load existing data
-  let existing = null;
-  if (type === 'initial') {
-    existing = (p.visits||[]).find(v => v.type === 'initial');
-  } else if (fuId) {
-    existing = (p.visits||[]).find(v => v.id === fuId);
-  }
-
-  if (existing) {
-    AS_DATE     = existing.date || today();
-    AS_REGIONS  = JSON.parse(JSON.stringify(existing.regions || []));
-    AS_DURATION = existing.duration || '';
-    AS_ONSET    = existing.onset || '';
-    AS_NOTES    = existing.notes || '';
+// ── ASSESSMENT ──
+window.openAssess = async (pid, type, fuId=null) => {
+  if(ME.role!=='doctor'){toast('Doctor access only',true);return;}
+  AS_PID=pid; AS_TYPE=type; AS_FU_ID=fuId;
+  const p=PTS.find(x=>x.id===pid);if(!p)return;
+  let ex = fuId ? (p.visits||[]).find(v=>v.id===fuId) : type==='initial'?(p.visits||[]).find(v=>v.type==='initial'):null;
+  if(ex){
+    AS_DATE=ex.date||today(); AS_REGIONS=JSON.parse(JSON.stringify(ex.regions||[]));
+    AS_DUR=ex.duration||''; AS_ONSET=ex.onset||''; AS_NOTES=ex.notes||'';
   } else {
-    // for follow-up, pre-populate regions from initial
-    AS_DATE     = today();
-    AS_DURATION = '';
-    AS_ONSET    = '';
-    AS_NOTES    = '';
-    if (type === 'followup') {
-      const initial = (p.visits||[]).find(v => v.type === 'initial');
-      AS_REGIONS = (initial?.regions||[]).map(r => ({
-        region: r.region,
-        diagnoses: [], complaints: [], findings: [], problems: [], treatment: [], vas: null, sessionsPlanned: '', freq: ''
-      }));
-    } else {
-      AS_REGIONS = [];
-    }
+    AS_DATE=today(); AS_DUR=''; AS_ONSET=''; AS_NOTES='';
+    if(type==='followup'){
+      const ini=(p.visits||[]).find(v=>v.type==='initial');
+      AS_REGIONS=(ini?.regions||[]).map(r=>({region:r.region,diagnoses:[],complaints:[],findings:[],problems:[],treatment:[],vas:null,sessionsPlanned:'',freq:''}));
+    } else { AS_REGIONS=[]; }
   }
-
-  AS_CUR_REG = 0;
-  const label = type === 'initial' ? 'Initial Assessment' : 'Follow-up';
-  document.getElementById('assessTitle').textContent = `${label} — ${p.name}`;
-  document.getElementById('assessBody').innerHTML = `<div class="loading"><div class="spinner"></div><span>Loading...</span></div>`;
+  AS_CUR=0;
+  document.getElementById('assessTtl').textContent=(type==='initial'?'Initial Assessment':'Follow-up')+' — '+p.name;
+  document.getElementById('assessBody').innerHTML='<div class="loading"><div class="spin"></div><span>Loading...</span></div>';
   openM('moAssess');
-  const opts = await getOpts();
-  buildAssessForm(opts);
+  const opts=await getOpts();
+  buildForm(opts);
 };
 
-function buildAssessForm(opts) {
-  const b = document.getElementById('assessBody');
-  b.innerHTML = '';
+function buildForm(opts){
+  const b=document.getElementById('assessBody');
+  b.innerHTML='';
 
   // Date
-  const dateFG = document.createElement('div'); dateFG.className = 'fg';
-  dateFG.innerHTML = '<label class="fl">Date</label>';
-  const dateInp = document.createElement('input');
-  dateInp.className = 'fc'; dateInp.type = 'date'; dateInp.id = 'as-date'; dateInp.value = AS_DATE;
-  dateInp.addEventListener('change', () => AS_DATE = dateInp.value);
-  dateFG.appendChild(dateInp); b.appendChild(dateFG);
+  const df=mk('div','fg'); df.innerHTML='<label class="fl">Date</label>';
+  const di=mk('input','fc'); di.type='date'; di.id='as-date'; di.value=AS_DATE;
+  di.onchange=()=>AS_DATE=di.value; df.appendChild(di); b.appendChild(df);
 
   // Region tabs
-  const tabsDiv = document.createElement('div');
-  tabsDiv.id = 'as-tabs'; tabsDiv.className = 'rtabs';
-  AS_REGIONS.forEach((r, i) => tabsDiv.appendChild(mkRegionTab(r.region, i)));
-  const addBtn = document.createElement('button');
-  addBtn.className = 'rtab-add'; addBtn.textContent = '+ Add Region';
-  addBtn.onclick = () => showRegionPicker(opts);
-  tabsDiv.appendChild(addBtn);
-  b.appendChild(tabsDiv);
+  const tabs=mk('div','rtabs'); tabs.id='as-tabs';
+  AS_REGIONS.forEach((_,i)=>tabs.appendChild(mkRTab(AS_REGIONS[i].region,i)));
+  const addTab=mk('button','rtab-add'); addTab.textContent='+ Add Region'; addTab.onclick=()=>showPicker(opts);
+  tabs.appendChild(addTab); b.appendChild(tabs);
 
-  // Region panels
-  const panelsDiv = document.createElement('div'); panelsDiv.id = 'as-panels';
-  AS_REGIONS.forEach((r, i) => panelsDiv.appendChild(mkRegionPanel(r, i, opts)));
-  b.appendChild(panelsDiv);
+  // Panels
+  const panels=mk('div',''); panels.id='as-panels';
+  AS_REGIONS.forEach((_,i)=>panels.appendChild(mkPanel(AS_REGIONS[i],i,opts)));
+  b.appendChild(panels);
 
-  if (AS_REGIONS.length === 0) {
-    const hint = document.createElement('p');
-    hint.style.cssText = 'font-size:13px;color:var(--muted);padding:20px;text-align:center';
-    hint.textContent = 'Click "+ Add Region" to start';
-    panelsDiv.appendChild(hint);
+  if(!AS_REGIONS.length){
+    const h=mk('p',''); h.style.cssText='font-size:13px;color:var(--muted);padding:18px;text-align:center';
+    h.textContent='Click "+ Add Region" to start'; panels.appendChild(h);
   }
 
   // Duration & Onset
   b.appendChild(mkSdiv('⏱ Duration & Onset'));
-  const durRow = document.createElement('div'); durRow.className = 'fr';
-  const durFG = mkFGEl('Duration', mkInp('as-dur','e.g. 3 months', AS_DURATION));
-  const onsFG = mkFGEl('Onset', mkSel('as-onset',['','Gradual','Sudden','Post-trauma','Post-surgical','Post-exercise','Unknown'], AS_ONSET));
-  durRow.appendChild(durFG); durRow.appendChild(onsFG); b.appendChild(durRow);
+  const dr=mk('div','fr');
+  dr.appendChild(mkFG('Duration',mkInp('as-dur','e.g. 3 months',AS_DUR)));
+  dr.appendChild(mkFG('Onset',mkSel('as-onset',['','Gradual','Sudden','Post-trauma','Post-surgical','Post-exercise','Unknown'],AS_ONSET)));
+  b.appendChild(dr);
 
   // Notes
   b.appendChild(mkSdiv('📝 Notes'));
-  const ta = document.createElement('textarea');
-  ta.className='fc'; ta.id='as-notes'; ta.rows=3; ta.placeholder='Clinical notes...'; ta.value=AS_NOTES;
+  const ta=mk('textarea','fc'); ta.id='as-notes'; ta.rows=3; ta.placeholder='Clinical notes...'; ta.value=AS_NOTES;
   b.appendChild(ta);
 
-  if (AS_REGIONS.length > 0) activateRegionTab(0);
+  if(AS_REGIONS.length) activateTab(0);
 }
 
-function mkRegionTab(regionName, idx) {
-  const btn = document.createElement('button');
-  btn.className = 'rtab' + (idx === AS_CUR_REG ? ' on' : '');
-  btn.dataset.idx = idx; btn.textContent = regionName;
-  btn.onclick = () => activateRegionTab(idx);
-  return btn;
+function mkRTab(name,idx){
+  const b=mk('button','rtab'+(idx===AS_CUR?' on':''));
+  b.dataset.idx=idx; b.textContent=name;
+  b.onclick=()=>activateTab(idx); return b;
 }
-
-function activateRegionTab(idx) {
-  AS_CUR_REG = idx;
-  document.querySelectorAll('#as-tabs .rtab').forEach((t,i) => t.classList.toggle('on', i===idx));
-  document.querySelectorAll('#as-panels .region-panel').forEach((p,i) => p.classList.toggle('on', i===idx));
+function activateTab(idx){
+  AS_CUR=idx;
+  document.querySelectorAll('#as-tabs .rtab').forEach((t,i)=>t.classList.toggle('on',i===idx));
+  document.querySelectorAll('#as-panels .rpanel').forEach((p,i)=>p.classList.toggle('on',i===idx));
 }
-
-function mkRegionPanel(regionData, idx, opts) {
-  const panel = document.createElement('div');
-  panel.className = 'region-panel' + (idx === AS_CUR_REG ? ' on' : '');
-
-  // Remove button
-  const removeBtn = document.createElement('button');
-  removeBtn.className = 'btn bd bs'; removeBtn.style.marginBottom = '12px';
-  removeBtn.textContent = `🗑️ Remove ${regionData.region}`;
-  removeBtn.onclick = () => removeRegion(idx, opts);
-  panel.appendChild(removeBtn);
-
-  const r = regionData.region;
-  const sections = [
-    ['🩺 Diagnosis',         'diagnoses',  opts.diagnoses[r]||[]],
-    ['💬 Chief Complaints',  'complaints', opts.complaints[r]||[]],
-    ['🔬 Assessment Findings','findings',  opts.findings[r]||[]],
-    ['📌 Problem List',      'problems',   opts.problems],
-    ['💊 Treatment Plan',    'treatment',  opts.treatment[r]||[]],
-  ];
-  sections.forEach(([title, key, allOpts]) => {
-    panel.appendChild(mkSdiv(title));
-    panel.appendChild(mkPillGroupWithAdd(key, allOpts, regionData[key]||[], key==='problems'?null:r, opts, idx));
+function mkPanel(rd,idx,opts){
+  const p=mk('div','rpanel'+(idx===AS_CUR?' on':''));
+  const rb=mk('button','btn bd bs'); rb.style.marginBottom='12px'; rb.textContent=`🗑️ Remove ${rd.region}`;
+  rb.onclick=()=>removeReg(idx,opts); p.appendChild(rb);
+  const r=rd.region;
+  [['🩺 Diagnosis','diagnoses',opts.diagnoses[r]||[]],
+   ['💬 Chief Complaints','complaints',opts.complaints[r]||[]],
+   ['🔬 Assessment Findings','findings',opts.findings[r]||[]],
+   ['📌 Problem List','problems',opts.problems],
+   ['💊 Treatment Plan','treatment',opts.treatment[r]||[]]].forEach(([t,k,all])=>{
+    p.appendChild(mkSdiv(t));
+    p.appendChild(mkPillsAdd(k,all,rd[k]||[],k==='problems'?null:r,opts,idx));
   });
-
-  // VAS
-  panel.appendChild(mkSdiv('😣 Pain Level — VAS (0–10)'));
-  panel.appendChild(mkVasEl(regionData.vas, idx));
-
-  // Sessions
-  panel.appendChild(mkSdiv('📅 Session Plan'));
-  const sessRow = document.createElement('div'); sessRow.className = 'fr';
-  sessRow.appendChild(mkFGEl('Sessions Planned', mkInp(`as-sess-${idx}`,'e.g. 12', regionData.sessionsPlanned||'','number')));
-  sessRow.appendChild(mkFGEl('Frequency', mkSel(`as-freq-${idx}`,['','Daily','3x/week','2x/week','Weekly'], regionData.freq||'')));
-  panel.appendChild(sessRow);
-
-  return panel;
+  p.appendChild(mkSdiv('😣 Pain Level — VAS (0–10)'));
+  p.appendChild(mkVasEl(rd.vas,idx));
+  p.appendChild(mkSdiv('📅 Session Plan'));
+  const sr=mk('div','fr');
+  sr.appendChild(mkFG('Sessions Planned',mkInp(`as-ss-${idx}`,'e.g. 12',rd.sessionsPlanned||'','number')));
+  sr.appendChild(mkFG('Frequency',mkSel(`as-fr-${idx}`,['','Daily','3x/week','2x/week','Weekly'],rd.freq||'')));
+  p.appendChild(sr); return p;
 }
-
-function showRegionPicker(opts) {
-  const existing  = AS_REGIONS.map(r => r.region);
-  const available = opts.regions.filter(r => !existing.includes(r));
-  if (!available.length) { toast('All regions already added', true); return; }
-  const picker = document.createElement('div');
-  picker.style.cssText = 'position:fixed;inset:0;background:rgba(13,61,46,.5);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px';
-  picker.id = 'regionPicker';
-  const box = document.createElement('div');
-  box.style.cssText = 'background:#fff;border-radius:14px;padding:24px;max-width:440px;width:100%;box-shadow:0 8px 36px rgba(13,61,46,.2)';
-  box.innerHTML = `<div style="font-family:'DM Serif Display',serif;font-size:18px;color:#0d3d2e;margin-bottom:16px">Select Region</div>`;
-  const pg = document.createElement('div'); pg.className = 'pill-group';
-  available.forEach(r => {
-    const btn = document.createElement('button'); btn.type='button'; btn.className='pill';
-    btn.textContent = r;
-    btn.onclick = () => { addRegion(r, opts); document.getElementById('regionPicker')?.remove(); };
-    pg.appendChild(btn);
+function showPicker(opts){
+  const ex=AS_REGIONS.map(r=>r.region);
+  const av=opts.regions.filter(r=>!ex.includes(r));
+  if(!av.length){toast('All regions already added',true);return;}
+  const ov=mk('div','');
+  ov.style.cssText='position:fixed;inset:0;background:rgba(13,61,46,.5);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px';
+  ov.id='picker';
+  const box=mk('div','');
+  box.style.cssText='background:#fff;border-radius:14px;padding:22px;max-width:440px;width:100%;box-shadow:0 8px 36px rgba(13,61,46,.2)';
+  box.innerHTML='<div style="font-size:16px;font-weight:700;color:var(--pd);margin-bottom:14px">Select Region</div>';
+  const pg=mk('div','pg');
+  av.forEach(r=>{
+    const b=mk('button','pill'); b.textContent=r;
+    b.onclick=()=>{addReg(r,opts);document.getElementById('picker')?.remove();};
+    pg.appendChild(b);
   });
   box.appendChild(pg);
-  const cancel = document.createElement('button');
-  cancel.className = 'btn bg bs'; cancel.style.marginTop='16px'; cancel.textContent='Cancel';
-  cancel.onclick = () => picker.remove();
-  box.appendChild(cancel);
-  picker.appendChild(box); document.body.appendChild(picker);
+  const c=mk('button','btn bg bs'); c.style.marginTop='14px'; c.textContent='Cancel';
+  c.onclick=()=>ov.remove(); box.appendChild(c);
+  ov.appendChild(box); document.body.appendChild(ov);
 }
-
-function addRegion(regionName, opts) {
-  AS_REGIONS.push({ region: regionName, diagnoses:[], complaints:[], findings:[], problems:[], treatment:[], vas:null, sessionsPlanned:'', freq:'' });
-  const idx = AS_REGIONS.length - 1;
-  const tabsDiv = document.getElementById('as-tabs');
-  const addBtn  = tabsDiv.querySelector('.rtab-add');
-  tabsDiv.insertBefore(mkRegionTab(regionName, idx), addBtn);
-  document.getElementById('as-panels').appendChild(mkRegionPanel(AS_REGIONS[idx], idx, opts));
-  activateRegionTab(idx);
+function addReg(name,opts){
+  AS_REGIONS.push({region:name,diagnoses:[],complaints:[],findings:[],problems:[],treatment:[],vas:null,sessionsPlanned:'',freq:''});
+  const idx=AS_REGIONS.length-1;
+  const tabs=document.getElementById('as-tabs');
+  tabs.insertBefore(mkRTab(name,idx),tabs.querySelector('.rtab-add'));
+  document.getElementById('as-panels').appendChild(mkPanel(AS_REGIONS[idx],idx,opts));
+  activateTab(idx);
 }
-
-function removeRegion(idx, opts) {
-  AS_REGIONS.splice(idx, 1);
-  buildAssessForm(opts);
-}
+function removeReg(idx,opts){AS_REGIONS.splice(idx,1);buildForm(opts);}
 
 window.saveAssess = async () => {
-  AS_DATE     = document.getElementById('as-date')?.value || today();
-  AS_DURATION = document.getElementById('as-dur')?.value.trim() || '';
-  AS_ONSET    = document.getElementById('as-onset')?.value || '';
-  AS_NOTES    = document.getElementById('as-notes')?.value.trim() || '';
-  AS_REGIONS.forEach((r, i) => {
-    r.sessionsPlanned = document.getElementById(`as-sess-${i}`)?.value || '';
-    r.freq = document.getElementById(`as-freq-${i}`)?.value || '';
+  AS_DATE=document.getElementById('as-date')?.value||today();
+  AS_DUR=document.getElementById('as-dur')?.value.trim()||'';
+  AS_ONSET=document.getElementById('as-onset')?.value||'';
+  AS_NOTES=document.getElementById('as-notes')?.value.trim()||'';
+  AS_REGIONS.forEach((_,i)=>{
+    AS_REGIONS[i].sessionsPlanned=document.getElementById(`as-ss-${i}`)?.value||'';
+    AS_REGIONS[i].freq=document.getElementById(`as-fr-${i}`)?.value||'';
   });
-  const visitData = {
-    id:       AS_FU_ID || uid(),
-    type:     AS_TYPE,
-    date:     AS_DATE,
-    duration: AS_DURATION,
-    onset:    AS_ONSET,
-    notes:    AS_NOTES,
-    regions:  AS_REGIONS,
-    savedAt:  Date.now(),
-  };
+  const v={id:AS_FU_ID||uid(),type:AS_TYPE,date:AS_DATE,duration:AS_DUR,onset:AS_ONSET,notes:AS_NOTES,regions:AS_REGIONS,savedAt:Date.now()};
   try {
-    const p = PATIENTS.find(x => x.id === AS_PID);
-    let visits = [...(p.visits || [])];
-    if (AS_TYPE === 'initial') {
-      // replace or add initial
-      const idx = visits.findIndex(v => v.type === 'initial');
-      if (idx >= 0) visits[idx] = visitData;
-      else visits.unshift(visitData);
-    } else {
-      // replace or add followup
-      const idx = visits.findIndex(v => v.id === visitData.id);
-      if (idx >= 0) visits[idx] = visitData;
-      else visits.push(visitData);
-    }
-    await updateDoc(doc(db,'patients',AS_PID), { visits });
+    const p=PTS.find(x=>x.id===AS_PID);
+    let visits=[...(p.visits||[])];
+    if(AS_TYPE==='initial'){const i=visits.findIndex(x=>x.type==='initial');if(i>=0)visits[i]=v;else visits.unshift(v);}
+    else{const i=visits.findIndex(x=>x.id===v.id);if(i>=0)visits[i]=v;else visits.push(v);}
+    await updateDoc(doc(db,'patients',AS_PID),{visits});
     closeM('moAssess'); toast('Saved ✅'); openProfile(AS_PID);
-  } catch(e) { toast('Error: ' + e.message, true); }
+  }catch(e){toast('Error: '+e.message,true);}
 };
 
 // ── PROFILE ──
 window.openProfile = (pid) => {
-  const p = PATIENTS.find(x => x.id === pid); if (!p) return;
-  const canEdit = CUR_USER.role === 'doctor';
-  const pills   = (arr, cls) => (arr||[]).map(x=>`<span class="atag ${cls||''}">${x}</span>`).join('');
-  const visits  = [...(p.visits||[])].sort((a,b) => {
-    if (a.type==='initial') return -1;
-    if (b.type==='initial') return 1;
-    return a.date > b.date ? -1 : 1;
-  });
-  const initial = visits.find(v => v.type === 'initial');
-  const fus     = visits.filter(v => v.type === 'followup');
+  const p=PTS.find(x=>x.id===pid);if(!p)return;
+  const doc_=ME.role==='doctor';
+  const tags=(arr,cls)=>(arr||[]).map(x=>`<span class="atag ${cls||''}">${x}</span>`).join('');
+  const visits=[...(p.visits||[])].sort((a,b)=>{if(a.type==='initial')return -1;if(b.type==='initial')return 1;return a.date>b.date?-1:1;});
+  const ini=visits.find(v=>v.type==='initial');
 
-  let html = `
-    <button class="btn bg bs no-print" onclick="goPage('patients')" style="margin-bottom:14px">← Back</button>
-    <div class="profhd no-print">
-      <div>
-        <div class="profname">${p.name}</div>
-        <div style="opacity:.8;font-size:14px">${p.age} y/o — ${p.gender||''}${p.job?' · '+p.job:''}${p.phone?' · '+p.phone:''}</div>
-        <div class="proftags">
-          ${(initial?.regions||[]).map(r=>`<span class="ptag gold">${r.region}</span>`).join('')}
-          ${initial?`<span class="ptag">📅 ${initial.date}</span>`:''}
-          ${fus.length?`<span class="ptag">🔄 ${fus.length} Follow-up${fus.length!==1?'s':''}</span>`:''}
-        </div>
+  let html=`<button class="btn bg bs" onclick="goPage('patients')" style="margin-bottom:12px">← Back</button>
+  <div class="profhd">
+    <div>
+      <div class="profname">${p.name}</div>
+      <div style="opacity:.75;font-size:13px">${p.age} y/o — ${p.gender||''}${p.job?' · '+p.job:''}${p.phone?' · '+p.phone:''}</div>
+      <div class="proftags">
+        ${(ini?.regions||[]).map(r=>`<span class="ptag gold">${r.region}</span>`).join('')}
+        ${ini?`<span class="ptag">📅 ${ini.date}</span>`:''}
+        ${visits.filter(v=>v.type==='followup').length?`<span class="ptag">🔄 ${visits.filter(v=>v.type==='followup').length} Follow-up(s)</span>`:''}
       </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        ${canEdit?`<button class="btn ba bs" onclick="openAssessment('${p.id}','initial')">✏️ Edit Assessment</button>`:''}
-        ${canEdit?`<button class="btn bp bs" onclick="openAssessment('${p.id}','followup')">+ Follow-up</button>`:''}
-        ${canEdit?`<button class="btn bpdf bs" onclick="exportPDF('${p.id}')">📄 PDF</button>`:''}
-        ${canEdit?`<button class="btn bcsv bs" onclick="exportCSV('${p.id}')">📊 CSV</button>`:''}
-      </div>
-    </div>`;
+    </div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap">
+      ${doc_?`<button class="btn ba bs" onclick="openAssess('${p.id}','initial')">✏️ Edit</button>`:''}
+      ${doc_?`<button class="btn bp bs" onclick="openAssess('${p.id}','followup')">+ Follow-up</button>`:''}
+      ${doc_?`<button class="btn bpdf bs" onclick="exportPDF('${p.id}')">📄 PDF</button>`:''}
+      ${doc_?`<button class="btn bcsv bs" onclick="exportCSV('${p.id}')">📊 CSV</button>`:''}
+    </div>
+  </div>`;
 
-  if (!initial) {
-    html += `<div class="card" style="text-align:center;padding:44px;color:var(--muted)">
-      <div style="font-size:42px;margin-bottom:12px">📋</div>
-      <p style="font-weight:600">No assessment yet</p>
-      ${canEdit?`<button class="btn bp" style="margin-top:16px" onclick="openAssessment('${p.id}','initial')">Start Assessment</button>`:''}
+  if(!ini){
+    html+=`<div class="card" style="text-align:center;padding:40px;color:var(--muted)">
+      <div style="font-size:40px;margin-bottom:10px">📋</div><p style="font-weight:600">No assessment yet</p>
+      ${doc_?`<button class="btn bp" style="margin-top:14px" onclick="openAssess('${p.id}','initial')">Start Assessment</button>`:''}
     </div>`;
   } else {
-    // render all visits
-    visits.forEach(v => {
-      const isInitial = v.type === 'initial';
-      html += `<div class="visit-card ${isInitial?'':'followup'}">
-        ${canEdit && !isInitial ? `<button class="visit-del no-print" onclick="askDelVisit('${p.id}','${v.id}')">🗑️</button>` : ''}
-        ${canEdit && !isInitial ? `<button class="btn bg bs no-print" style="position:absolute;top:14px;right:42px;padding:4px 10px;font-size:12px" onclick="openAssessment('${p.id}','followup','${v.id}')">✏️</button>` : ''}
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
-          <span class="visit-label ${isInitial?'initial':'followup'}">${isInitial?'📋 Initial Assessment':'🔄 Follow-up'}</span>
-          <span style="font-size:13px;color:var(--muted);font-weight:600">📅 ${v.date}</span>
-          ${v.duration?`<span style="font-size:13px;color:var(--muted)">⏱ ${v.duration}${v.onset?' — '+v.onset:''}</span>`:''}
+    visits.forEach(v=>{
+      const ini_=v.type==='initial';
+      html+=`<div class="vcard ${ini_?'':'fu'}">
+        ${doc_&&!ini_?`<button class="vdel" onclick="askDelVisit('${p.id}','${v.id}')">🗑️</button>`:''}
+        ${doc_&&!ini_?`<button class="vedit" onclick="openAssess('${p.id}','followup','${v.id}')">✏️ Edit</button>`:''}
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+          <span class="vlabel ${ini_?'ini':'fup'}">${ini_?'📋 Initial Assessment':'🔄 Follow-up'}</span>
+          <span style="font-size:12px;font-weight:600;color:var(--muted)">📅 ${v.date}</span>
+          ${v.duration?`<span style="font-size:12px;color:var(--muted)">⏱ ${v.duration}${v.onset?' — '+v.onset:''}</span>`:''}
         </div>`;
-
-      (v.regions||[]).forEach(r => {
-        html += `<div class="region-card">
-          <div class="region-title">📍 ${r.region}${r.sessionsPlanned?` <span style="font-size:12px;color:var(--muted);font-weight:500">💪 ${r.sessionsPlanned}${r.freq?' · '+r.freq:''}</span>`:''}</div>`;
-        if (r.diagnoses?.length)  html += `<div class="asec"><div class="asec-ttl">🩺 Diagnosis</div><div class="atags">${pills(r.diagnoses,'key')}</div></div>`;
-        if (r.complaints?.length) html += `<div class="asec"><div class="asec-ttl">💬 Complaints</div><div class="atags">${pills(r.complaints)}</div></div>`;
-        if (r.vas != null) {
-          const c = r.vas<=3?'#27ae60':r.vas<=6?'#e8a020':'#d94f4f';
-          html += `<div class="asec"><div class="asec-ttl">😣 VAS</div>
-            <div style="display:inline-flex;align-items:center;gap:10px;background:var(--bg);padding:8px 16px;border-radius:24px">
-              <span style="font-size:24px;font-weight:700;color:${c}">${r.vas}</span><span style="color:var(--muted);font-size:13px">/10</span>
-              <div style="height:6px;width:100px;background:#ddd;border-radius:6px;overflow:hidden"><div style="height:100%;width:${r.vas*10}%;background:${c}"></div></div>
-            </div></div>`;
-        }
-        if (r.findings?.length)  html += `<div class="asec"><div class="asec-ttl">🔬 Findings</div><div class="atags">${pills(r.findings)}</div></div>`;
-        if (r.problems?.length)  html += `<div class="asec"><div class="asec-ttl">📌 Problem List</div><div class="atags">${pills(r.problems,'red')}</div></div>`;
-        if (r.treatment?.length) html += `<div class="asec"><div class="asec-ttl">💊 Treatment</div><div class="atags">${pills(r.treatment)}</div></div>`;
-        html += `</div>`;
+      (v.regions||[]).forEach(r=>{
+        html+=`<div class="rcard">
+          <div class="rtitle">📍 ${r.region}${r.sessionsPlanned?` <span style="font-size:11px;color:var(--muted);font-weight:400">💪 ${r.sessionsPlanned}${r.freq?' · '+r.freq:''}</span>`:''}</div>`;
+        if(r.diagnoses?.length) html+=`<div class="asec"><div class="attl">🩺 Diagnosis</div><div class="atags">${tags(r.diagnoses,'key')}</div></div>`;
+        if(r.complaints?.length) html+=`<div class="asec"><div class="attl">💬 Complaints</div><div class="atags">${tags(r.complaints)}</div></div>`;
+        if(r.vas!=null){const c=r.vas<=3?'#27ae60':r.vas<=6?'#e8a020':'#d94f4f';
+          html+=`<div class="asec"><div class="attl">😣 VAS</div>
+            <div style="display:inline-flex;align-items:center;gap:8px;background:var(--bg);padding:6px 14px;border-radius:22px">
+              <span style="font-size:22px;font-weight:700;color:${c}">${r.vas}</span><span style="color:var(--muted);font-size:12px">/10</span>
+              <div style="height:5px;width:90px;background:#ddd;border-radius:5px;overflow:hidden"><div style="height:100%;width:${r.vas*10}%;background:${c}"></div></div>
+            </div></div>`;}
+        if(r.findings?.length) html+=`<div class="asec"><div class="attl">🔬 Findings</div><div class="atags">${tags(r.findings)}</div></div>`;
+        if(r.problems?.length) html+=`<div class="asec"><div class="attl">📌 Problems</div><div class="atags">${tags(r.problems,'red')}</div></div>`;
+        if(r.treatment?.length) html+=`<div class="asec"><div class="attl">💊 Treatment</div><div class="atags">${tags(r.treatment)}</div></div>`;
+        html+=`</div>`;
       });
-
-      if (v.notes) html += `<div style="font-size:13px;background:var(--bg);padding:10px;border-radius:var(--rs);margin-top:8px">${v.notes}</div>`;
-      html += `</div>`;
+      if(v.notes) html+=`<div style="font-size:13px;background:var(--bg);padding:10px;border-radius:var(--rs);margin-top:8px">${v.notes}</div>`;
+      html+=`</div>`;
     });
   }
-
-  document.getElementById('pg-profile').innerHTML = html;
+  document.getElementById('pg-profile').innerHTML=html;
   goPage('profile');
 };
 
-// ── DELETE VISIT ──
-window.askDelVisit = (pid, visitId) => {
-  document.getElementById('confTitle').textContent = 'Delete Follow-up';
-  document.getElementById('confMsg').textContent   = 'Delete this follow-up? Cannot be undone.';
-  document.getElementById('confBtn').onclick = async () => {
-    const p = PATIENTS.find(x => x.id === pid);
-    await updateDoc(doc(db,'patients',pid), { visits: (p.visits||[]).filter(v => v.id !== visitId) });
-    toast('Deleted'); closeConf(); openProfile(pid);
+// ── DELETE ──
+window.askDelVisit=(pid,vid)=>{
+  document.getElementById('confTitle').textContent='Delete Follow-up';
+  document.getElementById('confMsg').textContent='Delete this follow-up? Cannot be undone.';
+  document.getElementById('confBtn').onclick=async()=>{
+    const p=PTS.find(x=>x.id===pid);
+    await updateDoc(doc(db,'patients',pid),{visits:(p.visits||[]).filter(v=>v.id!==vid)});
+    toast('Deleted');closeConf();openProfile(pid);
   };
   document.getElementById('confO').classList.add('open');
 };
-
-// ── DELETE PATIENT ──
-window.askDel = (pid) => {
-  const p = PATIENTS.find(x => x.id === pid);
-  document.getElementById('confTitle').textContent = 'Delete Patient';
-  document.getElementById('confMsg').textContent   = `Delete "${p?.name}"? Cannot be undone.`;
-  document.getElementById('confBtn').onclick = async () => {
+window.askDel=(pid)=>{
+  const p=PTS.find(x=>x.id===pid);
+  document.getElementById('confTitle').textContent='Delete Patient';
+  document.getElementById('confMsg').textContent=`Delete "${p?.name}"?`;
+  document.getElementById('confBtn').onclick=async()=>{
     await deleteDoc(doc(db,'patients',pid));
-    toast('Patient deleted'); closeConf(); goPage('patients');
+    toast('Deleted');closeConf();goPage('patients');
   };
   document.getElementById('confO').classList.add('open');
 };
 
 // ── PDF EXPORT ──
 window.exportPDF = async (pid) => {
-  const p = PATIENTS.find(x => x.id === pid); if (!p) return;
+  const p=PTS.find(x=>x.id===pid);if(!p)return;
   toast('Generating PDF...');
+  const visits=[...(p.visits||[])].sort((a,b)=>{if(a.type==='initial')return -1;if(b.type==='initial')return 1;return a.date>b.date?-1:1;});
 
-  const visits = [...(p.visits||[])].sort((a,b) => {
-    if(a.type==='initial') return -1; if(b.type==='initial') return 1;
-    return a.date > b.date ? -1 : 1;
-  });
+  const pill=(x,bg,bc,tc)=>`<span style="background:${bg};border:1px solid ${bc};padding:3px 9px;border-radius:12px;font-size:11px;color:${tc};display:inline-block;margin:2px">${x}</span>`;
+  const sec=(t,arr,type='')=>arr?.length?`<div style="margin-bottom:8px"><div style="font-size:10px;font-weight:700;color:#1a5c4a;text-transform:uppercase;margin-bottom:4px">${t}</div><div>${arr.map(x=>type==='key'?pill(x,'#eafaf1','#27ae60','#1a6b40'):type==='red'?pill(x,'#fdeaea','#d94f4f','#d94f4f'):pill(x,'#eef2f0','#ccddd6','#162820')).join('')}</div></div>`:'' ;
 
-  const sec = (t, arr, cls='') => arr?.length ? `
-    <div style="margin-bottom:10px">
-      <div style="font-size:10px;font-weight:700;color:#1a5c4a;text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px">${t}</div>
-      <div style="display:flex;flex-wrap:wrap;gap:5px">${arr.map(x=>`<span style="background:${cls==='key'?'#eafaf1':cls==='red'?'#fdeaea':'#eef2f0'};border:1px solid ${cls==='key'?'#27ae60':cls==='red'?'#d94f4f':'#ccddd6'};padding:3px 10px;border-radius:14px;font-size:11px;color:${cls==='key'?'#1a6b40':cls==='red'?'#d94f4f':'#162820'}">${x}</span>`).join('')}</div>
-    </div>` : '';
+  let html=`<div style="font-family:Arial,sans-serif;padding:24px;max-width:700px;color:#162820">
+  <div style="border-bottom:3px solid #0d3d2e;padding-bottom:12px;margin-bottom:16px">
+    <div style="font-size:18px;font-weight:700;color:#0d3d2e">PT Assessment Report</div>
+    <div style="font-size:14px;font-weight:700;margin-top:3px">${p.name}</div>
+    <div style="font-size:12px;color:#5a7a6e;margin-top:1px">${p.age} y/o ${p.gender||''} ${p.job?'· '+p.job:''} ${p.phone?'· '+p.phone:''}</div>
+  </div>`;
 
-  let content = `
-  <div style="font-family:Arial,sans-serif;padding:20px;max-width:750px;color:#162820">
-    <div style="border-bottom:3px solid #0d3d2e;padding-bottom:14px;margin-bottom:18px">
-      <div style="font-size:20px;font-weight:700;color:#0d3d2e">PT Assessment Report</div>
-      <div style="font-size:14px;font-weight:700;color:#162820;margin-top:4px">${p.name}</div>
-      <div style="font-size:12px;color:#5a7a6e;margin-top:2px">${p.age} y/o — ${p.gender||''}${p.job?' · '+p.job:''}${p.phone?' · '+p.phone:''}</div>
-    </div>`;
-
-  visits.forEach(v => {
-    const isInitial = v.type === 'initial';
-    content += `<div style="margin-bottom:20px;border-left:3px solid ${isInitial?'#1a5c4a':'#e8a020'};padding-left:12px">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-        <span style="background:${isInitial?'#eafaf1':'#fff3cd'};color:${isInitial?'#27ae60':'#b07a00'};padding:2px 10px;border-radius:14px;font-size:11px;font-weight:700">${isInitial?'Initial Assessment':'Follow-up'}</span>
+  visits.forEach(v=>{
+    const ini_=v.type==='initial';
+    html+=`<div style="margin-bottom:18px;border-left:3px solid ${ini_?'#1a5c4a':'#e8a020'};padding-left:12px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+        <span style="background:${ini_?'#eafaf1':'#fff3cd'};color:${ini_?'#27ae60':'#b07a00'};padding:2px 10px;border-radius:12px;font-size:11px;font-weight:700">${ini_?'Initial Assessment':'Follow-up'}</span>
         <span style="font-size:12px;font-weight:600;color:#5a7a6e">📅 ${v.date}</span>
         ${v.duration?`<span style="font-size:11px;color:#5a7a6e">⏱ ${v.duration}${v.onset?' — '+v.onset:''}</span>`:''}
       </div>`;
-    (v.regions||[]).forEach(r => {
-      content += `<div style="background:#f8faf9;border-radius:6px;padding:12px;margin-bottom:8px;border-right:3px solid #1a5c4a">
+    (v.regions||[]).forEach(r=>{
+      html+=`<div style="background:#f8faf9;border-radius:7px;padding:12px;margin-bottom:8px;border-right:3px solid #1a5c4a">
         <div style="font-weight:700;color:#0d3d2e;font-size:12px;margin-bottom:8px">📍 ${r.region}${r.sessionsPlanned?` <span style="font-size:10px;color:#5a7a6e;font-weight:400">— ${r.sessionsPlanned} sessions${r.freq?' · '+r.freq:''}</span>`:''}</div>
-        ${sec('Diagnosis', r.diagnoses, 'key')}
-        ${sec('Chief Complaints', r.complaints)}
-        ${r.vas!=null?`<div style="margin-bottom:8px"><div style="font-size:10px;font-weight:700;color:#1a5c4a;text-transform:uppercase;margin-bottom:4px">Pain Level (VAS)</div><span style="font-size:18px;font-weight:700;color:${r.vas<=3?'#27ae60':r.vas<=6?'#e8a020':'#d94f4f'}">${r.vas}/10</span></div>`:''}
-        ${sec('Assessment Findings', r.findings)}
-        ${sec('Problem List', r.problems, 'red')}
-        ${sec('Treatment Plan', r.treatment)}
+        ${sec('Diagnosis',r.diagnoses,'key')}
+        ${sec('Chief Complaints',r.complaints)}
+        ${r.vas!=null?`<div style="margin-bottom:8px"><div style="font-size:10px;font-weight:700;color:#1a5c4a;text-transform:uppercase;margin-bottom:3px">Pain Level (VAS)</div><span style="font-size:20px;font-weight:700;color:${r.vas<=3?'#27ae60':r.vas<=6?'#e8a020':'#d94f4f'}">${r.vas}/10</span></div>`:''}
+        ${sec('Assessment Findings',r.findings)}
+        ${sec('Problem List',r.problems,'red')}
+        ${sec('Treatment Plan',r.treatment)}
       </div>`;
     });
-    if (v.notes) content += `<div style="font-size:11px;color:#5a7a6e;font-style:italic;margin-top:4px;padding:6px 10px;background:#f8faf9;border-radius:5px">📝 ${v.notes}</div>`;
-    content += `</div>`;
+    if(v.notes) html+=`<div style="font-size:11px;color:#5a7a6e;font-style:italic;padding:6px 10px;background:#f8faf9;border-radius:5px;margin-top:4px">📝 ${v.notes}</div>`;
+    html+=`</div>`;
   });
-  content += `<div style="margin-top:24px;padding-top:10px;border-top:1px solid #d0e4de;font-size:10px;color:#5a7a6e;text-align:center">Generated by Physiclinic PT Archive · ${today()}</div></div>`;
+  html+=`<div style="margin-top:20px;padding-top:10px;border-top:1px solid #d0e4de;font-size:10px;color:#5a7a6e;text-align:center">Physiclinic PT Archive · ${today()}</div></div>`;
 
-  // Create hidden div, render, then use print dialog to save as PDF
-  const div = document.createElement('div');
-  div.innerHTML = content;
-  div.style.cssText = 'position:fixed;left:-9999px;top:0;background:#fff;width:750px';
+  // Render to canvas then PDF
+  const div=document.createElement('div');
+  div.innerHTML=html;
+  div.style.cssText='position:fixed;left:-9999px;top:0;background:#fff;width:700px;z-index:-1';
   document.body.appendChild(div);
 
-  // Load html2canvas + jsPDF
-  if (!window.html2canvas) {
-    const s1 = document.createElement('script');
-    s1.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-    document.head.appendChild(s1);
-    await new Promise(r => s1.onload = r);
-  }
-  if (!window.jspdf) {
-    const s2 = document.createElement('script');
-    s2.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
-    document.head.appendChild(s2);
-    await new Promise(r => s2.onload = r);
-  }
-
   try {
-    const canvas = await html2canvas(div, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-    const pageW = pdf.internal.pageSize.getWidth();
-    const pageH = pdf.internal.pageSize.getHeight();
-    const imgW  = pageW - 20;
-    const imgH  = (canvas.height * imgW) / canvas.width;
-    const imgData = canvas.toDataURL('image/jpeg', 0.95);
-    let y = 10;
-    let remaining = imgH;
-    let srcY = 0;
-    while (remaining > 0) {
-      const sliceH = Math.min(remaining, pageH - 20);
-      const sliceCanvas = document.createElement('canvas');
-      sliceCanvas.width  = canvas.width;
-      sliceCanvas.height = (sliceH / imgH) * canvas.height;
-      const ctx = sliceCanvas.getContext('2d');
-      ctx.drawImage(canvas, 0, srcY * canvas.height / imgH, canvas.width, sliceCanvas.height, 0, 0, canvas.width, sliceCanvas.height);
-      if (srcY > 0) pdf.addPage();
-      pdf.addImage(sliceCanvas.toDataURL('image/jpeg', 0.95), 'JPEG', 10, y, imgW, sliceH);
-      remaining -= sliceH;
-      srcY += sliceH;
-      y = 10;
+    const canvas=await html2canvas(div,{scale:2,useCORS:true,backgroundColor:'#ffffff',logging:false});
+    const {jsPDF}=window.jspdf;
+    const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+    const pW=pdf.internal.pageSize.getWidth()-20;
+    const pH=pdf.internal.pageSize.getHeight()-20;
+    const iW=pW, iH=(canvas.height*iW)/canvas.width;
+    let srcY=0, page=0;
+    while(srcY<iH){
+      if(page>0)pdf.addPage();
+      const sliceH=Math.min(pH,iH-srcY);
+      const sc=document.createElement('canvas');
+      sc.width=canvas.width; sc.height=Math.round((sliceH/iH)*canvas.height);
+      sc.getContext('2d').drawImage(canvas,0,Math.round((srcY/iH)*canvas.height),canvas.width,sc.height,0,0,canvas.width,sc.height);
+      pdf.addImage(sc.toDataURL('image/jpeg',0.92),'JPEG',10,10,iW,sliceH);
+      srcY+=sliceH; page++;
     }
     pdf.save(`PT_${p.name.replace(/\s+/g,'_')}_${today()}.pdf`);
     toast('PDF downloaded ✅');
-  } catch(e) {
-    toast('PDF error: ' + e.message, true);
-  } finally {
-    document.body.removeChild(div);
-  }
-};
+  } catch(e){toast('PDF error: '+e.message,true);}
+  finally{document.body.removeChild(div);}
 };
 
 // ── CSV EXPORT ──
-function csvEscape(v){
-  if(v==null||v==='') return '';
+function csvE(v){
+  if(v==null||v==='')return '';
   const s=String(v).replace(/\r\n|\r|\n/g,' ');
-  if(s.includes(',')||s.includes('"')) return '"'+s.replace(/"/g,'""')+'"';
-  return s;
+  return s.includes(',')||s.includes('"')?'"'+s.replace(/"/g,'""')+'"':s;
 }
-function csvDL(filename, rows){
-  const csv = rows.map(r => r.map(csvEscape).join(',')).join('\r\n');
-  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'});
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href=url; a.download=filename; document.body.appendChild(a); a.click();
-  setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(url); }, 1000);
+function csvDL(name,rows){
+  const blob=new Blob(['\uFEFF'+rows.map(r=>r.map(csvE).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name;
+  document.body.appendChild(a);a.click();setTimeout(()=>{document.body.removeChild(a);},1000);
 }
-
-window.exportCSV = (pid) => {
-  const p = PATIENTS.find(x => x.id === pid); if (!p) return;
-  const visits = [...(p.visits||[])].sort((a,b)=>{if(a.type==='initial')return -1;if(b.type==='initial')return 1;return a.date>b.date?1:-1;});
-  const rows = [['Patient','Age','Gender','Occupation','Phone','Visit Type','Date','Duration','Onset','Region','Diagnosis','Complaints','VAS','Findings','Problem List','Treatment','Sessions','Frequency','Notes']];
-  visits.forEach(v => {
-    (v.regions||[]).forEach((r,i) => {
-      rows.push([
-        i===0?p.name:'', i===0?p.age:'', i===0?p.gender:'', i===0?p.job:'', i===0?p.phone:'',
-        i===0?(v.type==='initial'?'Initial Assessment':'Follow-up'):'',
-        i===0?v.date:'', i===0?(v.duration||''):'', i===0?(v.onset||''):'',
-        r.region,
-        (r.diagnoses||[]).join(' | '), (r.complaints||[]).join(' | '),
-        r.vas!=null?r.vas+'/10':'',
-        (r.findings||[]).join(' | '), (r.problems||[]).join(' | '), (r.treatment||[]).join(' | '),
-        r.sessionsPlanned||'', r.freq||'',
-        i===0?(v.notes||''):'',
-      ]);
-    });
-    if (!(v.regions||[]).length) {
-      rows.push([p.name,p.age,p.gender,p.job,p.phone,v.type==='initial'?'Initial Assessment':'Follow-up',v.date,v.duration||'',v.onset||'','','','','','','','','','',v.notes||'']);
-    }
-  });
-  csvDL(`PT_${p.name.replace(/\s+/g,'_')}_${today()}.csv`, rows);
+window.exportCSV=(pid)=>{
+  const p=PTS.find(x=>x.id===pid);if(!p)return;
+  const visits=[...(p.visits||[])].sort((a,b)=>{if(a.type==='initial')return -1;if(b.type==='initial')return 1;return a.date>b.date?1:-1;});
+  const rows=[['Patient','Age','Gender','Job','Phone','Visit','Date','Duration','Onset','Region','Diagnosis','Complaints','VAS','Findings','Problems','Treatment','Sessions','Freq','Notes']];
+  visits.forEach((v,vi)=>(v.regions||[]).forEach((r,ri)=>{
+    rows.push([vi===0&&ri===0?p.name:'',vi===0&&ri===0?p.age:'',vi===0&&ri===0?p.gender:'',vi===0&&ri===0?p.job:'',vi===0&&ri===0?p.phone:'',
+      ri===0?(v.type==='initial'?'Initial':'Follow-up '+vi):'',ri===0?v.date:'',ri===0?(v.duration||''):'',ri===0?(v.onset||''):'',
+      r.region,(r.diagnoses||[]).join(' | '),(r.complaints||[]).join(' | '),r.vas!=null?r.vas+'/10':'',
+      (r.findings||[]).join(' | '),(r.problems||[]).join(' | '),(r.treatment||[]).join(' | '),r.sessionsPlanned||'',r.freq||'',ri===0?(v.notes||''):'']);
+  }));
+  csvDL(`PT_${p.name.replace(/\s+/g,'_')}_${today()}.csv`,rows);
   toast('CSV downloaded ✅');
 };
-
-window.exportAll = () => {
-  if (!PATIENTS.length) { toast('No patients to export', true); return; }
-  const rows = [['Patient','Age','Gender','Occupation','Phone','Visit Type','Date','Region','Diagnosis','VAS','Complaints','Findings','Problems','Treatment']];
-  PATIENTS.forEach(p => {
-    const visits = p.visits || [];
-    if (!visits.length) { rows.push([p.name,p.age,p.gender,p.job,p.phone,'No assessment yet','','','','','','','','']); return; }
-    visits.forEach((v,vi) => {
-      (v.regions||[]).forEach((r,ri) => {
-        rows.push([
-          vi===0&&ri===0?p.name:'', vi===0&&ri===0?p.age:'', vi===0&&ri===0?p.gender:'',
-          vi===0&&ri===0?p.job:'', vi===0&&ri===0?p.phone:'',
-          ri===0?(v.type==='initial'?'Initial':'Follow-up '+vi):'',
-          ri===0?v.date:'', r.region,
-          (r.diagnoses||[]).join(' | '), r.vas!=null?r.vas+'/10':'',
-          (r.complaints||[]).join(' | '), (r.findings||[]).join(' | '),
-          (r.problems||[]).join(' | '), (r.treatment||[]).join(' | '),
-        ]);
-      });
-    });
+window.exportAll=()=>{
+  if(!PTS.length){toast('No patients',true);return;}
+  const rows=[['Name','Age','Gender','Job','Phone','Visit','Date','Region','Diagnosis','VAS','Complaints','Findings','Problems','Treatment']];
+  PTS.forEach(p=>{
+    const visits=p.visits||[];
+    if(!visits.length){rows.push([p.name,p.age,p.gender,p.job,p.phone,'No assessment','','','','','','','','']);return;}
+    visits.forEach((v,vi)=>(v.regions||[]).forEach((r,ri)=>{
+      rows.push([vi===0&&ri===0?p.name:'',vi===0&&ri===0?p.age:'',vi===0&&ri===0?p.gender:'',vi===0&&ri===0?p.job:'',vi===0&&ri===0?p.phone:'',
+        ri===0?(v.type==='initial'?'Initial':'Follow-up '+vi):'',ri===0?v.date:'',r.region,
+        (r.diagnoses||[]).join(' | '),r.vas!=null?r.vas+'/10':'',(r.complaints||[]).join(' | '),(r.findings||[]).join(' | '),(r.problems||[]).join(' | '),(r.treatment||[]).join(' | ')]);
+    }));
   });
-  csvDL(`Physiclinic_All_${today()}.csv`, rows);
-  toast(`Exported ${PATIENTS.length} patients ✅`);
+  csvDL(`Physiclinic_All_${today()}.csv`,rows);
+  toast(`Exported ${PTS.length} patients ✅`);
 };
 
 // ── NAV ──
-window.goPage = (n) => {
-  ['patients','manage','profile','users'].forEach(p => document.getElementById('pg-'+p).style.display='none');
-  document.getElementById('pg-'+n).style.display = 'block';
-  document.querySelectorAll('.ni').forEach(x => x.classList.remove('on'));
-  if(n==='patients') document.querySelectorAll('.ni')[0].classList.add('on');
-  if(n==='manage')   { document.querySelectorAll('.ni')[1].classList.add('on'); renderManage(); }
-  if(n==='users')    { document.querySelectorAll('.ni')[2].classList.add('on'); renderUsers(); }
+window.goPage=(n)=>{
+  ['patients','manage','profile','users'].forEach(p=>document.getElementById('pg-'+p).style.display='none');
+  document.getElementById('pg-'+n).style.display='block';
+  document.querySelectorAll('.ni').forEach(x=>x.classList.remove('on'));
+  if(n==='patients')document.querySelectorAll('.ni')[0].classList.add('on');
+  if(n==='manage'){document.querySelectorAll('.ni')[1].classList.add('on');renderManage();}
+  if(n==='users'){document.querySelectorAll('.ni')[2].classList.add('on');renderUsers();}
   closeSide();
 };
 
 // ── USERS ──
-async function renderUsers() {
-  const body = document.getElementById('usersBody');
-  body.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
-  const snap  = await getDocs(collection(db,'users'));
-  const users = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  body.innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-      <div style="font-weight:700;color:var(--pd)">${users.length} staff account${users.length!==1?'s':''}</div>
-      <button class="btn bp bs" onclick="openM('moUser')">+ Add Staff</button>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:10px">
-      ${users.map(u=>`<div style="display:flex;align-items:center;gap:14px;background:var(--bg);padding:14px 16px;border-radius:var(--rs)">
-        <div style="width:40px;height:40px;border-radius:50%;background:var(--p);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;flex-shrink:0">${(u.name||u.email).charAt(0).toUpperCase()}</div>
-        <div style="flex:1">
-          <div style="font-weight:700">${u.name||u.email}</div>
-          <div style="font-size:12px;color:var(--muted)">${u.email} · <span style="color:${u.role==='doctor'?'var(--p)':'var(--acc)'};font-weight:600">${u.role==='doctor'?'👨‍⚕️ Doctor':'🗂️ Receptionist'}</span></div>
-        </div>
-        ${u.id!==CUR_USER.uid?`<button class="btn bd bs" onclick="delUser('${u.id}','${u.name||u.email}')">Remove</button>`:'<span style="font-size:12px;color:var(--muted)">(you)</span>'}
-      </div>`).join('')}
-    </div>`;
+async function renderUsers(){
+  const b=document.getElementById('usersBody');
+  b.innerHTML='<div class="loading"><div class="spin"></div></div>';
+  const snap=await getDocs(collection(db,'users'));
+  const users=snap.docs.map(d=>({id:d.id,...d.data()}));
+  b.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+    <div style="font-weight:700;color:var(--pd)">${users.length} staff account${users.length!==1?'s':''}</div>
+    <button class="btn bp bs" onclick="openM('moUser')">+ Add Staff</button>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:9px">
+    ${users.map(u=>`<div style="display:flex;align-items:center;gap:12px;background:var(--bg);padding:12px 14px;border-radius:var(--rs)">
+      <div style="width:38px;height:38px;border-radius:50%;background:var(--p);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">${(u.name||u.email).charAt(0).toUpperCase()}</div>
+      <div style="flex:1"><div style="font-weight:700">${u.name||u.email}</div><div style="font-size:12px;color:var(--muted)">${u.email} · <span style="color:${u.role==='doctor'?'var(--p)':'var(--acc)'};font-weight:600">${u.role==='doctor'?'👨‍⚕️ Doctor':'🗂️ Receptionist'}</span></div></div>
+      ${u.id!==ME.uid?`<button class="btn bd bs" onclick="delUser('${u.id}','${u.name||u.email}')">Remove</button>`:'<span style="font-size:11px;color:var(--muted)">(you)</span>'}
+    </div>`).join('')}
+  </div>`;
 }
-window.saveUser = async () => {
-  const email = document.getElementById('uEmail').value.trim();
-  const pass  = document.getElementById('uPass').value;
-  const name  = document.getElementById('uName').value.trim();
-  const role  = document.getElementById('uRole').value;
-  if(!email||!pass){ toast('Email and password required',true); return; }
-  if(pass.length<6){ toast('Password must be at least 6 characters',true); return; }
-  try {
-    const cred = await createUserWithEmailAndPassword(auth, email, pass);
-    await setDoc(doc(db,'users',cred.user.uid), { name:name||email, email, role, createdAt:Date.now() });
-    closeM('moUser'); toast('Staff account created ✅'); renderUsers();
-  } catch(e) { toast(e.message, true); }
+window.saveUser=async()=>{
+  const email=document.getElementById('uEmail').value.trim();
+  const pass=document.getElementById('uPass').value;
+  const name=document.getElementById('uName').value.trim();
+  const role=document.getElementById('uRole').value;
+  if(!email||!pass){toast('Email and password required',true);return;}
+  if(pass.length<6){toast('Password must be at least 6 characters',true);return;}
+  try{
+    const c=await createUserWithEmailAndPassword(auth,email,pass);
+    await setDoc(doc(db,'users',c.user.uid),{name:name||email,email,role,createdAt:Date.now()});
+    closeM('moUser');toast('Staff created ✅');renderUsers();
+  }catch(e){toast(e.message,true);}
 };
-window.delUser = (uid2, name) => {
-  document.getElementById('confTitle').textContent = 'Remove Staff';
-  document.getElementById('confMsg').textContent   = `Remove "${name}"?`;
-  document.getElementById('confBtn').onclick = async () => {
-    await deleteDoc(doc(db,'users',uid2));
-    toast('Removed'); closeConf(); renderUsers();
+window.delUser=(uid2,name)=>{
+  document.getElementById('confTitle').textContent='Remove Staff';
+  document.getElementById('confMsg').textContent=`Remove "${name}"?`;
+  document.getElementById('confBtn').onclick=async()=>{
+    await deleteDoc(doc(db,'users',uid2));toast('Removed');closeConf();renderUsers();
   };
   document.getElementById('confO').classList.add('open');
 };
 
 // ── MANAGE OPTIONS ──
-window.renderManage = async () => {
-  const tabs   = ['regions','diagnoses','complaints','findings','treatment','problems'];
-  const labels = {regions:'Regions',diagnoses:'Diagnoses',complaints:'Complaints',findings:'Findings',treatment:'Treatment',problems:'Problem List'};
-  if (!MG_TAB) MG_TAB = 'regions';
-  document.getElementById('mgTabs').innerHTML = tabs.map(t=>`<button class="mtab ${MG_TAB===t?'on':''}" onclick="setMgTab('${t}')">${labels[t]}</button>`).join('');
+window.renderManage=async()=>{
+  const tabs=['regions','diagnoses','complaints','findings','treatment','problems'];
+  const labels={regions:'Regions',diagnoses:'Diagnoses',complaints:'Complaints',findings:'Findings',treatment:'Treatment',problems:'Problem List'};
+  if(!MG_TAB)MG_TAB='regions';
+  document.getElementById('mgTabs').innerHTML=tabs.map(t=>`<button class="mtab ${MG_TAB===t?'on':''}" onclick="setMgTab('${t}')">${labels[t]}</button>`).join('');
   renderMgBody();
 };
-window.setMgTab = (t) => { MG_TAB=t; document.querySelectorAll('.mtab').forEach(b=>b.classList.remove('on')); event.target.classList.add('on'); renderMgBody(); };
-async function renderMgBody() {
-  const opts = await getOpts(); const c = document.getElementById('mgBody');
-  if (MG_TAB==='regions') {
-    c.innerHTML = `<div class="opt-list">${opts.regions.map(r=>`<div class="opt-row"><span>${r}</span><button class="opt-del" onclick="delOpt('regions',null,${JSON.stringify(r)})">✕</button></div>`).join('')}</div>
-    <div class="add-row" style="margin-top:12px"><input type="text" id="mg-inp" placeholder="New region..."><button onclick="mgAdd()">+ Add</button></div>`;
-  } else if (MG_TAB==='problems') {
-    c.innerHTML = `<div class="opt-list">${opts.problems.map(p=>`<div class="opt-row"><span>${p}</span><button class="opt-del" onclick="delOpt('problems',null,${JSON.stringify(p)})">✕</button></div>`).join('')}</div>
-    <div class="add-row" style="margin-top:12px"><input type="text" id="mg-inp" placeholder="New problem..."><button onclick="mgAdd()">+ Add</button></div>`;
-  } else {
-    const sel = c.dataset.selReg || opts.regions[0];
-    const items = opts[MG_TAB]?.[sel] || [];
-    c.innerHTML = `<div style="margin-bottom:12px"><label class="fl" style="display:block;margin-bottom:5px">Region</label>
-      <select class="fc" style="width:auto" onchange="document.getElementById('mgBody').dataset.selReg=this.value;renderMgBody()">
-        ${opts.regions.map(r=>`<option value="${r}" ${r===sel?'selected':''}>${r}</option>`).join('')}
-      </select></div>
-    <div class="opt-list">${items.map(item=>`<div class="opt-row"><span>${item}</span><button class="opt-del" onclick="delOpt(${JSON.stringify(MG_TAB)},${JSON.stringify(sel)},${JSON.stringify(item)})">✕</button></div>`).join('')}</div>
-    <div class="add-row" style="margin-top:10px"><input type="text" id="mg-inp" placeholder="Add new option..."><button onclick="mgAdd()">+ Add</button></div>`;
-    c.dataset.selReg = sel;
+window.setMgTab=(t)=>{MG_TAB=t;document.querySelectorAll('.mtab').forEach(b=>b.classList.remove('on'));event.target.classList.add('on');renderMgBody();};
+async function renderMgBody(){
+  const opts=await getOpts();const c=document.getElementById('mgBody');
+  if(MG_TAB==='regions'){
+    c.innerHTML=`<div class="optlist">${opts.regions.map(r=>`<div class="optrow"><span>${r}</span><button class="optdel" onclick="delOpt('regions',null,${JSON.stringify(r)})">✕</button></div>`).join('')}</div>
+    <div class="addrow" style="margin-top:12px"><input type="text" id="mg-i" placeholder="New region..."><button onclick="mgAdd()">+ Add</button></div>`;
+  }else if(MG_TAB==='problems'){
+    c.innerHTML=`<div class="optlist">${opts.problems.map(p=>`<div class="optrow"><span>${p}</span><button class="optdel" onclick="delOpt('problems',null,${JSON.stringify(p)})">✕</button></div>`).join('')}</div>
+    <div class="addrow" style="margin-top:12px"><input type="text" id="mg-i" placeholder="New problem..."><button onclick="mgAdd()">+ Add</button></div>`;
+  }else{
+    const sel=c.dataset.selReg||opts.regions[0];
+    const items=opts[MG_TAB]?.[sel]||[];
+    c.innerHTML=`<div style="margin-bottom:12px"><label class="fl" style="display:block;margin-bottom:5px">Region</label>
+    <select class="fc" style="width:auto" onchange="document.getElementById('mgBody').dataset.selReg=this.value;renderMgBody()">
+      ${opts.regions.map(r=>`<option value="${r}" ${r===sel?'selected':''}>${r}</option>`).join('')}
+    </select></div>
+    <div class="optlist">${items.map(x=>`<div class="optrow"><span>${x}</span><button class="optdel" onclick="delOpt(${JSON.stringify(MG_TAB)},${JSON.stringify(sel)},${JSON.stringify(x)})">✕</button></div>`).join('')}</div>
+    <div class="addrow" style="margin-top:10px"><input type="text" id="mg-i" placeholder="Add option..."><button onclick="mgAdd()">+ Add</button></div>`;
+    c.dataset.selReg=sel;
   }
 }
-window.mgAdd = async () => {
-  const val = document.getElementById('mg-inp')?.value?.trim(); if(!val) return;
-  const opts = await getOpts();
+window.mgAdd=async()=>{
+  const val=document.getElementById('mg-i')?.value?.trim();if(!val)return;
+  const opts=await getOpts();
   if(MG_TAB==='regions'){if(!opts.regions.includes(val)){opts.regions.push(val);['diagnoses','complaints','findings','treatment'].forEach(k=>{opts[k][val]=[];});}}
   else if(MG_TAB==='problems'){if(!opts.problems.includes(val))opts.problems.push(val);}
   else{const sel=document.getElementById('mgBody').dataset.selReg||opts.regions[0];if(!opts[MG_TAB][sel])opts[MG_TAB][sel]=[];if(!opts[MG_TAB][sel].includes(val))opts[MG_TAB][sel].push(val);}
-  await saveOpts(opts); toast('Added ✅'); renderMgBody();
+  await saveOpts(opts);toast('Added ✅');renderMgBody();
 };
-window.delOpt = async (cat, region, val) => {
-  const opts = await getOpts();
+window.delOpt=async(cat,region,val)=>{
+  const opts=await getOpts();
   if(cat==='regions')opts.regions=opts.regions.filter(x=>x!==val);
   else if(cat==='problems')opts.problems=opts.problems.filter(x=>x!==val);
   else if(region&&opts[cat]?.[region])opts[cat][region]=opts[cat][region].filter(x=>x!==val);
-  await saveOpts(opts); toast('Removed'); renderMgBody();
+  await saveOpts(opts);toast('Removed');renderMgBody();
 };
 
 // ── DOM HELPERS ──
-function mkSdiv(txt){ const d=document.createElement('div'); d.className='sdiv'; d.textContent=txt; return d; }
-function mkInp(id,ph,val='',type='text'){ const i=document.createElement('input'); i.className='fc';i.id=id;i.type=type;i.placeholder=ph;i.value=val; return i; }
-function mkSel(id,opts,val){
-  const s=document.createElement('select');s.className='fc';s.id=id;
-  opts.forEach(o=>{const op=document.createElement('option');op.value=o;op.textContent=o||'Select...';if(o===val)op.selected=true;s.appendChild(op);});
-  return s;
+function mk(tag,cls){const e=document.createElement(tag);if(cls)e.className=cls;return e;}
+function mkSdiv(t){const d=mk('div','sdiv');d.textContent=t;return d;}
+function mkInp(id,ph,val='',type='text'){const i=mk('input','fc');i.id=id;i.type=type;i.placeholder=ph;i.value=val;return i;}
+function mkSel(id,opts,val){const s=mk('select','fc');s.id=id;opts.forEach(o=>{const op=mk('option');op.value=o;op.textContent=o||'Select...';if(o===val)op.selected=true;s.appendChild(op);});return s;}
+function mkFG(label,el){const w=mk('div','fg');const l=mk('label','fl');l.textContent=label;w.appendChild(l);w.appendChild(el);return w;}
+function mkPill(key,opt,sel,ri){
+  const b=mk('button','pill'+(sel?' sel':''));b.textContent=opt;
+  b.onclick=function(){
+    if(!AS_REGIONS[ri][key])AS_REGIONS[ri][key]=[];
+    if(AS_REGIONS[ri][key].includes(opt)){AS_REGIONS[ri][key]=AS_REGIONS[ri][key].filter(x=>x!==opt);this.classList.remove('sel');}
+    else{AS_REGIONS[ri][key].push(opt);this.classList.add('sel');}
+  };return b;
 }
-function mkFGEl(label, el){ const w=document.createElement('div');w.className='fg'; const l=document.createElement('label');l.className='fl';l.textContent=label;w.appendChild(l);w.appendChild(el);return w; }
-function mkOnePill(key, opt, selected, regionIdx){
-  const b=document.createElement('button');b.type='button';b.className='pill'+(selected?' sel':'');b.textContent=opt;
-  b.addEventListener('click',function(){
-    if(!AS_REGIONS[regionIdx][key])AS_REGIONS[regionIdx][key]=[];
-    if(AS_REGIONS[regionIdx][key].includes(opt)){AS_REGIONS[regionIdx][key]=AS_REGIONS[regionIdx][key].filter(x=>x!==opt);this.classList.remove('sel');}
-    else{AS_REGIONS[regionIdx][key].push(opt);this.classList.add('sel');}
-  });
-  return b;
-}
-function mkPillGroupWithAdd(key, allOpts, selected, region, opts, regionIdx){
-  const wrap=document.createElement('div');
-  const pg=document.createElement('div');pg.className='pill-group';
-  allOpts.forEach(opt=>pg.appendChild(mkOnePill(key,opt,selected.includes(opt),regionIdx)));
-  wrap.appendChild(pg);
-  const row=document.createElement('div');row.className='add-row';
-  const inp=document.createElement('input');inp.type='text';inp.placeholder='Add new option (saves permanently)...';
-  const btn=document.createElement('button');btn.type='button';btn.textContent='+ Add';
-  btn.addEventListener('click',async()=>{
+function mkPillsAdd(key,all,sel,reg,opts,ri){
+  const w=mk('div');const pg=mk('div','pg');
+  all.forEach(o=>pg.appendChild(mkPill(key,o,sel.includes(o),ri)));
+  w.appendChild(pg);
+  const row=mk('div','addrow');
+  const inp=mk('input');inp.type='text';inp.placeholder='Add new option (saves permanently)...';
+  const btn=mk('button');btn.textContent='+ Add';
+  btn.onclick=async()=>{
     const val=inp.value.trim();if(!val){toast('Type an option first',true);return;}
-    if(region&&opts[key]&&opts[key][region]!==undefined){if(!opts[key][region].includes(val))opts[key][region].push(val);}
+    if(reg&&opts[key]&&opts[key][reg]!==undefined){if(!opts[key][reg].includes(val))opts[key][reg].push(val);}
     else if(key==='problems'){if(!opts.problems.includes(val))opts.problems.push(val);}
     await saveOpts(opts);
-    if(!AS_REGIONS[regionIdx][key])AS_REGIONS[regionIdx][key]=[];
-    if(!AS_REGIONS[regionIdx][key].includes(val))AS_REGIONS[regionIdx][key].push(val);
-    pg.appendChild(mkOnePill(key,val,true,regionIdx));
-    inp.value='';toast('Option added ✅');
-  });
-  row.appendChild(inp);row.appendChild(btn);wrap.appendChild(row);return wrap;
+    if(!AS_REGIONS[ri][key])AS_REGIONS[ri][key]=[];
+    if(!AS_REGIONS[ri][key].includes(val))AS_REGIONS[ri][key].push(val);
+    pg.appendChild(mkPill(key,val,true,ri));inp.value='';toast('Added ✅');
+  };
+  row.appendChild(inp);row.appendChild(btn);w.appendChild(row);return w;
 }
-function mkVasEl(currentVal, regionIdx){
-  const w=document.createElement('div');w.style.cssText='display:flex;gap:6px;flex-wrap:wrap;margin-top:4px';
+function mkVasEl(cur,ri){
+  const w=mk('div');w.style.cssText='display:flex;gap:6px;flex-wrap:wrap;margin-top:4px';
   for(let i=0;i<=10;i++){
-    const b=document.createElement('button');b.type='button';b.className='vas-btn'+(currentVal===i?' sel':'');b.textContent=i;
-    b.addEventListener('click',function(){
-      AS_REGIONS[regionIdx].vas=i;
-      w.querySelectorAll('.vas-btn').forEach(x=>x.classList.remove('sel'));this.classList.add('sel');
-    });
+    const b=mk('button','vas-btn'+(cur===i?' sel':''));b.textContent=i;
+    b.onclick=function(){AS_REGIONS[ri].vas=i;w.querySelectorAll('.vas-btn').forEach(x=>x.classList.remove('sel'));this.classList.add('sel');};
     w.appendChild(b);
-  }
-  return w;
+  }return w;
 }
 
 // ── UTILS ──
-function today(){ return new Date().toISOString().split('T')[0]; }
-function uid()  { return Date.now().toString(36)+Math.random().toString(36).slice(2); }
-window.openM    = id => document.getElementById(id).classList.add('open');
-window.closeM   = id => document.getElementById(id).classList.remove('open');
-window.closeConf= () => document.getElementById('confO').classList.remove('open');
-window.toggleSide = () => {
-  const s=document.getElementById('side');const ov=document.getElementById('ovcl');
-  s.classList.toggle('open');ov.style.display=s.classList.contains('open')?'block':'none';
-};
-function closeSide(){ if(window.innerWidth<=768){document.getElementById('side').classList.remove('open');document.getElementById('ovcl').style.display='none';}}
-window.toast = (msg,err=false) => {
-  const t=document.getElementById('toast');t.textContent=msg;t.className='toast show'+(err?' err':'');
-  setTimeout(()=>t.classList.remove('show'),2800);
-};
+function today(){return new Date().toISOString().split('T')[0];}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2);}
+window.openM=id=>document.getElementById(id).classList.add('open');
+window.closeM=id=>document.getElementById(id).classList.remove('open');
+window.closeConf=()=>document.getElementById('confO').classList.remove('open');
+window.toggleSide=()=>{const s=document.getElementById('side');const ov=document.getElementById('ovcl');s.classList.toggle('open');ov.style.display=s.classList.contains('open')?'block':'none';};
+function closeSide(){if(window.innerWidth<=768){document.getElementById('side').classList.remove('open');document.getElementById('ovcl').style.display='none';}}
+window.toast=(msg,err=false)=>{const t=document.getElementById('toast');t.textContent=msg;t.className='toast show'+(err?' err':'');setTimeout(()=>t.classList.remove('show'),2800);};
 
 // ── DEFAULT OPTIONS ──
-function defaultOpts(){return{
+function defOpts(){return{
   regions:['Cervical Spine','Thoracic Spine','Lumbar Spine','Shoulder','Elbow','Wrist & Hand','Hip','Knee','Ankle & Foot','TMJ','Sacroiliac Joint'],
   diagnoses:{'Cervical Spine':['Cervical Disc Herniation','Cervical Spondylosis','Cervical Radiculopathy','Cervical Myelopathy','Neck Strain / Whiplash','Cervicogenic Headache','Cervical Facet Syndrome','Torticollis','Cervical Stenosis','Thoracic Outlet Syndrome'],'Thoracic Spine':['Thoracic Disc Herniation','Thoracic Spondylosis','Scheuermann\'s Disease','Costochondritis','Thoracic Facet Syndrome'],'Lumbar Spine':['Lumbar Disc Herniation','Lumbar Spondylosis','Lumbar Radiculopathy (Sciatica)','Spinal Stenosis','Spondylolisthesis','Spondylolysis','Lumbar Strain','Piriformis Syndrome','SI Joint Dysfunction','Facet Syndrome','Post-Surgical Lumbar'],'Shoulder':['Rotator Cuff Tear','Rotator Cuff Tendinopathy','Shoulder Impingement','Frozen Shoulder (Adhesive Capsulitis)','Shoulder Dislocation / Instability','AC Joint Sprain','Biceps Tendinopathy','SLAP Tear','Shoulder Bursitis','Post-Surgical Shoulder'],'Elbow':['Tennis Elbow (Lateral Epicondylitis)','Golfer\'s Elbow (Medial Epicondylitis)','Elbow Bursitis','Radial Tunnel Syndrome','Cubital Tunnel Syndrome','Elbow Fracture (Post-Surgical)','Elbow Stiffness'],'Wrist & Hand':['Carpal Tunnel Syndrome','De Quervain\'s Tenosynovitis','Trigger Finger','Wrist Sprain','TFCC Tear','Wrist Fracture (Post-Surgical)','Wrist Tendinopathy','Finger Stiffness'],'Hip':['Hip Osteoarthritis','Hip Impingement (FAI)','Trochanteric Bursitis','Hip Labral Tear','Hip Flexor Strain','Piriformis Syndrome','Hip Fracture (Post-Surgical)','Gluteal Tendinopathy'],'Knee':['Knee Osteoarthritis','Patellofemoral Pain Syndrome','ACL Tear / Post-Surgical','Meniscal Tear','PCL Injury','MCL / LCL Sprain','Patellar Tendinopathy','IT Band Syndrome','Total Knee Replacement (Post-Surgical)'],'Ankle & Foot':['Lateral Ankle Sprain','Achilles Tendinopathy','Plantar Fasciitis','Ankle OA','Peroneal Tendinopathy','Ankle Fracture (Post-Surgical)','Metatarsalgia','Hallux Valgus'],'TMJ':['TMJ Dysfunction','TMJ Disc Displacement','Bruxism-Related TMJ','Myofascial TMJ Pain'],'Sacroiliac Joint':['SI Joint Dysfunction','Sacroiliitis','Ankylosing Spondylitis','Pelvic Girdle Pain','Post-Partum SI Pain']},
   complaints:{'Cervical Spine':['Neck pain','Morning stiffness','Cervicogenic headache','Radiating arm pain','Finger numbness / tingling','Dizziness','Interscapular pain','Limited ROM','Pain on rotation','Pain on extension'],'Thoracic Spine':['Mid-back pain','Thoracic stiffness','Pain on breathing','Postural kyphosis','Pain with prolonged sitting'],'Lumbar Spine':['Low back pain','Radiating leg pain (Sciatica)','Morning stiffness','Leg weakness','Foot numbness / tingling','Pain on standing','Pain on prolonged sitting','Pain on bending forward','Pain on extension','Night pain'],'Shoulder':['Shoulder pain','Limited ROM','Night pain','Weakness','Clicking / crepitus','Pain on overhead activities','Pain on reaching behind back'],'Elbow':['Lateral elbow pain','Medial elbow pain','Pain on gripping','Pain on wrist extension','Stiffness','Swelling'],'Wrist & Hand':['Wrist pain','Hand numbness','Thumb pain','Trigger finger locking','Grip weakness','Morning stiffness','Swelling'],'Hip':['Hip pain','Groin pain','Lateral hip pain','Pain on walking','Limited ROM','Pain on stairs','Night pain'],'Knee':['Knee pain','Swelling','Crepitus','Limited flexion','Pain on stairs','Pain on squatting','Morning stiffness','Locking / giving way'],'Ankle & Foot':['Heel pain','Ankle pain','Morning heel pain','Swelling','Pain on walking','Limited dorsiflexion','Weakness','Instability'],'TMJ':['Jaw pain','Clicking on opening','Limited mouth opening','Difficulty chewing','Facial headache'],'Sacroiliac Joint':['Sacral pain','Pain radiating to buttock','Pain on prolonged standing','Pain on transitional movements','Pelvic asymmetry']},
@@ -1188,7 +975,6 @@ function defaultOpts(){return{
   treatment:{'Cervical Spine':['TENS','Ultrasound','Hot Pack','Cervical Traction','Manual Therapy','Mobilization','Strengthening','Stretching','Postural Correction','Dry Needling','Kinesio Taping','DNF Strengthening','Home Exercise Program'],'Thoracic Spine':['Hot Pack','Thoracic Mobilization','Manual Therapy','Strengthening','Stretching','Postural Correction','TENS','Breathing Exercises'],'Lumbar Spine':['TENS','Ultrasound','Hot Pack','Lumbar Traction','Manual Therapy','McKenzie Exercises','Core Stabilization','Stretching','Mobilization','Dry Needling','SWD','Kinesio Taping','Neural Mobilization','Home Exercise Program'],'Shoulder':['TENS','Ultrasound','Hot Pack','Joint Mobilization','Codman Exercises','Rotator Cuff Strengthening','Scapular Stabilization','Stretching','Manual Therapy','Kinesio Taping','Pulley Exercises','Home Exercise Program'],'Elbow':['TENS','Ultrasound','Friction Massage','Stretching','Eccentric Strengthening','Bracing','Ice','Kinesio Taping'],'Wrist & Hand':['TENS','Ultrasound','Splinting','Strengthening','Stretching','Mobilization','Nerve Gliding','Tendon Gliding'],'Hip':['TENS','Hot Pack','Hip Strengthening','Stretching','Manual Therapy','Gait Training','Mobilization','Core Stabilization','Home Exercise Program'],'Knee':['TENS','Ultrasound','Hot Pack','Quad Strengthening','VMO Exercises','Hamstring Stretching','Patellar Taping','Mobilization','Kinesio Taping','Balance Training','Gait Training','Home Exercise Program'],'Ankle & Foot':['TENS','Ultrasound','Ice','Calf Strengthening','Stretching','Balance Training','Taping','Orthotics Advice','Manual Therapy','Proprioception Training'],'TMJ':['TENS','Ultrasound','Manual Therapy','TMJ Mobilization','Jaw Stretching','Postural Correction','Patient Education'],'Sacroiliac Joint':['TENS','Manual Therapy','SI Belt','Stabilization Exercises','Stretching','Hot Pack','Pelvic Floor Exercises']},
   problems:['Pain','Stiffness','Limited ROM','Muscle weakness','Balance deficit','Gait impairment','Swelling / Oedema','Numbness / Tingling','Functional limitation','Postural dysfunction','Nerve Entrapment','Muscle Imbalance','Reduced proprioception','Decreased endurance'],
 };}
-
 </script>
 </body>
 </html>
