@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
@@ -214,6 +215,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);font
   </div>
 </div>
 
+<!-- NEW PATIENT -->
 <div class="mo" id="moAdd">
   <div class="mdl" style="max-width:460px">
     <div class="mhd"><div class="mtt">New Patient</div><button class="mcl" onclick="closeM('moAdd')">✕</button></div>
@@ -236,6 +238,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);font
   </div>
 </div>
 
+<!-- ASSESSMENT -->
 <div class="mo" id="moAssess">
   <div class="mdl">
     <div class="mhd"><div class="mtt" id="assessTtl">Assessment</div><button class="mcl" onclick="closeM('moAssess')">✕</button></div>
@@ -247,6 +250,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);font
   </div>
 </div>
 
+<!-- ADD USER -->
 <div class="mo" id="moUser">
   <div class="mdl" style="max-width:430px">
     <div class="mhd"><div class="mtt">Add Staff Account</div><button class="mcl" onclick="closeM('moUser')">✕</button></div>
@@ -268,6 +272,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);font
   </div>
 </div>
 
+<!-- CONFIRM -->
 <div class="conf-o" id="confO">
   <div class="conf-b">
     <div style="font-size:34px;margin-bottom:10px">⚠️</div>
@@ -286,12 +291,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy }
-  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-// RE-IMPORT FOR SAFETY
-import * as firestore from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-const { getFirestore: getFS, collection: coll, doc: dref, getDoc: gDoc, getDocs: gDocs, setDoc: sDoc, addDoc: aDoc, updateDoc: uDoc, deleteDoc: delD, onSnapshot: onSnap, query: qry, orderBy: oBy } = firestore;
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const app  = initializeApp({
   apiKey:"AIzaSyBV6--Y8VTOIm0XhU1h-6GSJmJiWwbBMd8",
@@ -302,20 +302,20 @@ const app  = initializeApp({
   appId:"1:581907813652:web:c203369bb92e63d01b1e01"
 });
 const auth = getAuth(app);
-const db   = getFS(app);
+const db   = getFirestore(app);
 
 // STATE
 let ME=null, PTS=[], MG_TAB=null;
 let AS_PID='', AS_TYPE='', AS_FU_ID=null;
 let AS_DATE='', AS_REGIONS=[], AS_CUR=0, AS_DUR='', AS_ONSET='', AS_NOTES='';
 
-// OPTIONS HELPER
+// ── OPTIONS — always read from Firestore, no local cache ──
 async function getOpts() {
-  const snap = await gDoc(dref(db, 'config', 'options'));
+  const snap = await getDoc(doc(db, 'config', 'options'));
   return snap.exists() ? snap.data() : defOpts();
 }
 async function saveOpts(o) {
-  await sDoc(dref(db, 'config', 'options'), o);
+  await setDoc(doc(db, 'config', 'options'), o);
 }
 
 // AUTH
@@ -336,22 +336,34 @@ window.doLogout = async () => {
   PTS=[]; ME=null;
   document.getElementById('appScreen').style.display='none';
   document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('lEmail').value='';
+  document.getElementById('lPass').value='';
+  document.getElementById('lerr').style.display='none';
 };
 
 onAuthStateChanged(auth, async user => {
   if (!user) return;
-  const snap = await gDoc(dref(db,'users',user.uid));
+  const snap = await getDoc(doc(db,'users',user.uid));
   ME = snap.exists() ? {uid:user.uid,email:user.email,...snap.data()} : {uid:user.uid,email:user.email,name:user.email,role:'doctor'};
+  if (!snap.exists()) await setDoc(doc(db,'users',user.uid),{name:user.email,role:'doctor',email:user.email});
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('appScreen').style.display='block';
   document.getElementById('suName').textContent=ME.name||ME.email;
   document.getElementById('suRole').textContent=ME.role==='doctor'?'👨‍⚕️ Doctor':'🗂️ Receptionist';
+  if (ME.role!=='doctor') {
+    ['navManage','navUsers'].forEach(id=>{
+      const el=document.getElementById(id);
+      el.classList.add('locked');
+      el.onclick=()=>toast('Doctor access only',true);
+    });
+    document.getElementById('btnAll').style.display='none';
+  }
   loadPts();
 });
 
 // PATIENTS
 function loadPts() {
-  onSnap(qry(coll(db,'patients'),oBy('createdAt','desc')), snap=>{
+  onSnapshot(query(collection(db,'patients'),orderBy('createdAt','desc')), snap=>{
     PTS=snap.docs.map(d=>({id:d.id,...d.data()}));
     renderList();
   });
@@ -359,22 +371,30 @@ function loadPts() {
 
 window.renderList = () => {
   const q=(document.getElementById('srch')?.value||'').toLowerCase();
-  const pts=PTS.filter(p=> p.name.toLowerCase().includes(q));
+  const pts=PTS.filter(p=>
+    p.name.toLowerCase().includes(q)||
+    (p.visits||[]).flatMap(v=>(v.regions||[]).map(r=>r.region+' '+(r.diagnoses||[]).join(' '))).join(' ').toLowerCase().includes(q)
+  );
   document.getElementById('pcnt').textContent=`${PTS.length} patient${PTS.length!==1?'s':''}`;
   const g=document.getElementById('pgrid');
   if (!pts.length) {
-    g.innerHTML=`<div class="empty" style="grid-column:1/-1"><span class="ico">👥</span><h3>No results</h3></div>`;
+    g.innerHTML=`<div class="empty" style="grid-column:1/-1"><span class="ico">👥</span><h3>${q?'No results':'No patients yet'}</h3></div>`;
     return;
   }
   const isDoc=ME.role==='doctor';
   g.innerHTML=pts.map(p=>{
     const ini=(p.visits||[]).find(v=>v.type==='initial');
+    const fus=(p.visits||[]).filter(v=>v.type==='followup');
+    const regs=(ini?.regions||[]).map(r=>r.region).join(', ');
     return `<div class="pcard">
       <div class="pname">${p.name}</div>
       <span class="badge ${ini?'bdone':'bpend'}">${ini?'✅ Complete':'⏳ Pending'}</span>
       <div class="pmeta">
-        <span>👤 ${p.age} y/o — ${p.gender||''}</span>
+        <span>👤 ${p.age} y/o — ${p.gender||''}${p.job?' · '+p.job:''}</span>
         ${p.phone?`<span>📞 ${p.phone}</span>`:''}
+        ${regs?`<span>📍 ${regs}</span>`:''}
+        ${ini?`<span>📅 ${ini.date}</span>`:''}
+        ${fus.length?`<span>🔄 ${fus.length} follow-up${fus.length>1?'s':''}</span>`:''}
       </div>
       <div class="pactions">
         <button class="btn bp bs" onclick="openProfile('${p.id}')">📋 View</button>
@@ -385,78 +405,518 @@ window.renderList = () => {
   }).join('');
 };
 
-// MANAGE OPTIONS - FULL FIX
-window.renderManage = async () => {
-  const tabs=['regions','diagnoses','complaints','findings','treatment','problems'];
-  if(!MG_TAB) MG_TAB='regions';
-  document.getElementById('mgTabs').innerHTML=tabs.map(t=>`<button class="mtab ${MG_TAB===t?'on':''}" onclick="setMgTab('${t}')">${t}</button>`).join('');
-  await renderMgBody();
+// ADD PATIENT
+window.openAdd = () => {
+  ['iName','iAge','iJob','iPhone'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('iGender').value='Male';
+  openM('moAdd');
 };
-window.setMgTab = async (t) => { MG_TAB=t; await renderMgBody(); };
+window.saveNew = async () => {
+  const name=document.getElementById('iName').value.trim();
+  const age=document.getElementById('iAge').value.trim();
+  if (!name||!age) { toast('Name and age required',true); return; }
+  try {
+    const ref=await addDoc(collection(db,'patients'),{
+      name,age,
+      gender:document.getElementById('iGender').value,
+      job:document.getElementById('iJob').value.trim(),
+      phone:document.getElementById('iPhone').value.trim(),
+      createdAt:Date.now(),createdBy:ME.uid,visits:[],
+    });
+    closeM('moAdd'); toast('Patient added ✅');
+    if (ME.role==='doctor') setTimeout(()=>openAssess(ref.id,'initial'),300);
+  } catch(e) { toast('Error: '+e.message,true); }
+};
 
-async function renderMgBody(){
-  const opts = await getOpts();
-  const c = document.getElementById('mgBody');
-  if(MG_TAB==='regions' || MG_TAB==='problems'){
-    const list = MG_TAB==='regions' ? opts.regions : opts.problems;
-    c.innerHTML = `<div class="optlist">${list.map(x=>`<div class="optrow"><span>${x}</span><button class="optdel" onclick="delOpt('${MG_TAB}', null, '${x}')">✕</button></div>`).join('')}</div>
-    <div class="addrow"><input class="fc" id="mg-i" placeholder="Add..."><button class="btn bp" onclick="mgAdd()">+ Add</button></div>`;
+// ASSESSMENT
+window.openAssess = async (pid,type,fuId=null) => {
+  if (ME.role!=='doctor') { toast('Doctor access only',true); return; }
+  AS_PID=pid; AS_TYPE=type; AS_FU_ID=fuId;
+  const p=PTS.find(x=>x.id===pid); if (!p) return;
+  let ex=fuId?(p.visits||[]).find(v=>v.id===fuId):type==='initial'?(p.visits||[]).find(v=>v.type==='initial'):null;
+  if (ex) {
+    AS_DATE=ex.date||today(); AS_REGIONS=JSON.parse(JSON.stringify(ex.regions||[]));
+    AS_DUR=ex.duration||''; AS_ONSET=ex.onset||''; AS_NOTES=ex.notes||'';
   } else {
-    const sel = c.dataset.selReg || opts.regions[0];
-    const items = opts[MG_TAB][sel] || [];
-    c.innerHTML = `<label class="fl">Select Region</label>
-    <select id="mg-reg-sel" class="fc" onchange="document.getElementById('mgBody').dataset.selReg=this.value; renderMgBody()">
-      ${opts.regions.map(r=>`<option value="${r}" ${r===sel?'selected':''}>${r}</option>`).join('')}
-    </select>
-    <div class="optlist" style="margin-top:15px">${items.map(x=>`<div class="optrow"><span>${x}</span><button class="optdel" onclick="delOpt('${MG_TAB}','${sel}','${x}')">✕</button></div>`).join('')}</div>
-    <div class="addrow"><input class="fc" id="mg-i" placeholder="Add..."><button class="btn bp" onclick="mgAdd()">+ Add</button></div>`;
-    c.dataset.selReg = sel;
+    AS_DATE=today(); AS_DUR=''; AS_ONSET=''; AS_NOTES='';
+    if (type==='followup') {
+      const ini=(p.visits||[]).find(v=>v.type==='initial');
+      AS_REGIONS=(ini?.regions||[]).map(r=>({region:r.region,diagnoses:[],complaints:[],findings:[],problems:[],treatment:[],vas:null,sessionsPlanned:'',freq:''}));
+    } else { AS_REGIONS=[]; }
   }
+  AS_CUR=0;
+  document.getElementById('assessTtl').textContent=(type==='initial'?'Initial Assessment':'Follow-up')+' — '+p.name;
+  document.getElementById('assessBody').innerHTML='<div class="loading"><div class="spin"></div><span>Loading...</span></div>';
+  openM('moAssess');
+  const opts=await getOpts();
+  buildForm(opts);
+};
+
+function buildForm(opts) {
+  const b=document.getElementById('assessBody');
+  b.innerHTML='';
+  // Date
+  const df=E('div','fg'); df.innerHTML='<label class="fl">Date</label>';
+  const di=E('input','fc'); di.type='date'; di.id='as-date'; di.value=AS_DATE;
+  di.onchange=()=>AS_DATE=di.value; df.appendChild(di); b.appendChild(df);
+  // Region tabs
+  const tabs=E('div','rtabs'); tabs.id='as-tabs';
+  AS_REGIONS.forEach((_,i)=>tabs.appendChild(mkRTab(AS_REGIONS[i].region,i)));
+  const addT=E('button','rtab-add'); addT.textContent='+ Add Region'; addT.onclick=()=>showPicker(opts);
+  tabs.appendChild(addT); b.appendChild(tabs);
+  // Panels
+  const panels=E('div',''); panels.id='as-panels';
+  AS_REGIONS.forEach((_,i)=>panels.appendChild(mkPanel(AS_REGIONS[i],i,opts)));
+  b.appendChild(panels);
+  if (!AS_REGIONS.length) {
+    const h=E('p',''); h.style.cssText='font-size:13px;color:var(--muted);padding:18px;text-align:center';
+    h.textContent='Click "+ Add Region" to start'; panels.appendChild(h);
+  }
+  // Duration & Onset
+  b.appendChild(mkSdiv('⏱ Duration & Onset'));
+  const dr=E('div','fr');
+  dr.appendChild(mkFG('Duration',mkInp('as-dur','e.g. 3 months',AS_DUR)));
+  dr.appendChild(mkFG('Onset',mkSel('as-onset',['','Gradual','Sudden','Post-trauma','Post-surgical','Post-exercise','Unknown'],AS_ONSET)));
+  b.appendChild(dr);
+  // Notes
+  b.appendChild(mkSdiv('📝 Notes'));
+  const ta=E('textarea','fc'); ta.id='as-notes'; ta.rows=3; ta.placeholder='Clinical notes...'; ta.value=AS_NOTES;
+  b.appendChild(ta);
+  if (AS_REGIONS.length) activateTab(0);
 }
 
-window.mgAdd = async () => {
-  const val = document.getElementById('mg-i').value.trim(); if(!val) return;
-  const opts = await getOpts();
-  if(MG_TAB==='regions') { 
-    if(!opts.regions.includes(val)){
-      opts.regions.push(val); 
-      ['diagnoses','complaints','findings','treatment'].forEach(k=>{ if(!opts[k][val]) opts[k][val]=[]; });
+function mkRTab(name,idx) {
+  const b=E('button','rtab'+(idx===AS_CUR?' on':''));
+  b.dataset.idx=idx; b.textContent=name;
+  b.onclick=()=>activateTab(idx); return b;
+}
+function activateTab(idx) {
+  AS_CUR=idx;
+  document.querySelectorAll('#as-tabs .rtab').forEach((t,i)=>t.classList.toggle('on',i===idx));
+  document.querySelectorAll('#as-panels .rpanel').forEach((p,i)=>p.classList.toggle('on',i===idx));
+}
+function mkPanel(rd,idx,opts) {
+  const p=E('div','rpanel'+(idx===AS_CUR?' on':''));
+  const rb=E('button','btn bd bs'); rb.style.marginBottom='12px'; rb.textContent=`🗑️ Remove ${rd.region}`;
+  rb.onclick=()=>removeReg(idx,opts); p.appendChild(rb);
+  const r=rd.region;
+  [['🩺 Diagnosis','diagnoses',opts.diagnoses[r]||[]],
+   ['💬 Chief Complaints','complaints',opts.complaints[r]||[]],
+   ['🔬 Assessment Findings','findings',opts.findings[r]||[]],
+   ['📌 Problem List','problems',opts.problems],
+   ['💊 Treatment Plan','treatment',opts.treatment[r]||[]]].forEach(([t,k,all])=>{
+    p.appendChild(mkSdiv(t));
+    p.appendChild(mkPillsAdd(k,all,rd[k]||[],k==='problems'?null:r,opts,idx));
+  });
+  p.appendChild(mkSdiv('😣 Pain Level — VAS (0–10)'));
+  p.appendChild(mkVasEl(rd.vas,idx));
+  p.appendChild(mkSdiv('📅 Session Plan'));
+  const sr=E('div','fr');
+  sr.appendChild(mkFG('Sessions Planned',mkInp(`as-ss-${idx}`,'e.g. 12',rd.sessionsPlanned||'','number')));
+  sr.appendChild(mkFG('Frequency',mkSel(`as-fr-${idx}`,['','Daily','3x/week','2x/week','Weekly'],rd.freq||'')));
+  p.appendChild(sr); return p;
+}
+function showPicker(opts) {
+  const ex=AS_REGIONS.map(r=>r.region);
+  const av=opts.regions.filter(r=>!ex.includes(r));
+  if (!av.length) { toast('All regions already added',true); return; }
+  const ov=E('div','');
+  ov.style.cssText='position:fixed;inset:0;background:rgba(13,61,46,.5);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px';
+  ov.id='picker';
+  const box=E('div','');
+  box.style.cssText='background:#fff;border-radius:14px;padding:22px;max-width:440px;width:100%;box-shadow:0 8px 36px rgba(13,61,46,.2)';
+  box.innerHTML='<div style="font-size:16px;font-weight:700;color:var(--pd);margin-bottom:14px">Select Region</div>';
+  const pg=E('div','pg');
+  av.forEach(r=>{
+    const b=E('button','pill'); b.textContent=r;
+    b.onclick=()=>{addReg(r,opts);document.getElementById('picker')?.remove();};
+    pg.appendChild(b);
+  });
+  box.appendChild(pg);
+  const c=E('button','btn bg bs'); c.style.marginTop='14px'; c.textContent='Cancel';
+  c.onclick=()=>ov.remove(); box.appendChild(c);
+  ov.appendChild(box); document.body.appendChild(ov);
+}
+function addReg(name,opts) {
+  AS_REGIONS.push({region:name,diagnoses:[],complaints:[],findings:[],problems:[],treatment:[],vas:null,sessionsPlanned:'',freq:''});
+  const idx=AS_REGIONS.length-1;
+  const tabs=document.getElementById('as-tabs');
+  tabs.insertBefore(mkRTab(name,idx),tabs.querySelector('.rtab-add'));
+  document.getElementById('as-panels').appendChild(mkPanel(AS_REGIONS[idx],idx,opts));
+  activateTab(idx);
+}
+function removeReg(idx,opts) { AS_REGIONS.splice(idx,1); buildForm(opts); }
+
+window.saveAssess = async () => {
+  AS_DATE=document.getElementById('as-date')?.value||today();
+  AS_DUR=document.getElementById('as-dur')?.value.trim()||'';
+  AS_ONSET=document.getElementById('as-onset')?.value||'';
+  AS_NOTES=document.getElementById('as-notes')?.value.trim()||'';
+  AS_REGIONS.forEach((_,i)=>{
+    AS_REGIONS[i].sessionsPlanned=document.getElementById(`as-ss-${i}`)?.value||'';
+    AS_REGIONS[i].freq=document.getElementById(`as-fr-${i}`)?.value||'';
+  });
+  const v={id:AS_FU_ID||uid(),type:AS_TYPE,date:AS_DATE,duration:AS_DUR,onset:AS_ONSET,notes:AS_NOTES,regions:AS_REGIONS,savedAt:Date.now()};
+  try {
+    const p=PTS.find(x=>x.id===AS_PID);
+    let visits=[...(p.visits||[])];
+    if (AS_TYPE==='initial') { const i=visits.findIndex(x=>x.type==='initial'); if(i>=0)visits[i]=v; else visits.unshift(v); }
+    else { const i=visits.findIndex(x=>x.id===v.id); if(i>=0)visits[i]=v; else visits.push(v); }
+    await updateDoc(doc(db,'patients',AS_PID),{visits});
+    closeM('moAssess'); toast('Saved ✅'); openProfile(AS_PID);
+  } catch(e) { toast('Error: '+e.message,true); }
+};
+
+// PROFILE
+window.openProfile = (pid) => {
+  const p=PTS.find(x=>x.id===pid); if (!p) return;
+  const isDoc=ME.role==='doctor';
+  const tags=(arr,cls)=>(arr||[]).map(x=>`<span class="atag ${cls||''}">${x}</span>`).join('');
+  const visits=[...(p.visits||[])].sort((a,b)=>{if(a.type==='initial')return -1;if(b.type==='initial')return 1;return a.date>b.date?-1:1;});
+  const ini=visits.find(v=>v.type==='initial');
+  let html=`<button class="btn bg bs" onclick="goPage('patients')" style="margin-bottom:12px">← Back</button>
+  <div class="profhd">
+    <div>
+      <div class="profname">${p.name}</div>
+      <div style="opacity:.75;font-size:13px">${p.age} y/o — ${p.gender||''}${p.job?' · '+p.job:''}${p.phone?' · '+p.phone:''}</div>
+      <div class="proftags">
+        ${(ini?.regions||[]).map(r=>`<span class="ptag gold">${r.region}</span>`).join('')}
+        ${ini?`<span class="ptag">📅 ${ini.date}</span>`:''}
+        ${visits.filter(v=>v.type==='followup').length?`<span class="ptag">🔄 ${visits.filter(v=>v.type==='followup').length} Follow-up(s)</span>`:''}
+      </div>
+    </div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap">
+      ${isDoc?`<button class="btn ba bs" onclick="openAssess('${p.id}','initial')">✏️ Edit</button>`:''}
+      ${isDoc?`<button class="btn bp bs" onclick="openAssess('${p.id}','followup')">+ Follow-up</button>`:''}
+      ${isDoc?`<button class="btn bpdf bs" onclick="exportPDF('${p.id}')">📄 PDF</button>`:''}
+      ${isDoc?`<button class="btn bcsv bs" onclick="exportCSV('${p.id}')">📊 CSV</button>`:''}
+    </div>
+  </div>`;
+  if (!ini) {
+    html+=`<div class="card" style="text-align:center;padding:40px;color:var(--muted)">
+      <div style="font-size:40px;margin-bottom:10px">📋</div><p style="font-weight:600">No assessment yet</p>
+      ${isDoc?`<button class="btn bp" style="margin-top:14px" onclick="openAssess('${p.id}','initial')">Start Assessment</button>`:''}
+    </div>`;
+  } else {
+    visits.forEach(v=>{
+      const ini_=v.type==='initial';
+      html+=`<div class="vcard ${ini_?'':'fu'}">
+        ${isDoc&&!ini_?`<button class="vdel" onclick="askDelVisit('${p.id}','${v.id}')">🗑️</button>`:''}
+        ${isDoc&&!ini_?`<button class="vedit" onclick="openAssess('${p.id}','followup','${v.id}')">✏️ Edit</button>`:''}
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+          <span class="vlabel ${ini_?'ini':'fup'}">${ini_?'📋 Initial Assessment':'🔄 Follow-up'}</span>
+          <span style="font-size:12px;font-weight:600;color:var(--muted)">📅 ${v.date}</span>
+          ${v.duration?`<span style="font-size:12px;color:var(--muted)">⏱ ${v.duration}${v.onset?' — '+v.onset:''}</span>`:''}
+        </div>`;
+      (v.regions||[]).forEach(r=>{
+        html+=`<div class="rcard">
+          <div class="rtitle">📍 ${r.region}${r.sessionsPlanned?` <span style="font-size:11px;color:var(--muted);font-weight:400">💪 ${r.sessionsPlanned}${r.freq?' · '+r.freq:''}</span>`:''}</div>`;
+        if(r.diagnoses?.length) html+=`<div class="asec"><div class="attl">🩺 Diagnosis</div><div class="atags">${tags(r.diagnoses,'key')}</div></div>`;
+        if(r.complaints?.length) html+=`<div class="asec"><div class="attl">💬 Complaints</div><div class="atags">${tags(r.complaints)}</div></div>`;
+        if(r.vas!=null){const c=r.vas<=3?'#27ae60':r.vas<=6?'#e8a020':'#d94f4f';
+          html+=`<div class="asec"><div class="attl">😣 VAS</div>
+            <div style="display:inline-flex;align-items:center;gap:8px;background:var(--bg);padding:6px 14px;border-radius:22px">
+              <span style="font-size:22px;font-weight:700;color:${c}">${r.vas}</span><span style="color:var(--muted);font-size:12px">/10</span>
+              <div style="height:5px;width:90px;background:#ddd;border-radius:5px;overflow:hidden"><div style="height:100%;width:${r.vas*10}%;background:${c}"></div></div>
+            </div></div>`;}
+        if(r.findings?.length) html+=`<div class="asec"><div class="attl">🔬 Findings</div><div class="atags">${tags(r.findings)}</div></div>`;
+        if(r.problems?.length) html+=`<div class="asec"><div class="attl">📌 Problems</div><div class="atags">${tags(r.problems,'red')}</div></div>`;
+        if(r.treatment?.length) html+=`<div class="asec"><div class="attl">💊 Treatment</div><div class="atags">${tags(r.treatment)}</div></div>`;
+        html+=`</div>`;
+      });
+      if(v.notes) html+=`<div style="font-size:13px;background:var(--bg);padding:10px;border-radius:var(--rs);margin-top:8px">${v.notes}</div>`;
+      html+=`</div>`;
+    });
+  }
+  document.getElementById('pg-profile').innerHTML=html;
+  goPage('profile');
+};
+
+// DELETE
+window.askDelVisit=(pid,vid)=>{
+  document.getElementById('confTitle').textContent='Delete Follow-up';
+  document.getElementById('confMsg').textContent='Delete this follow-up? Cannot be undone.';
+  document.getElementById('confBtn').onclick=async()=>{
+    const p=PTS.find(x=>x.id===pid);
+    await updateDoc(doc(db,'patients',pid),{visits:(p.visits||[]).filter(v=>v.id!==vid)});
+    toast('Deleted');closeConf();openProfile(pid);
+  };
+  document.getElementById('confO').classList.add('open');
+};
+window.askDel=(pid)=>{
+  const p=PTS.find(x=>x.id===pid);
+  document.getElementById('confTitle').textContent='Delete Patient';
+  document.getElementById('confMsg').textContent=`Delete "${p?.name}"?`;
+  document.getElementById('confBtn').onclick=async()=>{
+    await deleteDoc(doc(db,'patients',pid));
+    toast('Deleted');closeConf();goPage('patients');
+  };
+  document.getElementById('confO').classList.add('open');
+};
+
+// PDF
+window.exportPDF = async (pid) => {
+  const p=PTS.find(x=>x.id===pid); if (!p) return;
+  toast('Generating PDF...');
+  const visits=[...(p.visits||[])].sort((a,b)=>{if(a.type==='initial')return -1;if(b.type==='initial')return 1;return a.date>b.date?-1:1;});
+  const pill=(x,bg,bc,tc)=>`<span style="background:${bg};border:1px solid ${bc};padding:3px 9px;border-radius:12px;font-size:11px;color:${tc};display:inline-block;margin:2px">${x}</span>`;
+  const sec=(t,arr,type='')=>arr?.length?`<div style="margin-bottom:8px"><div style="font-size:10px;font-weight:700;color:#1a5c4a;text-transform:uppercase;margin-bottom:4px">${t}</div><div>${arr.map(x=>type==='key'?pill(x,'#eafaf1','#27ae60','#1a6b40'):type==='red'?pill(x,'#fdeaea','#d94f4f','#d94f4f'):pill(x,'#eef2f0','#ccddd6','#162820')).join('')}</div></div>`:'';
+  let html=`<div style="font-family:Arial,sans-serif;padding:24px;max-width:700px;color:#162820">
+  <div style="border-bottom:3px solid #0d3d2e;padding-bottom:12px;margin-bottom:16px">
+    <div style="font-size:18px;font-weight:700;color:#0d3d2e">PT Assessment Report</div>
+    <div style="font-size:14px;font-weight:700;margin-top:3px">${p.name}</div>
+    <div style="font-size:12px;color:#5a7a6e;margin-top:1px">${p.age} y/o ${p.gender||''} ${p.job?'· '+p.job:''} ${p.phone?'· '+p.phone:''}</div>
+  </div>`;
+  visits.forEach(v=>{
+    const ini_=v.type==='initial';
+    html+=`<div style="margin-bottom:18px;border-left:3px solid ${ini_?'#1a5c4a':'#e8a020'};padding-left:12px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+        <span style="background:${ini_?'#eafaf1':'#fff3cd'};color:${ini_?'#27ae60':'#b07a00'};padding:2px 10px;border-radius:12px;font-size:11px;font-weight:700">${ini_?'Initial Assessment':'Follow-up'}</span>
+        <span style="font-size:12px;font-weight:600;color:#5a7a6e">📅 ${v.date}</span>
+        ${v.duration?`<span style="font-size:11px;color:#5a7a6e">⏱ ${v.duration}${v.onset?' — '+v.onset:''}</span>`:''}
+      </div>`;
+    (v.regions||[]).forEach(r=>{
+      html+=`<div style="background:#f8faf9;border-radius:7px;padding:12px;margin-bottom:8px;border-right:3px solid #1a5c4a">
+        <div style="font-weight:700;color:#0d3d2e;font-size:12px;margin-bottom:8px">📍 ${r.region}${r.sessionsPlanned?` <span style="font-size:10px;color:#5a7a6e;font-weight:400">— ${r.sessionsPlanned} sessions${r.freq?' · '+r.freq:''}</span>`:''}</div>
+        ${sec('Diagnosis',r.diagnoses,'key')}${sec('Chief Complaints',r.complaints)}
+        ${r.vas!=null?`<div style="margin-bottom:8px"><div style="font-size:10px;font-weight:700;color:#1a5c4a;text-transform:uppercase;margin-bottom:3px">Pain Level (VAS)</div><span style="font-size:20px;font-weight:700;color:${r.vas<=3?'#27ae60':r.vas<=6?'#e8a020':'#d94f4f'}">${r.vas}/10</span></div>`:''}
+        ${sec('Assessment Findings',r.findings)}${sec('Problem List',r.problems,'red')}${sec('Treatment Plan',r.treatment)}
+      </div>`;
+    });
+    if(v.notes) html+=`<div style="font-size:11px;color:#5a7a6e;font-style:italic;padding:6px 10px;background:#f8faf9;border-radius:5px;margin-top:4px">📝 ${v.notes}</div>`;
+    html+=`</div>`;
+  });
+  html+=`<div style="margin-top:20px;padding-top:10px;border-top:1px solid #d0e4de;font-size:10px;color:#5a7a6e;text-align:center">Physiclinic PT Archive · ${today()}</div></div>`;
+  const div=document.createElement('div');
+  div.innerHTML=html;
+  div.style.cssText='position:fixed;left:-9999px;top:0;background:#fff;width:700px;z-index:-1';
+  document.body.appendChild(div);
+  try {
+    const canvas=await html2canvas(div,{scale:2,useCORS:true,backgroundColor:'#ffffff',logging:false});
+    const {jsPDF}=window.jspdf;
+    const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+    const pW=pdf.internal.pageSize.getWidth()-20;
+    const pH=pdf.internal.pageSize.getHeight()-20;
+    const iH=(canvas.height*pW)/canvas.width;
+    let srcY=0,page=0;
+    while(srcY<iH){
+      if(page>0)pdf.addPage();
+      const sliceH=Math.min(pH,iH-srcY);
+      const sc=document.createElement('canvas');
+      sc.width=canvas.width; sc.height=Math.round((sliceH/iH)*canvas.height);
+      sc.getContext('2d').drawImage(canvas,0,Math.round((srcY/iH)*canvas.height),canvas.width,sc.height,0,0,canvas.width,sc.height);
+      pdf.addImage(sc.toDataURL('image/jpeg',.92),'JPEG',10,10,pW,sliceH);
+      srcY+=sliceH;page++;
     }
-  }
-  else if(MG_TAB==='problems') { if(!opts.problems.includes(val)) opts.problems.push(val); }
-  else { 
-    const sel = document.getElementById('mg-reg-sel').value;
-    if(!opts[MG_TAB][sel]) opts[MG_TAB][sel]=[];
-    if(!opts[MG_TAB][sel].includes(val)) opts[MG_TAB][sel].push(val);
-  }
-  await saveOpts(opts); toast('Added ✅'); await renderMgBody();
+    pdf.save(`PT_${p.name.replace(/\s+/g,'_')}_${today()}.pdf`);
+    toast('PDF downloaded ✅');
+  } catch(e){toast('PDF error: '+e.message,true);}
+  finally{document.body.removeChild(div);}
 };
 
-window.delOpt = async (cat, region, val) => {
-  const opts = await getOpts();
-  if(cat==='regions') {
-     opts.regions = opts.regions.filter(x=>x!==val);
-     delete opts.diagnoses[val]; delete opts.complaints[val]; delete opts.findings[val]; delete opts.treatment[val];
-  }
-  else if(cat==='problems') opts.problems = opts.problems.filter(x=>x!==val);
-  else if(region) opts[cat][region] = opts[cat][region].filter(x=>x!==val);
-  
-  await saveOpts(opts); toast('Removed ✅'); await renderMgBody();
+// CSV
+function csvE(v){if(v==null||v==='')return '';const s=String(v).replace(/\r\n|\r|\n/g,' ');return s.includes(',')||s.includes('"')?'"'+s.replace(/"/g,'""')+'"':s;}
+function csvDL(name,rows){
+  const blob=new Blob(['\uFEFF'+rows.map(r=>r.map(csvE).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;
+  document.body.appendChild(a);a.click();setTimeout(()=>document.body.removeChild(a),1000);
+}
+window.exportCSV=(pid)=>{
+  const p=PTS.find(x=>x.id===pid);if(!p)return;
+  const visits=[...(p.visits||[])].sort((a,b)=>{if(a.type==='initial')return -1;if(b.type==='initial')return 1;return a.date>b.date?1:-1;});
+  const rows=[['Patient','Age','Gender','Job','Phone','Visit','Date','Duration','Onset','Region','Diagnosis','Complaints','VAS','Findings','Problems','Treatment','Sessions','Freq','Notes']];
+  visits.forEach((v,vi)=>(v.regions||[]).forEach((r,ri)=>{
+    rows.push([vi===0&&ri===0?p.name:'',vi===0&&ri===0?p.age:'',vi===0&&ri===0?p.gender:'',vi===0&&ri===0?p.job:'',vi===0&&ri===0?p.phone:'',
+      ri===0?(v.type==='initial'?'Initial':'Follow-up '+vi):'',ri===0?v.date:'',ri===0?(v.duration||''):'',ri===0?(v.onset||''):'',
+      r.region,(r.diagnoses||[]).join(' | '),(r.complaints||[]).join(' | '),r.vas!=null?r.vas+'/10':'',(r.findings||[]).join(' | '),(r.problems||[]).join(' | '),(r.treatment||[]).join(' | '),r.sessionsPlanned||'',r.freq||'',ri===0?(v.notes||''):'']);
+  }));
+  csvDL(`PT_${p.name.replace(/\s+/g,'_')}_${today()}.csv`,rows);
+  toast('CSV downloaded ✅');
+};
+window.exportAll=()=>{
+  if(!PTS.length){toast('No patients',true);return;}
+  const rows=[['Name','Age','Gender','Job','Phone','Visit','Date','Region','Diagnosis','VAS','Complaints','Findings','Problems','Treatment']];
+  PTS.forEach(p=>{
+    if(!(p.visits||[]).length){rows.push([p.name,p.age,p.gender,p.job,p.phone,'No assessment','','','','','','','','']);return;}
+    p.visits.forEach((v,vi)=>(v.regions||[]).forEach((r,ri)=>{
+      rows.push([vi===0&&ri===0?p.name:'',vi===0&&ri===0?p.age:'',vi===0&&ri===0?p.gender:'',vi===0&&ri===0?p.job:'',vi===0&&ri===0?p.phone:'',
+        ri===0?(v.type==='initial'?'Initial':'Follow-up '+vi):'',ri===0?v.date:'',r.region,(r.diagnoses||[]).join(' | '),r.vas!=null?r.vas+'/10':'',(r.complaints||[]).join(' | '),(r.findings||[]).join(' | '),(r.problems||[]).join(' | '),(r.treatment||[]).join(' | ')]);
+    }));
+  });
+  csvDL(`Physiclinic_All_${today()}.csv`,rows);
+  toast(`Exported ${PTS.length} patients ✅`);
 };
 
-// ... (Rest of your original logic for Assessment, Profile, PDF follows)
-// (Due to length, I have ensured the critical UI fix is included above)
+// NAV
+window.goPage=(n)=>{
+  ['patients','manage','profile','users'].forEach(p=>document.getElementById('pg-'+p).style.display='none');
+  document.getElementById('pg-'+n).style.display='block';
+  document.querySelectorAll('.ni').forEach(x=>x.classList.remove('on'));
+  if(n==='patients')document.querySelectorAll('.ni')[0].classList.add('on');
+  if(n==='manage'){document.querySelectorAll('.ni')[1].classList.add('on');renderManage();}
+  if(n==='users'){document.querySelectorAll('.ni')[2].classList.add('on');renderUsers();}
+  closeSide();
+};
 
-// SHARED HELPERS
-window.toast=(m,e)=> { const t=document.getElementById('toast'); t.textContent=m; t.className='toast show'+(e?' err':''); setTimeout(()=>t.classList.remove('show'),2000);};
-window.goPage=p=>{['patients','manage','profile','users'].forEach(x=>document.getElementById('pg-'+x).style.display='none'); document.getElementById('pg-'+p).style.display='block';};
+// USERS
+async function renderUsers(){
+  const b=document.getElementById('usersBody');
+  b.innerHTML='<div class="loading"><div class="spin"></div></div>';
+  const snap=await getDocs(collection(db,'users'));
+  const users=snap.docs.map(d=>({id:d.id,...d.data()}));
+  b.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+    <div style="font-weight:700;color:var(--pd)">${users.length} staff account${users.length!==1?'s':''}</div>
+    <button class="btn bp bs" onclick="openM('moUser')">+ Add Staff</button>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:9px">
+    ${users.map(u=>`<div style="display:flex;align-items:center;gap:12px;background:var(--bg);padding:12px 14px;border-radius:var(--rs)">
+      <div style="width:38px;height:38px;border-radius:50%;background:var(--p);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">${(u.name||u.email).charAt(0).toUpperCase()}</div>
+      <div style="flex:1"><div style="font-weight:700">${u.name||u.email}</div><div style="font-size:12px;color:var(--muted)">${u.email} · <span style="color:${u.role==='doctor'?'var(--p)':'var(--acc)'};font-weight:600">${u.role==='doctor'?'👨‍⚕️ Doctor':'🗂️ Receptionist'}</span></div></div>
+      ${u.id!==ME.uid?`<button class="btn bd bs" onclick="delUser('${u.id}','${u.name||u.email}')">Remove</button>`:'<span style="font-size:11px;color:var(--muted)">(you)</span>'}
+    </div>`).join('')}
+  </div>`;
+}
+window.saveUser=async()=>{
+  const email=document.getElementById('uEmail').value.trim();
+  const pass=document.getElementById('uPass').value;
+  const name=document.getElementById('uName').value.trim();
+  const role=document.getElementById('uRole').value;
+  if(!email||!pass){toast('Email and password required',true);return;}
+  if(pass.length<6){toast('Password min 6 characters',true);return;}
+  try {
+    const c=await createUserWithEmailAndPassword(auth,email,pass);
+    await setDoc(doc(db,'users',c.user.uid),{name:name||email,email,role,createdAt:Date.now()});
+    closeM('moUser');toast('Staff created ✅');renderUsers();
+  }catch(e){toast(e.message,true);}
+};
+window.delUser=(uid2,name)=>{
+  document.getElementById('confTitle').textContent='Remove Staff';
+  document.getElementById('confMsg').textContent=`Remove "${name}"?`;
+  document.getElementById('confBtn').onclick=async()=>{
+    await deleteDoc(doc(db,'users',uid2));toast('Removed');closeConf();renderUsers();
+  };
+  document.getElementById('confO').classList.add('open');
+};
+
+// ── MANAGE OPTIONS — reads fresh from Firestore every time ──
+window.renderManage=async()=>{
+  const tabs=['regions','diagnoses','complaints','findings','treatment','problems'];
+  const labels={regions:'Regions',diagnoses:'Diagnoses',complaints:'Complaints',findings:'Findings',treatment:'Treatment',problems:'Problem List'};
+  if(!MG_TAB)MG_TAB='regions';
+  document.getElementById('mgTabs').innerHTML=tabs.map(t=>`<button class="mtab ${MG_TAB===t?'on':''}" onclick="setMgTab('${t}')">${labels[t]}</button>`).join('');
+  await renderMgBody();
+};
+window.setMgTab=async(t)=>{
+  MG_TAB=t;
+  document.querySelectorAll('.mtab').forEach(b=>b.classList.remove('on'));
+  event.target.classList.add('on');
+  await renderMgBody();
+};
+async function renderMgBody(){
+  const opts=await getOpts(); // always fresh from Firestore
+  const c=document.getElementById('mgBody');
+  if(MG_TAB==='regions'){
+    c.innerHTML=`<div class="optlist">${opts.regions.map(r=>`<div class="optrow"><span>${r}</span><button class="optdel" onclick="delOpt('regions',null,${JSON.stringify(r)})">✕</button></div>`).join('')}</div>
+    <div class="addrow" style="margin-top:12px"><input type="text" id="mg-i" placeholder="New region..."><button onclick="mgAdd()">+ Add</button></div>`;
+  } else if(MG_TAB==='problems'){
+    c.innerHTML=`<div class="optlist">${opts.problems.map(p=>`<div class="optrow"><span>${p}</span><button class="optdel" onclick="delOpt('problems',null,${JSON.stringify(p)})">✕</button></div>`).join('')}</div>
+    <div class="addrow" style="margin-top:12px"><input type="text" id="mg-i" placeholder="New problem..."><button onclick="mgAdd()">+ Add</button></div>`;
+  } else {
+    const sel=c.dataset.selReg||opts.regions[0];
+    const items=opts[MG_TAB]?.[sel]||[];
+    c.innerHTML=`<div style="margin-bottom:12px"><label class="fl" style="display:block;margin-bottom:5px">Region</label>
+    <select class="fc" style="width:auto" onchange="document.getElementById('mgBody').dataset.selReg=this.value;renderMgBody()">
+      ${opts.regions.map(r=>`<option value="${r}" ${r===sel?'selected':''}>${r}</option>`).join('')}
+    </select></div>
+    <div class="optlist">${items.map(x=>`<div class="optrow"><span>${x}</span><button class="optdel" onclick="delOpt(${JSON.stringify(MG_TAB)},${JSON.stringify(sel)},${JSON.stringify(x)})">✕</button></div>`).join('')}</div>
+    <div class="addrow" style="margin-top:10px"><input type="text" id="mg-i" placeholder="Add option..."><button onclick="mgAdd()">+ Add</button></div>`;
+    c.dataset.selReg=sel;
+  }
+}
+window.mgAdd=async()=>{
+  const val=document.getElementById('mg-i')?.value?.trim();if(!val)return;
+  const opts=await getOpts(); // fresh
+  if(MG_TAB==='regions'){if(!opts.regions.includes(val)){opts.regions.push(val);['diagnoses','complaints','findings','treatment'].forEach(k=>{opts[k][val]=[];});}}
+  else if(MG_TAB==='problems'){if(!opts.problems.includes(val))opts.problems.push(val);}
+  else{const sel=document.getElementById('mgBody').dataset.selReg||opts.regions[0];if(!opts[MG_TAB][sel])opts[MG_TAB][sel]=[];if(!opts[MG_TAB][sel].includes(val))opts[MG_TAB][sel].push(val);}
+  await saveOpts(opts);
+  toast('Added ✅');
+  await renderMgBody();
+};
+window.delOpt=async(cat,region,val)=>{
+  const opts=await getOpts(); // fresh from Firestore
+  if(cat==='regions') opts.regions=opts.regions.filter(x=>x!==val);
+  else if(cat==='problems') opts.problems=opts.problems.filter(x=>x!==val);
+  else if(region&&opts[cat]?.[region]) opts[cat][region]=opts[cat][region].filter(x=>x!==val);
+  await saveOpts(opts); // save back
+  toast('Removed ✅');
+  await renderMgBody(); // re-render with fresh data
+};
+
+// DOM HELPERS
+function E(tag,cls){const e=document.createElement(tag);if(cls)e.className=cls;return e;}
+function mkSdiv(t){const d=E('div','sdiv');d.textContent=t;return d;}
+function mkInp(id,ph,val='',type='text'){const i=E('input','fc');i.id=id;i.type=type;i.placeholder=ph;i.value=val;return i;}
+function mkSel(id,opts,val){const s=E('select','fc');s.id=id;opts.forEach(o=>{const op=E('option');op.value=o;op.textContent=o||'Select...';if(o===val)op.selected=true;s.appendChild(op);});return s;}
+function mkFG(label,el){const w=E('div','fg');const l=E('label','fl');l.textContent=label;w.appendChild(l);w.appendChild(el);return w;}
+function mkPill(key,opt,sel,ri){
+  const b=E('button','pill'+(sel?' sel':''));b.textContent=opt;
+  b.onclick=function(){
+    if(!AS_REGIONS[ri][key])AS_REGIONS[ri][key]=[];
+    if(AS_REGIONS[ri][key].includes(opt)){AS_REGIONS[ri][key]=AS_REGIONS[ri][key].filter(x=>x!==opt);this.classList.remove('sel');}
+    else{AS_REGIONS[ri][key].push(opt);this.classList.add('sel');}
+  };return b;
+}
+function mkPillsAdd(key,all,sel,reg,opts,ri){
+  const w=E('div');const pg=E('div','pg');
+  all.forEach(o=>pg.appendChild(mkPill(key,o,sel.includes(o),ri)));
+  w.appendChild(pg);
+  const row=E('div','addrow');
+  const inp=E('input');inp.type='text';inp.placeholder='Add new option (saves permanently)...';
+  const btn=E('button');btn.textContent='+ Add';
+  btn.onclick=async()=>{
+    const val=inp.value.trim();if(!val){toast('Type an option first',true);return;}
+    const opts2=await getOpts();
+    if(reg&&opts2[key]&&opts2[key][reg]!==undefined){if(!opts2[key][reg].includes(val))opts2[key][reg].push(val);}
+    else if(key==='problems'){if(!opts2.problems.includes(val))opts2.problems.push(val);}
+    await saveOpts(opts2);
+    if(!AS_REGIONS[ri][key])AS_REGIONS[ri][key]=[];
+    if(!AS_REGIONS[ri][key].includes(val))AS_REGIONS[ri][key].push(val);
+    pg.appendChild(mkPill(key,val,true,ri));inp.value='';toast('Added ✅');
+  };
+  row.appendChild(inp);row.appendChild(btn);w.appendChild(row);return w;
+}
+function mkVasEl(cur,ri){
+  const w=E('div');w.style.cssText='display:flex;gap:6px;flex-wrap:wrap;margin-top:4px';
+  for(let i=0;i<=10;i++){
+    const b=E('button','vas-btn'+(cur===i?' sel':''));b.textContent=i;
+    b.onclick=function(){AS_REGIONS[ri].vas=i;w.querySelectorAll('.vas-btn').forEach(x=>x.classList.remove('sel'));this.classList.add('sel');};
+    w.appendChild(b);
+  }return w;
+}
+
+// UTILS
+function today(){return new Date().toISOString().split('T')[0];}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2);}
 window.openM=id=>document.getElementById(id).classList.add('open');
 window.closeM=id=>document.getElementById(id).classList.remove('open');
-window.today=()=>{return new Date().toISOString().split('T')[0];};
+window.closeConf=()=>document.getElementById('confO').classList.remove('open');
+window.toggleSide=()=>{const s=document.getElementById('side');const ov=document.getElementById('ovcl');s.classList.toggle('open');ov.style.display=s.classList.contains('open')?'block':'none';};
+function closeSide(){if(window.innerWidth<=768){document.getElementById('side').classList.remove('open');document.getElementById('ovcl').style.display='none';}}
+window.toast=(msg,err=false)=>{const t=document.getElementById('toast');t.textContent=msg;t.className='toast show'+(err?' err':'');setTimeout(()=>t.classList.remove('show'),2800);};
 
-function defOpts(){return{regions:['Cervical Spine','Lumbar Spine'],diagnoses:{'Cervical Spine':[],'Lumbar Spine':[]},complaints:{'Cervical Spine':[],'Lumbar Spine':[]},findings:{'Cervical Spine':[],'Lumbar Spine':[]},treatment:{'Cervical Spine':[],'Lumbar Spine':[]},problems:[]};}
-
+// DEFAULT OPTIONS
+function defOpts(){return{
+  regions:['Cervical Spine','Thoracic Spine','Lumbar Spine','Shoulder','Elbow','Wrist & Hand','Hip','Knee','Ankle & Foot','TMJ','Sacroiliac Joint'],
+  diagnoses:{'Cervical Spine':['Cervical Disc Herniation','Cervical Spondylosis','Cervical Radiculopathy','Cervical Myelopathy','Neck Strain / Whiplash','Cervicogenic Headache','Cervical Facet Syndrome','Torticollis','Cervical Stenosis','Thoracic Outlet Syndrome'],'Thoracic Spine':['Thoracic Disc Herniation','Thoracic Spondylosis','Scheuermann\'s Disease','Costochondritis','Thoracic Facet Syndrome'],'Lumbar Spine':['Lumbar Disc Herniation','Lumbar Spondylosis','Lumbar Radiculopathy (Sciatica)','Spinal Stenosis','Spondylolisthesis','Spondylolysis','Lumbar Strain','Piriformis Syndrome','SI Joint Dysfunction','Facet Syndrome','Post-Surgical Lumbar'],'Shoulder':['Rotator Cuff Tear','Rotator Cuff Tendinopathy','Shoulder Impingement','Frozen Shoulder (Adhesive Capsulitis)','Shoulder Dislocation / Instability','AC Joint Sprain','Biceps Tendinopathy','SLAP Tear','Shoulder Bursitis','Post-Surgical Shoulder'],'Elbow':['Tennis Elbow (Lateral Epicondylitis)','Golfer\'s Elbow (Medial Epicondylitis)','Elbow Bursitis','Radial Tunnel Syndrome','Cubital Tunnel Syndrome','Elbow Fracture (Post-Surgical)','Elbow Stiffness'],'Wrist & Hand':['Carpal Tunnel Syndrome','De Quervain\'s Tenosynovitis','Trigger Finger','Wrist Sprain','TFCC Tear','Wrist Fracture (Post-Surgical)','Wrist Tendinopathy','Finger Stiffness'],'Hip':['Hip Osteoarthritis','Hip Impingement (FAI)','Trochanteric Bursitis','Hip Labral Tear','Hip Flexor Strain','Piriformis Syndrome','Hip Fracture (Post-Surgical)','Gluteal Tendinopathy'],'Knee':['Knee Osteoarthritis','Patellofemoral Pain Syndrome','ACL Tear / Post-Surgical','Meniscal Tear','PCL Injury','MCL / LCL Sprain','Patellar Tendinopathy','IT Band Syndrome','Total Knee Replacement (Post-Surgical)'],'Ankle & Foot':['Lateral Ankle Sprain','Achilles Tendinopathy','Plantar Fasciitis','Ankle OA','Peroneal Tendinopathy','Ankle Fracture (Post-Surgical)','Metatarsalgia','Hallux Valgus'],'TMJ':['TMJ Dysfunction','TMJ Disc Displacement','Bruxism-Related TMJ','Myofascial TMJ Pain'],'Sacroiliac Joint':['SI Joint Dysfunction','Sacroiliitis','Ankylosing Spondylitis','Pelvic Girdle Pain','Post-Partum SI Pain']},
+  complaints:{'Cervical Spine':['Neck pain','Morning stiffness','Cervicogenic headache','Radiating arm pain','Finger numbness / tingling','Dizziness','Interscapular pain','Limited ROM','Pain on rotation','Pain on extension'],'Thoracic Spine':['Mid-back pain','Thoracic stiffness','Pain on breathing','Postural kyphosis','Pain with prolonged sitting'],'Lumbar Spine':['Low back pain','Radiating leg pain (Sciatica)','Morning stiffness','Leg weakness','Foot numbness / tingling','Pain on standing','Pain on prolonged sitting','Pain on bending forward','Pain on extension','Night pain'],'Shoulder':['Shoulder pain','Limited ROM','Night pain','Weakness','Clicking / crepitus','Pain on overhead activities','Pain on reaching behind back'],'Elbow':['Lateral elbow pain','Medial elbow pain','Pain on gripping','Pain on wrist extension','Stiffness','Swelling'],'Wrist & Hand':['Wrist pain','Hand numbness','Thumb pain','Trigger finger locking','Grip weakness','Morning stiffness','Swelling'],'Hip':['Hip pain','Groin pain','Lateral hip pain','Pain on walking','Limited ROM','Pain on stairs','Night pain'],'Knee':['Knee pain','Swelling','Crepitus','Limited flexion','Pain on stairs','Pain on squatting','Morning stiffness','Locking / giving way'],'Ankle & Foot':['Heel pain','Ankle pain','Morning heel pain','Swelling','Pain on walking','Limited dorsiflexion','Weakness','Instability'],'TMJ':['Jaw pain','Clicking on opening','Limited mouth opening','Difficulty chewing','Facial headache'],'Sacroiliac Joint':['Sacral pain','Pain radiating to buttock','Pain on prolonged standing','Pain on transitional movements','Pelvic asymmetry']},
+  findings:{'Cervical Spine':['Limited Flexion','Limited Extension','Limited Rotation R','Limited Rotation L','Limited Lat. Flexion R','Limited Lat. Flexion L','Spurling Test +','Distraction Test +','Muscle weakness','Forward Head Posture','Upper Crossed Syndrome','Trigger points'],'Thoracic Spine':['Kyphosis','Limited thoracic rotation','Weak thoracic extensors','Hypomobility T-spine','Rib restriction'],'Lumbar Spine':['SLR +','Slump Test +','Limited Flexion','Limited Extension','Limited Lat. Flexion','Quad weakness','Hamstring tightness','Tight Hip Flexors','Pelvic Tilt','Reduced Lumbar Lordosis','Muscle spasm','Neurological deficits'],'Shoulder':['Neer Test +','Hawkins-Kennedy +','Empty Can +','Drop Arm +','Speed Test +','Apprehension Test +','Limited Abduction','Limited Flexion','Limited IR','Limited ER','Rotator cuff weakness','Scapular dyskinesia'],'Elbow':['Pain on resisted wrist extension','Pain on resisted wrist flexion','Limited Pronation','Limited Supination','Cozen Test +','Mill\'s Test +','Tinel at elbow'],'Wrist & Hand':['Phalen Test +','Tinel Test +','Limited wrist flexion','Limited wrist extension','Grip weakness','Finkelstein Test +'],'Hip':['FABER +','FADIR +','Thomas Test +','Trendelenburg +','Limited IR','Limited ER','Limited Flexion','Gluteal weakness'],'Knee':['Lachman Test +','Anterior Drawer +','McMurray +','Valgus Stress +','Varus Stress +','Patellar Grind +','Limited Flexion','Quad weakness','VMO atrophy','Joint effusion','Crepitus'],'Ankle & Foot':['Anterior Drawer +','Talar Tilt +','Thompson Test +','Limited Dorsiflexion','Calf weakness','Tight Achilles','Plantar tenderness'],'TMJ':['Limited mouth opening','Jaw deviation','TMJ Clicking','Joint tenderness','Masticatory muscle tightness'],'Sacroiliac Joint':['FABER +','Gaenslen Test +','Compression Test +','Distraction Test +','SI joint tenderness','Pelvic asymmetry']},
+  treatment:{'Cervical Spine':['TENS','Ultrasound','Hot Pack','Cervical Traction','Manual Therapy','Mobilization','Strengthening','Stretching','Postural Correction','Dry Needling','Kinesio Taping','DNF Strengthening','Home Exercise Program'],'Thoracic Spine':['Hot Pack','Thoracic Mobilization','Manual Therapy','Strengthening','Stretching','Postural Correction','TENS','Breathing Exercises'],'Lumbar Spine':['TENS','Ultrasound','Hot Pack','Lumbar Traction','Manual Therapy','McKenzie Exercises','Core Stabilization','Stretching','Mobilization','Dry Needling','SWD','Kinesio Taping','Neural Mobilization','Home Exercise Program'],'Shoulder':['TENS','Ultrasound','Hot Pack','Joint Mobilization','Codman Exercises','Rotator Cuff Strengthening','Scapular Stabilization','Stretching','Manual Therapy','Kinesio Taping','Pulley Exercises','Home Exercise Program'],'Elbow':['TENS','Ultrasound','Friction Massage','Stretching','Eccentric Strengthening','Bracing','Ice','Kinesio Taping'],'Wrist & Hand':['TENS','Ultrasound','Splinting','Strengthening','Stretching','Mobilization','Nerve Gliding','Tendon Gliding'],'Hip':['TENS','Hot Pack','Hip Strengthening','Stretching','Manual Therapy','Gait Training','Mobilization','Core Stabilization','Home Exercise Program'],'Knee':['TENS','Ultrasound','Hot Pack','Quad Strengthening','VMO Exercises','Hamstring Stretching','Patellar Taping','Mobilization','Kinesio Taping','Balance Training','Gait Training','Home Exercise Program'],'Ankle & Foot':['TENS','Ultrasound','Ice','Calf Strengthening','Stretching','Balance Training','Taping','Orthotics Advice','Manual Therapy','Proprioception Training'],'TMJ':['TENS','Ultrasound','Manual Therapy','TMJ Mobilization','Jaw Stretching','Postural Correction','Patient Education'],'Sacroiliac Joint':['TENS','Manual Therapy','SI Belt','Stabilization Exercises','Stretching','Hot Pack','Pelvic Floor Exercises']},
+  problems:['Pain','Stiffness','Limited ROM','Muscle weakness','Balance deficit','Gait impairment','Swelling / Oedema','Numbness / Tingling','Functional limitation','Postural dysfunction','Nerve Entrapment','Muscle Imbalance','Reduced proprioception','Decreased endurance'],
+};}
 </script>
 </body>
 </html>
+
+
 
