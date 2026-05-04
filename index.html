@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
@@ -811,68 +812,6 @@ window.setMgTab=async(t)=>{
   event.target.classList.add('on');
   await renderMgBody();
 };
-function renderMgBodyFromOpts(opts){
-  const c = document.getElementById('mgBody');
-  const selReg = c.dataset.selReg || (opts.regions[0] || '');
-  let html = '';
-  if (MG_TAB === 'regions') {
-    html += '<div class="optlist">';
-    opts.regions.forEach(r => {
-      html += '<div class="optrow"><span>' + r + '</span><button class="optdel" onclick="delOpt(\'regions\',null,\''+r+'\')">✕</button></div>';
-    });
-    html += '</div><div class="addrow" style="margin-top:12px"><input type="text" id="mg-i" placeholder="New region..."><button onclick="mgAdd()">+ Add</button></div>';
-  } else if (MG_TAB === 'problems') {
-    html += '<div class="optlist">';
-    opts.problems.forEach(p => {
-      html += '<div class="optrow"><span>' + p + '</span><button class="optdel" onclick="delOpt(\'problems\',null,\'' + p.replace(/'/g,"\\'") + '\')">✕</button></div>';
-    });
-    html += '</div><div class="addrow" style="margin-top:12px"><input type="text" id="mg-i" placeholder="New problem..."><button onclick="mgAdd()">+ Add</button></div>';
-  } else {
-    const items = (opts[MG_TAB] && opts[MG_TAB][selReg]) ? opts[MG_TAB][selReg] : [];
-    let selOpts = '';
-    opts.regions.forEach(r => { selOpts += '<option value="' + r + '"' + (r===selReg?' selected':'') + '>' + r + '</option>'; });
-    html += '<div style="margin-bottom:12px"><label class="fl" style="display:block;margin-bottom:5px">Region</label><select class="fc" style="width:auto" onchange="document.getElementById('mgBody').dataset.selReg=this.value;renderMgBody()">' + selOpts + '</select></div>';
-    html += '<div class="optlist">';
-    items.forEach(x => {
-      html += '<div class="optrow"><span>' + x + '</span><button class="optdel" onclick="delOpt(\'' + MG_TAB + '\',\'' + selReg + '\',\'' + x.replace(/'/g,"\\'") + '\')">✕</button></div>';
-    });
-    html += '</div><div class="addrow" style="margin-top:10px"><input type="text" id="mg-i" placeholder="Add option..."><button onclick="mgAdd()">+ Add</button></div>';
-    c.dataset.selReg = selReg;
-  }
-  c.innerHTML = html;
-  if (MG_TAB !== 'regions' && MG_TAB !== 'problems') c.dataset.selReg = selReg;
-}
-
-async function renderMgBody(){
-  const opts=await getOpts();
-  renderMgBodyFromOpts(opts);
-}
-window.setMgTab=async(t)=>{
-  MG_TAB=t;
-  document.querySelectorAll('.mtab').forEach(b=>b.classList.remove('on'));
-  event.target.classList.add('on');
-  await renderMgBody();
-};
-function renderMgBodyFromOpts(opts){
-  const c=document.getElementById('mgBody');
-  if(MG_TAB==='regions'){
-    c.innerHTML=`<div class="optlist">${opts.regions.map(r=>`<div class="optrow"><span>${r}</span><button class="optdel" onclick="delOpt('regions',null,${JSON.stringify(r)})">✕</button></div>`).join('')}</div>
-    <div class="addrow" style="margin-top:12px"><input type="text" id="mg-i" placeholder="New region..."><button onclick="mgAdd()">+ Add</button></div>`;
-  } else if(MG_TAB==='problems'){
-    c.innerHTML=`<div class="optlist">${opts.problems.map(p=>`<div class="optrow"><span>${p}</span><button class="optdel" onclick="delOpt('problems',null,${JSON.stringify(p)})">✕</button></div>`).join('')}</div>
-    <div class="addrow" style="margin-top:12px"><input type="text" id="mg-i" placeholder="New problem..."><button onclick="mgAdd()">+ Add</button></div>`;
-  } else {
-    const sel=c.dataset.selReg||opts.regions[0];
-    const items=opts[MG_TAB]?.[sel]||[];
-    c.innerHTML=`<div style="margin-bottom:12px"><label class="fl" style="display:block;margin-bottom:5px">Region</label>
-    <select class="fc" style="width:auto" onchange="document.getElementById('mgBody').dataset.selReg=this.value;renderMgBody()">
-      ${opts.regions.map(r=>`<option value="${r}" ${r===sel?'selected':''}}>${r}</option>`).join('')}
-    </select></div>
-    <div class="optlist">${items.map(x=>`<div class="optrow"><span>${x}</span><button class="optdel" onclick="delOpt(${JSON.stringify(MG_TAB)},${JSON.stringify(sel)},${JSON.stringify(x)})">✕</button></div>`).join('')}</div>
-    <div class="addrow" style="margin-top:10px"><input type="text" id="mg-i" placeholder="Add option..."><button onclick="mgAdd()">+ Add</button></div>`;
-    c.dataset.selReg=sel;
-  }
-}
 async function renderMgBody(){
   const opts=await getOpts(); // always fresh from Firestore
   const c=document.getElementById('mgBody');
@@ -905,21 +844,13 @@ window.mgAdd=async()=>{
   await renderMgBody();
 };
 window.delOpt=async(cat,region,val)=>{
-  try {
-    const opts=await getOpts();
-    // modify the opts object
-    if(cat==='regions') opts.regions=opts.regions.filter(x=>x!==val);
-    else if(cat==='problems') opts.problems=opts.problems.filter(x=>x!==val);
-    else if(region&&opts[cat]?.[region]) opts[cat][region]=opts[cat][region].filter(x=>x!==val);
-    // save to Firestore
-    await saveOpts(opts);
-    toast('Removed ✅');
-    // render directly from modified opts — no need to re-read Firestore
-    renderMgBodyFromOpts(opts);
-  } catch(e) {
-    toast('Error: '+e.message, true);
-    console.error('delOpt error:', e);
-  }
+  const opts=await getOpts(); // fresh from Firestore
+  if(cat==='regions') opts.regions=opts.regions.filter(x=>x!==val);
+  else if(cat==='problems') opts.problems=opts.problems.filter(x=>x!==val);
+  else if(region&&opts[cat]?.[region]) opts[cat][region]=opts[cat][region].filter(x=>x!==val);
+  await saveOpts(opts); // save back
+  toast('Removed ✅');
+  await renderMgBody(); // re-render with fresh data
 };
 
 // DOM HELPERS
