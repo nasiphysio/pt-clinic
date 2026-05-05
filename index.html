@@ -1,519 +1,762 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Physiclinic | Patient Archive</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-:root{
-  --p:#1a5c4a;--pl:#22776a;--pd:#0d3d2e;
-  --acc:#e8a020;--bg:#eef2f0;--card:#fff;
-  --txt:#162820;--muted:#5a7a6e;--border:#ccddd6;
-  --red:#d94f4f;--redl:#fdeaea;
-  --green:#27ae60;--greenl:#eafaf1;
-  --sh:0 2px 14px rgba(13,61,46,.09);
-  --shl:0 8px 36px rgba(13,61,46,.15);
-  --r:18px;--rs:12px;
-}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);font-size:15px;line-height:1.5}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physiclinic | PT Patient Archive</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --p: #1a5c4a; --pl: #22776a; --pd: #0d3d2e;
+            --acc: #e8a020; --bg: #eef2f0; --card: #fff;
+            --txt: #162820; --muted: #5a7a6e; --border: #ccddd6;
+            --red: #d94f4f; --redl: #fdeaea;
+            --green: #27ae60; --greenl: #eafaf1;
+            --sh: 0 2px 14px rgba(13,61,46,.09);
+            --shl: 0 8px 36px rgba(13,61,46,.15);
+            --r: 14px; --rs: 8px;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--txt); font-size: 15px; overflow-x: hidden; }
+        
+        /* Layout */
+        #loginScreen { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--pd); }
+        .lbox { background: #fff; border-radius: 20px; padding: 40px; width: 100%; max-width: 400px; box-shadow: var(--shl); }
+        #appScreen { display: none; }
+        .wrap { display: flex; min-height: 100vh; }
+        
+        /* Sidebar */
+        .side { width: 250px; background: var(--pd); position: fixed; top: 0; left: 0; height: 100vh; display: flex; flex-direction: column; z-index: 100; color: #fff; }
+        .slogo { padding: 30px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .snav { padding: 20px 10px; flex: 1; }
+        .ni { display: flex; align-items: center; gap: 12px; padding: 12px 15px; border-radius: var(--rs); color: rgba(255,255,255,0.6); cursor: pointer; border: none; background: none; width: 100%; text-align: left; font-size: 14px; transition: 0.2s; margin-bottom: 5px; }
+        .ni:hover:not(.locked) { background: rgba(255,255,255,0.1); color: #fff; }
+        .ni.on { background: var(--acc); color: var(--pd); font-weight: 700; }
+        .ni.locked { opacity: 0.3; cursor: not-allowed; }
+        
+        /* Main Content */
+        .main { margin-left: 250px; flex: 1; padding: 30px; max-width: 1200px; }
+        .ph { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .pt { font-size: 24px; font-weight: 700; color: var(--pd); }
 
-/* Login */
-#loginScreen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--pd)}
-.lbox{background:#fff;border-radius:24px;padding:44px 40px;width:100%;max-width:400px;box-shadow:var(--shl)}
-.lbox h1{font-size:28px;font-weight:700;color:var(--pd);margin-bottom:4px;text-align:center}
-.lbox p{font-size:14px;color:var(--muted);text-align:center;margin-bottom:30px}
+        /* UI Elements */
+        .card { background: #fff; border-radius: var(--r); padding: 25px; box-shadow: var(--sh); margin-bottom: 20px; }
+        .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: var(--rs); cursor: pointer; border: none; font-weight: 600; font-family: inherit; transition: 0.2s; }
+        .bp { background: var(--p); color: #fff; }
+        .ba { background: var(--acc); color: var(--pd); }
+        .bd { background: var(--redl); color: var(--red); }
+        .bg { background: var(--bg); color: var(--muted); border: 1px solid var(--border); }
+        .fc { width: 100%; padding: 10px 15px; border-radius: var(--rs); border: 1px solid var(--border); font-family: inherit; margin-top: 5px; }
+        
+        /* Pills & Assessment */
+        .pg { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+        .pill { padding: 6px 14px; border-radius: 20px; border: 1.5px solid var(--border); background: var(--bg); cursor: pointer; font-size: 13px; }
+        .pill.sel { background: var(--green) !important; color: #fff !important; border-color: var(--green) !important; }
+        
+        /* Patient Cards */
+        .pgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .pcard { background: #fff; border-radius: var(--r); padding: 20px; border-left: 5px solid var(--p); box-shadow: var(--sh); position: relative; }
+        
+        /* Modals */
+        .mo { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
+        .mo.open { display: flex; }
+        .mdl { background: #fff; border-radius: var(--r); width: 95%; max-width: 800px; max-height: 90vh; overflow-y: auto; padding: 30px; }
+        
+        /* VAS */
+        .vas-wrap { display: flex; gap: 5px; margin-top: 10px; }
+        .vas-btn { width: 35px; height: 35px; border-radius: 50%; border: 1px solid var(--border); background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .vas-btn.sel { background: var(--acc); color: #fff; border-color: var(--acc); font-weight: bold; }
 
-/* Sidebar */
-#appScreen{display:none}
-.wrap{display:flex;min-height:100vh}
-.side{width:260px;background:var(--pd);position:fixed;top:0;left:0;height:100vh;display:flex;flex-direction:column;z-index:100}
-.slogo{padding:30px 24px;border-bottom:1px solid rgba(255,255,255,.08)}
-.slogo h2{color:#fff;font-size:20px;letter-spacing:1px}
-.snav{padding:20px 12px;flex:1;display:flex;flex-direction:column;gap:5px}
-.ni{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:var(--rs);color:rgba(255,255,255,.6);cursor:pointer;font-size:14px;font-weight:500;border:none;background:none;width:100%;text-align:left;transition:0.2s}
-.ni:hover{background:rgba(255,255,255,.08);color:#fff}
-.ni.on{background:var(--p);color:#fff;font-weight:700;box-shadow:0 4px 12px rgba(0,0,0,0.1)}
-.sfooter{padding:20px;border-top:1px solid rgba(255,255,255,.08)}
-
-/* Main Content */
-.main{margin-left:260px;flex:1;padding:32px;max-width:1400px}
-.ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}
-.pt{font-size:26px;font-weight:700;color:var(--pd)}
-.card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:24px}
-
-/* Patient Cards */
-.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px}
-.pcard{background:#fff;border-radius:var(--r);padding:22px;border:1.5px solid var(--border);transition:0.3s;position:relative}
-.pcard:hover{border-color:var(--p);transform:translateY(-3px);box-shadow:var(--shl)}
-.pname{font-size:18px;font-weight:700;color:var(--pd);margin-bottom:6px}
-
-/* UI Elements from Screenshots */
-.sec-header{background:var(--pd);color:#fff;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:15px;text-transform:uppercase;letter-spacing:0.5px}
-.pill-container{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:15px}
-.pill{background:#f1f6f4;border:1.5px solid var(--border);padding:8px 18px;border-radius:25px;font-size:14px;font-weight:500;cursor:pointer;transition:0.2s;color:var(--txt)}
-.pill:hover{border-color:var(--p);background:#e8f0ed}
-.pill.sel{background:var(--p)!important;color:#fff!important;border-color:var(--p)!important}
-
-/* Forms */
-.fg{margin-bottom:18px}
-.fl{display:block;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:8px;letter-spacing:0.5px}
-.fc{width:100%;padding:12px 16px;border-radius:var(--rs);border:1.5px solid var(--border);background:#f9fbfb;font-family:inherit;font-size:15px;outline:none;transition:0.2s}
-.fc:focus{border-color:var(--p);background:#fff}
-
-/* Modal */
-.mo{position:fixed;inset:0;background:rgba(13,61,46,0.6);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
-.mo.open{display:flex}
-.mdl{background:#fff;border-radius:24px;width:100%;max-width:700px;max-height:90vh;overflow-y:auto;box-shadow:var(--shl);position:relative}
-.mhd{padding:24px 30px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:10}
-.mbody{padding:30px}
-.mft{padding:20px 30px;border-top:1px solid var(--border);display:flex;gap:12px;justify-content:flex-end;background:#fcfdfd}
-
-/* VAS Styling */
-.vas-wrap{display:flex;justify-content:space-between;gap:5px;margin-top:10px}
-.vas-btn{width:42px;height:42px;border-radius:50%;border:2px solid var(--border);background:#fff;font-weight:700;cursor:pointer;transition:0.2s}
-.vas-btn.sel{background:var(--p);color:#fff;border-color:var(--p);transform:scale(1.1)}
-
-/* Buttons */
-.btn{padding:12px 24px;border-radius:var(--rs);font-weight:700;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:8px;transition:0.2s;font-size:14px}
-.bp{background:var(--p);color:#fff}.bp:hover{background:var(--pd)}
-.ba{background:var(--acc);color:var(--pd)}.ba:hover{opacity:0.9}
-.bg{background:#fff;color:var(--muted);border:1.5px solid var(--border)}.bg:hover{background:var(--bg)}
-
-.toast{position:fixed;bottom:30px;right:30px;background:var(--pd);color:#fff;padding:14px 24px;border-radius:var(--rs);box-shadow:var(--shl);transform:translateY(100px);transition:0.3s;z-index:2000}
-.toast.show{transform:translateY(0)}
-
-/* Mobile */
-@media(max-width:768px){
-  .side{display:none}
-  .main{margin-left:0;padding:20px}
-  .ph{flex-direction:column;align-items:flex-start;gap:15px}
-}
-</style>
+        .toast { position: fixed; bottom: 20px; right: 20px; padding: 15px 25px; border-radius: var(--rs); color: #fff; z-index: 2000; display: none; }
+        
+        @media (max-width: 768px) {
+            .side { transform: translateX(-100%); }
+            .main { margin-left: 0; padding: 15px; }
+        }
+    </style>
 </head>
 <body>
 
 <div id="loginScreen">
-  <div class="lbox">
-    <h1>Physiclinic</h1>
-    <p>Orthopaedic Patient Archive</p>
-    <div id="lerr" style="color:var(--red);font-size:13px;margin-bottom:15px;display:none;text-align:center"></div>
-    <div class="fg">
-      <label class="fl">Email Address</label>
-      <input class="fc" type="email" id="lEmail" placeholder="doctor@physiclinic.com">
+    <div class="lbox">
+        <h1 style="color: var(--pd); margin-bottom: 5px;">Physiclinic</h1>
+        <p style="color: var(--muted); margin-bottom: 25px;">PT Patient Archive Access</p>
+        <div id="loginError" style="color: var(--red); font-size: 13px; margin-bottom: 15px; display: none;"></div>
+        <label style="font-size: 12px; font-weight: 700; color: var(--muted);">EMAIL</label>
+        <input type="email" id="email" class="fc" placeholder="doctor@clinic.com">
+        <div style="margin-top: 15px;">
+            <label style="font-size: 12px; font-weight: 700; color: var(--muted);">PASSWORD</label>
+            <input type="password" id="password" class="fc" placeholder="••••••••">
+        </div>
+        <button id="btnLogin" class="btn bp" style="width: 100%; margin-top: 25px; justify-content: center;">Sign In</button>
     </div>
-    <div class="fg">
-      <label class="fl">Password</label>
-      <input class="fc" type="password" id="lPass" placeholder="••••••••">
-    </div>
-    <button class="btn bp" style="width:100%;justify-content:center" onclick="doLogin()">Sign In</button>
-  </div>
 </div>
 
 <div id="appScreen">
-  <div class="wrap">
-    <aside class="side">
-      <div class="slogo"><h2>PHYSICLINIC</h2></div>
-      <div style="padding:20px 24px; color:rgba(255,255,255,0.5); font-size:12px; font-weight:700" id="userDisplay">...</div>
-      <nav class="snav">
-        <button class="ni on" onclick="goPage('patients')">👥 Patients List</button>
-        <button class="ni" id="navManage" onclick="goPage('manage')">⚙️ App Settings</button>
-        <button class="ni" id="navUsers" onclick="goPage('users')">👤 Staff Management</button>
-      </nav>
-      <div class="sfooter">
-        <button class="btn bg" style="width:100%;background:rgba(255,255,255,0.05);color:#fff;border:none" onclick="doLogout()">Sign Out</button>
-      </div>
-    </aside>
+    <div class="wrap">
+        <aside class="side">
+            <div class="slogo">
+                <h2 style="color: var(--acc);">Physiclinic</h2>
+                <p style="font-size: 11px; opacity: 0.6;">Ortho Patient Archive</p>
+            </div>
+            <div id="userInfo" style="padding: 15px 20px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <div id="userName" style="font-weight: 700; font-size: 14px;">User Name</div>
+                <div id="userRole" style="font-size: 11px; color: var(--acc); text-transform: uppercase;">Role</div>
+            </div>
+            <nav class="snav">
+                <button class="ni on" id="navPatients">👥 Patients</button>
+                <button class="ni" id="navManage">⚙️ Manage Options</button>
+                <button class="ni" id="navUsers">👤 Manage Users</button>
+            </nav>
+            <div style="padding: 20px;">
+                <button id="btnLogout" class="btn bg" style="width: 100%; background: rgba(255,255,255,0.1); color: #fff; border: none;">Sign Out</button>
+            </div>
+        </aside>
 
-    <main class="main">
-      <div id="pg-patients">
+        <main class="main">
+            <section id="view-patients">
+                <div class="ph">
+                    <h1 class="pt">Patient Archive</h1>
+                    <div style="display: flex; gap: 10px;">
+                        <button id="btnExportAll" class="btn bg">Export CSV</button>
+                        <button id="btnNewPatient" class="btn bp">+ New Patient</button>
+                    </div>
+                </div>
+                <input type="text" id="searchPatients" class="fc" placeholder="Search by name, region, or diagnosis..." style="margin-bottom: 20px; padding: 15px;">
+                <div id="patientGrid" class="pgrid"></div>
+            </section>
+
+            <section id="view-manage" style="display:none;">
+                <div class="ph"><h1 class="pt">Manage Assessment Options</h1></div>
+                <div class="card">
+                    <div class="pg" id="manageTabs">
+                        <button class="pill sel" data-tab="regions">Regions</button>
+                        <button class="pill" data-tab="diagnoses">Diagnoses</button>
+                        <button class="pill" data-tab="complaints">Complaints</button>
+                        <button class="pill" data-tab="findings">Findings</button>
+                        <button class="pill" data-tab="problems">Problem List</button>
+                        <button class="pill" data-tab="treatment">Treatment</button>
+                    </div>
+                    <div id="manageContainer" style="margin-top: 25px;">
+                        <div id="regionSelectWrapper" style="display:none; margin-bottom: 20px;">
+                            <label style="font-size: 12px; font-weight: bold;">SELECT REGION TO EDIT ITEMS FOR:</label>
+                            <select id="manageRegionContext" class="fc"></select>
+                        </div>
+                        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                            <input type="text" id="newOptionInput" class="fc" placeholder="Add new item...">
+                            <button id="btnAddOption" class="btn bp" style="margin-top: 5px;">Add</button>
+                        </div>
+                        <div id="optionsList" style="display: flex; flex-direction: column; gap: 10px;"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="view-users" style="display:none;">
+                <div class="ph">
+                    <h1 class="pt">Staff Management</h1>
+                    <button id="btnNewUser" class="btn bp">+ Add Staff</button>
+                </div>
+                <div id="userList" class="pgrid"></div>
+            </section>
+
+            <section id="view-profile" style="display:none;">
+                <div id="profileHeader"></div>
+                <div style="margin: 20px 0; display: flex; gap: 10px;">
+                    <button id="btnNewAssessment" class="btn ba">+ Initial Assessment</button>
+                    <button id="btnNewFollowup" class="btn bp">+ Follow-up</button>
+                    <button id="btnProfileBack" class="btn bg">← Back</button>
+                </div>
+                <div id="visitHistory"></div>
+            </section>
+        </main>
+    </div>
+</div>
+
+<div class="mo" id="modalPatient">
+    <div class="mdl" style="max-width: 500px;">
+        <h2 style="margin-bottom: 20px;">Patient Registration</h2>
+        <div class="fg">
+            <label>Full Name *</label>
+            <input type="text" id="p_name" class="fc">
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
+            <div><label>Age</label><input type="number" id="p_age" class="fc"></div>
+            <div><label>Gender</label><select id="p_gender" class="fc"><option>Male</option><option>Female</option></select></div>
+        </div>
+        <div style="margin-top: 15px;">
+            <label>Occupation</label>
+            <input type="text" id="p_job" class="fc">
+        </div>
+        <div style="margin-top: 15px;">
+            <label>Phone</label>
+            <input type="text" id="p_phone" class="fc">
+        </div>
+        <div style="margin-top: 25px; display: flex; justify-content: flex-end; gap: 10px;">
+            <button class="btn bg" id="btnCancelPatient">Cancel</button>
+            <button class="btn bp" id="btnSavePatient">Save Patient</button>
+        </div>
+    </div>
+</div>
+
+<div class="mo" id="modalAssessment">
+    <div class="mdl" style="max-width: 900px;">
         <div class="ph">
-          <div><h1 class="pt">Patient Archive</h1></div>
-          <button class="btn bp" onclick="openAdd()">+ Add New Patient</button>
+            <h2 id="assessTitle">Clinical Assessment</h2>
+            <button id="btnAddRegion" class="btn ba">+ Add Region</button>
         </div>
-        <div class="fg" style="max-width:400px">
-          <input class="fc" type="text" id="srch" placeholder="Search by name or region..." oninput="renderList()">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+            <div><label>Date</label><input type="date" id="v_date" class="fc"></div>
+            <div><label>Duration (mins)</label><input type="number" id="v_dur" class="fc" value="30"></div>
         </div>
-        <div class="pgrid" id="pgrid"></div>
-      </div>
-
-      <div id="pg-profile" style="display:none">
+        <div id="assessmentRegionsContainer"></div>
+        <div style="margin-top: 20px;">
+            <label>Clinical Notes</label>
+            <textarea id="v_notes" class="fc" style="height: 80px;"></textarea>
         </div>
-
-      <div id="pg-manage" style="display:none">
-         <div class="ph"><h1 class="pt">System Options</h1></div>
-         <div class="card" id="manageContent"></div>
-      </div>
-      
-      <div id="pg-users" style="display:none">
-         <div class="ph"><h1 class="pt">Staff Access</h1></div>
-         <div class="card" id="usersContent"></div>
-      </div>
-    </main>
-  </div>
+        <div style="margin-top: 25px; display: flex; justify-content: flex-end; gap: 10px;">
+            <button class="btn bg" id="btnCancelAssess">Cancel</button>
+            <button class="btn bp" id="btnSaveAssess">Save Clinical Record</button>
+        </div>
+    </div>
 </div>
 
-<div class="mo" id="moAdd">
-  <div class="mdl" style="max-width:500px">
-    <div class="mhd"><div class="mtt" style="font-size:20px; font-weight:700; color:var(--pd)">New Patient</div><button onclick="closeM('moAdd')" style="background:none;border:none;font-size:24px;cursor:pointer">&times;</button></div>
-    <div class="mbody">
-      <div style="background:#f1f6f4; padding:15px; border-radius:8px; border-left:4px solid var(--p); margin-bottom:25px; display:flex; align-items:center; gap:10px; font-size:14px; color:var(--muted)">
-        📝 Entered by receptionist
-      </div>
-      <div class="fg"><label class="fl">Full Name *</label><input class="fc" id="iName" placeholder="Patient name"></div>
-      <div class="fg"><label class="fl">Age *</label><input class="fc" id="iAge" type="number" placeholder="Age"></div>
-      <div class="fg">
-        <label class="fl">Gender</label>
-        <select class="fc" id="iGender"><option>Male</option><option>Female</option></select>
-      </div>
-      <div class="fg"><label class="fl">Occupation</label><input class="fc" id="iJob" placeholder="e.g. Office worker"></div>
-      <div class="fg"><label class="fl">Phone</label><input class="fc" id="iPhone" placeholder="Phone number"></div>
+<div class="mo" id="modalUser">
+    <div class="mdl" style="max-width: 400px;">
+        <h2>Add Staff Member</h2>
+        <div style="margin-top: 15px;"><label>Full Name</label><input type="text" id="u_name" class="fc"></div>
+        <div style="margin-top: 15px;"><label>Email</label><input type="email" id="u_email" class="fc"></div>
+        <div style="margin-top: 15px;"><label>Password</label><input type="password" id="u_pass" class="fc"></div>
+        <div style="margin-top: 15px;">
+            <label>Role</label>
+            <select id="u_role" class="fc">
+                <option value="receptionist">Receptionist</option>
+                <option value="doctor">Doctor</option>
+            </select>
+        </div>
+        <div style="margin-top: 25px; display: flex; justify-content: flex-end; gap: 10px;">
+            <button class="btn bg" id="btnCancelUser">Cancel</button>
+            <button class="btn bp" id="btnSaveUser">Create Account</button>
+        </div>
     </div>
-    <div class="mft">
-      <button class="btn bg" onclick="closeM('moAdd')">Cancel</button>
-      <button class="btn bp" onclick="saveNew()">Save & Open File</button>
-    </div>
-  </div>
 </div>
 
-<div class="mo" id="moAssess">
-  <div class="mdl">
-    <div class="mhd"><div class="mtt" id="assessTtl" style="font-size:20px; font-weight:700; color:var(--pd)">Assessment</div><button onclick="closeM('moAssess')" style="background:none;border:none;font-size:24px;cursor:pointer">&times;</button></div>
-    <div class="mbody" id="assessBody">
-      </div>
-    <div class="mft">
-      <button class="btn bg" onclick="closeM('moAssess')">Cancel</button>
-      <button class="btn bp" onclick="saveAssess()">💾 Save Assessment</button>
-    </div>
-  </div>
-</div>
-
-<div class="toast" id="toast"></div>
+<div id="toast" class="toast"></div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, deleteDoc, arrayUnion, arrayRemove, onSnapshot, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey:"AIzaSyBV6--Y8VTOIm0XhU1h-6GSJmJiWwbBMd8",
-  authDomain:"physiclinic-4a8d1.firebaseapp.com",
-  projectId:"physiclinic-4a8d1",
-  storageBucket:"physiclinic-4a8d1.firebasestorage.app",
-  messagingSenderId:"581907813652",
-  appId:"1:581907813652:web:c203369bb92e63d01b1e01"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-// Global State
-let ME=null, PTS=[], OPTS=null;
-let activeVisit = { type: 'Initial Assessment', regions: [], duration: '', onset: '', notes: '', vas: 0 };
-
-// Auth Logic
-window.doLogin = async () => {
-  const email = document.getElementById('lEmail').value;
-  const pass = document.getElementById('lPass').value;
-  try { await signInWithEmailAndPassword(auth, email, pass); } 
-  catch(e) { document.getElementById('lerr').textContent="Invalid Login Details"; document.getElementById('lerr').style.display='block'; }
-};
-
-onAuthStateChanged(auth, async user => {
-  if (user) {
-    const snap = await getDoc(doc(db, 'users', user.uid));
-    ME = snap.data();
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('appScreen').style.display = 'block';
-    document.getElementById('userDisplay').textContent = ME.name.toUpperCase();
-    if(ME.role !== 'doctor') {
-        document.getElementById('navManage').style.opacity = '0.3';
-        document.getElementById('navUsers').style.opacity = '0.3';
-    }
-    loadData();
-  } else {
-    document.getElementById('loginScreen').style.display = 'flex';
-    document.getElementById('appScreen').style.display = 'none';
-  }
-});
-
-window.doLogout = () => signOut(auth);
-
-// Data Management
-async function loadData() {
-  const oSnap = await getDoc(doc(db, 'config', 'options'));
-  OPTS = oSnap.data();
-
-  onSnapshot(query(collection(db, 'patients'), orderBy('createdAt', 'desc')), snap => {
-    PTS = snap.docs.map(d => ({id:d.id, ...d.data()}));
-    renderList();
-  });
-}
-
-window.renderList = () => {
-  const q = document.getElementById('srch').value.toLowerCase();
-  const grid = document.getElementById('pgrid');
-  const filtered = PTS.filter(p => p.name.toLowerCase().includes(q));
-  
-  grid.innerHTML = filtered.map(p => `
-    <div class="pcard">
-      <div class="pname">${p.name}</div>
-      <div style="font-size:13px; color:var(--muted); margin-bottom:15px">
-        ${p.age} years · ${p.gender} · ${p.job}
-      </div>
-      <div style="display:flex; gap:8px">
-        <button class="btn bp" style="padding:8px 16px; font-size:12px" onclick="openProfile('${p.id}')">View File</button>
-        ${ME.role==='doctor' ? `<button class="btn bg" style="padding:8px 16px; font-size:12px" onclick="openAssess('${p.id}')">New Assessment</button>` : ''}
-      </div>
-    </div>
-  `).join('');
-};
-
-// Assessment UI Builder (The Core Logic for Region-First)
-let selectedRegion = null;
-let currentPatientId = null;
-
-window.openAssess = (pid) => {
-  currentPatientId = pid;
-  const p = PTS.find(x => x.id === pid);
-  document.getElementById('assessTtl').textContent = `Assessment — ${p.name}`;
-  activeVisit = { type: 'Initial Assessment', regions: [], duration: '', onset: '', notes: '', vas: 5, sessions: '', freq: '' };
-  selectedRegion = null;
-  renderAssessForm();
-  openM('moAssess');
-};
-
-function renderAssessForm() {
-  const body = document.getElementById('assessBody');
-  body.innerHTML = `
-    <div class="sec-header">🏥 Visit Type</div>
-    <div class="pill-container">
-      ${['Initial Assessment', 'Follow-up', 'Re-assessment', 'Discharge'].map(t => `
-        <div class="pill ${activeVisit.type === t ? 'sel' : ''}" onclick="setVisitType('${t}')">${t}</div>
-      `).join('')}
-    </div>
-
-    <div class="sec-header">📍 Affected Region</div>
-    <div class="pill-container">
-      ${OPTS.regions.map(r => `
-        <div class="pill ${selectedRegion === r ? 'sel' : ''}" onclick="setRegion('${r}')">${r}</div>
-      `).join('')}
-    </div>
-
-    <div id="dynamic-fields" style="${selectedRegion ? '' : 'opacity:0.3; pointer-events:none'}">
-        
-        <div class="sec-header">🩺 Diagnosis</div>
-        <div class="pill-container" id="diag-pills">
-            ${selectedRegion ? renderPills('diagnoses', selectedRegion) : '<p style="font-size:12px; color:var(--muted)">Select a region first</p>'}
-        </div>
-
-        <div class="sec-header">⏱ Duration & Onset (Screenshot 3)</div>
-        <div class="fg">
-          <label class="fl">Duration</label>
-          <input class="fc" id="vDur" placeholder="e.g. 3 months" value="${activeVisit.duration}" oninput="activeVisit.duration=this.value">
-        </div>
-        <div class="fg">
-          <label class="fl">Onset</label>
-          <select class="fc" id="vOnset" onchange="activeVisit.onset=this.value">
-            <option value="">Select...</option>
-            <option ${activeVisit.onset==='Gradual'?'selected':''}>Gradual</option>
-            <option ${activeVisit.onset==='Sudden'?'selected':''}>Sudden</option>
-          </select>
-        </div>
-
-        <div class="sec-header">💬 Chief Complaints</div>
-        <div class="pill-container">
-            ${selectedRegion ? renderPills('complaints', selectedRegion) : '<p style="font-size:12px; color:var(--muted)">Select a region first</p>'}
-        </div>
-
-        <div class="sec-header">😣 Pain Level — VAS (0-10)</div>
-        <div class="vas-wrap">
-          ${[0,1,2,3,4,5,6,7,8,9,10].map(n => `
-            <button class="vas-btn ${activeVisit.vas === n ? 'sel' : ''}" onclick="setVas(${n})">${n}</button>
-          `).join('')}
-        </div>
-
-        <div class="sec-header">🔬 Assessment Findings</div>
-        <div class="pill-container">
-            ${selectedRegion ? renderPills('findings', selectedRegion) : '<p style="font-size:12px; color:var(--muted)">Select a region first</p>'}
-        </div>
-
-        <div class="sec-header">📌 Problem List (Screenshot 4)</div>
-        <div class="pill-container">
-            ${renderGlobalPills('problems')}
-        </div>
-
-        <div class="sec-header">💊 Treatment Plan (Screenshot 5)</div>
-        <div class="pill-container">
-            ${selectedRegion ? renderPills('treatment', selectedRegion) : '<p style="font-size:12px; color:var(--muted)">Select a region first</p>'}
-        </div>
-
-        <div class="sec-header">📅 Session Plan (Screenshot 5)</div>
-        <div class="fg">
-          <label class="fl">No. of Sessions</label>
-          <input class="fc" type="number" id="vSess" placeholder="e.g. 12" value="${activeVisit.sessions}" oninput="activeVisit.sessions=this.value">
-        </div>
-        <div class="fg">
-          <label class="fl">Frequency</label>
-          <select class="fc" onchange="activeVisit.freq=this.value">
-            <option value="">Select...</option>
-            <option ${activeVisit.freq==='2x/week'?'selected':''}>2x/week</option>
-            <option ${activeVisit.freq==='3x/week'?'selected':''}>3x/week</option>
-          </select>
-        </div>
-
-        <div class="sec-header">📝 Additional Notes</div>
-        <textarea class="fc" style="height:100px" oninput="activeVisit.notes=this.value" placeholder="Any important clinical notes...">${activeVisit.notes}</textarea>
-    </div>
-  `;
-}
-
-// Helper functions for pills
-window.setVisitType = (t) => { activeVisit.type = t; renderAssessForm(); }
-window.setRegion = (r) => { selectedRegion = r; renderAssessForm(); }
-window.setVas = (n) => { activeVisit.vas = n; renderAssessForm(); }
-
-function renderPills(category, region) {
-    const items = OPTS[category][region] || [];
-    if(!activeVisit[category]) activeVisit[category] = [];
-    
-    let html = items.map(item => `
-        <div class="pill ${activeVisit[category].includes(item) ? 'sel' : ''}" 
-             onclick="togglePill('${category}', '${item}')">${item}</div>
-    `).join('');
-    
-    html += `
-        <div style="display:flex; gap:5px; width:100%; margin-top:10px">
-            <input class="fc" style="padding:6px 12px; font-size:12px" placeholder="Add new..." id="new-${category}">
-            <button class="btn bp" style="padding:6px 12px" onclick="addNewOption('${category}', '${region}')">+ Add</button>
-        </div>
-    `;
-    return html;
-}
-
-function renderGlobalPills(category) {
-    const items = OPTS[category] || [];
-    if(!activeVisit[category]) activeVisit[category] = [];
-    return items.map(item => `
-        <div class="pill ${activeVisit[category].includes(item) ? 'sel' : ''}" 
-             onclick="togglePill('${category}', '${item}')">${item}</div>
-    `).join('');
-}
-
-window.togglePill = (cat, val) => {
-    if(!activeVisit[cat]) activeVisit[cat] = [];
-    const idx = activeVisit[cat].indexOf(val);
-    if(idx > -1) activeVisit[cat].splice(idx, 1);
-    else activeVisit[cat].push(val);
-    renderAssessForm();
-};
-
-window.addNewOption = async (cat, reg) => {
-    const val = document.getElementById(`new-${cat}`).value.trim();
-    if(!val) return;
-    
-    // Update Database permanently
-    if(!OPTS[cat][reg]) OPTS[cat][reg] = [];
-    OPTS[cat][reg].push(val);
-    await updateDoc(doc(db, 'config', 'options'), OPTS);
-    
-    // Add to current visit
-    togglePill(cat, val);
-    toast("Option Added Permanently ✅");
-};
-
-// Saving
-window.saveAssess = async () => {
-    if(!selectedRegion) return toast("Please select a region first", true);
-    
-    const visitData = {
-        ...activeVisit,
-        region: selectedRegion,
-        date: new Date().toISOString().split('T')[0],
-        timestamp: Date.now()
+    const firebaseConfig = {
+        apiKey: "AIzaSyBV6--Y8VTOIm0XhU1h-6GSJmJiWwbBMd8",
+        authDomain: "physiclinic-4a8d1.firebaseapp.com",
+        projectId: "physiclinic-4a8d1",
+        storageBucket: "physiclinic-4a8d1.firebasestorage.app",
+        messagingSenderId: "581907813652",
+        appId: "1:581907813652:web:c203369bb92e63d01b1e01"
     };
-    
-    const p = PTS.find(x => x.id === currentPatientId);
-    const visits = p.visits || [];
-    visits.push(visitData);
-    
-    await updateDoc(doc(db, 'patients', currentPatientId), { visits });
-    closeM('moAssess');
-    toast("Assessment Saved Successfully");
-    openProfile(currentPatientId);
-};
 
-// Navigation & Misc
-window.goPage = (pg) => {
-    ['patients', 'profile', 'manage', 'users'].forEach(p => document.getElementById('pg-'+p).style.display='none');
-    document.getElementById('pg-'+pg).style.display='block';
-    document.querySelectorAll('.ni').forEach(n => n.classList.remove('on'));
-    // Set active link logic...
-};
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-window.openAdd = () => openM('moAdd');
-window.saveNew = async () => {
-    const name = document.getElementById('iName').value;
-    if(!name) return;
-    const ref = await addDoc(collection(db, 'patients'), {
-        name,
-        age: document.getElementById('iAge').value,
-        gender: document.getElementById('iGender').value,
-        job: document.getElementById('iJob').value,
-        phone: document.getElementById('iPhone').value,
-        createdAt: Date.now(),
-        visits: []
+    // --- State ---
+    let currentUser = null;
+    let currentPatient = null;
+    let globalOptions = null;
+    let currentEditVisitIdx = -1;
+
+    // --- Core UI Functions ---
+    function showToast(msg, isErr = false) {
+        const t = document.getElementById('toast');
+        t.innerText = msg;
+        t.style.display = 'block';
+        t.style.backgroundColor = isErr ? 'var(--red)' : 'var(--pd)';
+        setTimeout(() => t.style.display = 'none', 3000);
+    }
+
+    function switchView(viewId) {
+        document.querySelectorAll('main section').forEach(s => s.style.display = 'none');
+        document.getElementById(`view-${viewId}`).style.display = 'block';
+        document.querySelectorAll('.ni').forEach(n => n.classList.remove('on'));
+        const activeNav = document.getElementById(`nav${viewId.charAt(0).toUpperCase() + viewId.slice(1)}`);
+        if(activeNav) activeNav.classList.add('on');
+    }
+
+    // --- Auth Logic ---
+    document.getElementById('btnLogin').addEventListener('click', async () => {
+        const e = document.getElementById('email').value;
+        const p = document.getElementById('password').value;
+        try {
+            await signInWithEmailAndPassword(auth, e, p);
+        } catch (err) {
+            const errDiv = document.getElementById('loginError');
+            errDiv.innerText = "Login failed. Check credentials.";
+            errDiv.style.display = 'block';
+        }
     });
-    closeM('moAdd');
-    openAssess(ref.id);
-};
 
-window.openProfile = (pid) => {
-    const p = PTS.find(x => x.id === pid);
-    const pg = document.getElementById('pg-profile');
-    pg.style.display = 'block';
-    document.getElementById('pg-patients').style.display = 'none';
-    
-    pg.innerHTML = `
-        <button class="btn bg" style="margin-bottom:20px" onclick="goPage('patients')">← Back to List</button>
-        <div class="ph">
-            <h1 class="pt">${p.name}</h1>
-            <div style="display:flex; gap:10px">
-                <button class="btn bp" onclick="openAssess('${p.id}')">+ New Visit</button>
-            </div>
-        </div>
-        <div class="card">
-            ${(p.visits || []).reverse().map(v => `
-                <div style="border-bottom:1px solid var(--border); padding:20px 0">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:10px">
-                        <strong style="color:var(--p)">${v.type}</strong>
-                        <span style="color:var(--muted); font-size:13px">${v.date}</span>
-                    </div>
-                    <p style="font-size:14px"><strong>Region:</strong> ${v.region}</p>
-                    <p style="font-size:14px"><strong>Diagnosis:</strong> ${(v.diagnoses || []).join(', ')}</p>
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            const userSnap = await getDoc(doc(db, "users", user.uid));
+            currentUser = { uid: user.uid, ...userSnap.data() };
+            
+            document.getElementById('userName').innerText = currentUser.name;
+            document.getElementById('userRole').innerText = currentUser.role;
+            
+            // Role Based Access
+            if(currentUser.role === 'receptionist') {
+                document.getElementById('navManage').classList.add('locked');
+                document.getElementById('navUsers').classList.add('locked');
+                document.getElementById('btnExportAll').style.display = 'none';
+            }
+
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('appScreen').style.display = 'block';
+            loadOptions();
+            renderPatients();
+        } else {
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('appScreen').style.display = 'none';
+        }
+    });
+
+    document.getElementById('btnLogout').addEventListener('click', () => signOut(auth));
+
+    // --- Navigation ---
+    document.getElementById('navPatients').addEventListener('click', () => switchView('patients'));
+    document.getElementById('navManage').addEventListener('click', () => {
+        if(currentUser.role !== 'doctor') return;
+        switchView('manage');
+        renderOptionsManager();
+    });
+    document.getElementById('navUsers').addEventListener('click', () => {
+        if(currentUser.role !== 'doctor') return;
+        switchView('users');
+        renderUsers();
+    });
+
+    // --- Options Management ---
+    async function loadOptions() {
+        const snap = await getDoc(doc(db, "config", "options"));
+        globalOptions = snap.data();
+    }
+
+    async function renderOptionsManager() {
+        const activeTab = document.querySelector('#manageTabs .sel').dataset.tab;
+        const list = document.getElementById('optionsList');
+        const regionWrap = document.getElementById('regionSelectWrapper');
+        list.innerHTML = '';
+        
+        // Handle Contextual Regions
+        const nestedTypes = ['diagnoses', 'complaints', 'findings', 'treatment'];
+        if(nestedTypes.includes(activeTab)) {
+            regionWrap.style.display = 'block';
+            const select = document.getElementById('manageRegionContext');
+            select.innerHTML = globalOptions.regions.map(r => `<option value="${r}">${r}</option>`).join('');
+            
+            const currentRegion = select.value;
+            const items = globalOptions[activeTab][currentRegion] || [];
+            items.forEach(item => createOptionRow(item, activeTab, currentRegion));
+        } else {
+            regionWrap.style.display = 'none';
+            const items = globalOptions[activeTab] || [];
+            items.forEach(item => createOptionRow(item, activeTab));
+        }
+    }
+
+    function createOptionRow(text, type, region = null) {
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.style.display = 'flex';
+        div.style.justifyContent = 'space-between';
+        div.style.padding = '10px 15px';
+        div.innerHTML = `<span>${text}</span><button class="btn bd" style="padding:4px 10px; font-size:11px;">Remove</button>`;
+        div.querySelector('button').addEventListener('click', () => deleteOption(text, type, region));
+        document.getElementById('optionsList').appendChild(div);
+    }
+
+    async function deleteOption(val, type, region) {
+        // Fresh Read
+        const snap = await getDoc(doc(db, "config", "options"));
+        const data = snap.data();
+        
+        if(region) {
+            data[type][region] = data[type][region].filter(x => x !== val);
+        } else {
+            data[type] = data[type].filter(x => x !== val);
+        }
+        
+        await setDoc(doc(db, "config", "options"), data);
+        globalOptions = data;
+        renderOptionsManager();
+        showToast("Option removed");
+    }
+
+    document.getElementById('btnAddOption').addEventListener('click', async () => {
+        const input = document.getElementById('newOptionInput');
+        const val = input.value.trim();
+        if(!val) return;
+        
+        const activeTab = document.querySelector('#manageTabs .sel').dataset.tab;
+        const region = document.getElementById('manageRegionContext').value;
+        
+        const snap = await getDoc(doc(db, "config", "options"));
+        const data = snap.data();
+
+        if(['diagnoses', 'complaints', 'findings', 'treatment'].includes(activeTab)) {
+            if(!data[activeTab][region]) data[activeTab][region] = [];
+            data[activeTab][region].push(val);
+        } else {
+            data[activeTab].push(val);
+        }
+
+        await setDoc(doc(db, "config", "options"), data);
+        globalOptions = data;
+        input.value = '';
+        renderOptionsManager();
+    });
+
+    document.querySelectorAll('#manageTabs .pill').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('#manageTabs .pill').forEach(p => p.classList.remove('sel'));
+            e.target.classList.add('sel');
+            renderOptionsManager();
+        });
+    });
+
+    // --- Patient Management ---
+    document.getElementById('btnNewPatient').addEventListener('click', () => {
+        document.getElementById('modalPatient').classList.add('open');
+    });
+
+    document.getElementById('btnCancelPatient').addEventListener('click', () => {
+        document.getElementById('modalPatient').classList.remove('open');
+    });
+
+    document.getElementById('btnSavePatient').addEventListener('click', async () => {
+        const p = {
+            name: document.getElementById('p_name').value,
+            age: document.getElementById('p_age').value,
+            gender: document.getElementById('p_gender').value,
+            job: document.getElementById('p_job').value,
+            phone: document.getElementById('p_phone').value,
+            createdAt: new Date().toISOString(),
+            createdBy: currentUser.uid,
+            visits: []
+        };
+        
+        if(!p.name) return showToast("Name is required", true);
+        
+        await setDoc(doc(collection(db, "patients")), p);
+        document.getElementById('modalPatient').classList.remove('open');
+        renderPatients();
+        showToast("Patient added");
+    });
+
+    async function renderPatients() {
+        const grid = document.getElementById('patientGrid');
+        grid.innerHTML = '<div class="pt">Loading...</div>';
+        
+        const q = query(collection(db, "patients"), orderBy("createdAt", "desc"));
+        const snap = await getDocs(q);
+        
+        grid.innerHTML = '';
+        snap.forEach(docSnap => {
+            const p = docSnap.data();
+            const id = docSnap.id;
+            const div = document.createElement('div');
+            div.className = 'pcard';
+            div.innerHTML = `
+                <h3>${p.name}</h3>
+                <p style="font-size:13px; color:var(--muted)">${p.age}y | ${p.job || 'No Job'}</p>
+                <div style="margin-top:10px;">
+                    <button class="btn bp bs" data-id="${id}">View Profile</button>
+                    ${currentUser.role === 'doctor' ? `<button class="btn bd bs delete-p" data-id="${id}">Delete</button>` : ''}
                 </div>
-            `).join('') || '<p style="text-align:center; padding:40px; color:var(--muted)">No visits recorded yet.</p>'}
-        </div>
-    `;
-};
+            `;
+            div.querySelector('.bp').addEventListener('click', () => openProfile(id));
+            if(currentUser.role === 'doctor') {
+                div.querySelector('.delete-p').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if(confirm("Delete patient forever?")) {
+                        deleteDoc(doc(db, "patients", id)).then(() => renderPatients());
+                    }
+                });
+            }
+            grid.appendChild(div);
+        });
+    }
 
-window.openM = (id) => document.getElementById(id).classList.add('open');
-window.closeM = (id) => document.getElementById(id).classList.remove('open');
-window.toast = (msg, isErr=false) => {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.style.background = isErr ? 'var(--red)' : 'var(--pd)';
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 3000);
-};
+    // --- Profile & Visits ---
+    async function openProfile(id) {
+        const snap = await getDoc(doc(db, "patients", id));
+        currentPatient = { id: snap.id, ...snap.data() };
+        switchView('profile');
+        renderProfile();
+    }
+
+    function renderProfile() {
+        const header = document.getElementById('profileHeader');
+        header.innerHTML = `
+            <div class="card" style="background:var(--pd); color:#fff;">
+                <h1 style="color:var(--acc)">${currentPatient.name}</h1>
+                <p>${currentPatient.age} years old • ${currentPatient.gender} • ${currentPatient.phone}</p>
+            </div>
+        `;
+        
+        const hist = document.getElementById('visitHistory');
+        hist.innerHTML = '';
+        
+        // Show Visits (Newest First)
+        const sortedVisits = [...currentPatient.visits].reverse();
+        
+        sortedVisits.forEach((v, idx) => {
+            const actualIdx = currentPatient.visits.length - 1 - idx;
+            const vDiv = document.createElement('div');
+            vDiv.className = 'card';
+            vDiv.style.borderTop = v.type === 'initial' ? '4px solid var(--green)' : '4px solid var(--acc)';
+            
+            let regionsHtml = v.regions.map(r => `
+                <div style="background:var(--bg); padding:15px; border-radius:10px; margin-top:10px;">
+                    <strong style="color:var(--p)">${r.region}</strong>
+                    <div style="font-size:13px; margin-top:5px;">
+                        <div><strong>Diagnosis:</strong> ${r.diagnoses.join(', ')}</div>
+                        <div><strong>Plan:</strong> ${r.treatment.join(', ')}</div>
+                        <div style="margin-top:5px; font-weight:bold; color:var(--acc)">VAS: ${r.vas}/10</div>
+                    </div>
+                </div>
+            `).join('');
+
+            vDiv.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                    <div>
+                        <span class="pill sel" style="font-size:10px; background:${v.type === 'initial' ? 'var(--green)' : 'var(--acc)'}">${v.type.toUpperCase()}</span>
+                        <div style="font-weight:700; margin-top:5px;">${v.date} (${v.duration} min)</div>
+                    </div>
+                    <div>
+                        <button class="btn bg bs edit-v" data-idx="${actualIdx}">Edit</button>
+                        <button class="btn bg bs pdf-v" data-idx="${actualIdx}">PDF</button>
+                    </div>
+                </div>
+                ${regionsHtml}
+                <div style="margin-top:10px; font-size:13px; font-style:italic;">"${v.notes || ''}"</div>
+            `;
+            
+            vDiv.querySelector('.edit-v').addEventListener('click', () => openAssessment(v.type, actualIdx));
+            vDiv.querySelector('.pdf-v').addEventListener('click', () => generateVisitPDF(actualIdx));
+            hist.appendChild(vDiv);
+        });
+    }
+
+    document.getElementById('btnProfileBack').addEventListener('click', () => switchView('patients'));
+
+    // --- Assessment Logic ---
+    document.getElementById('btnNewAssessment').addEventListener('click', () => openAssessment('initial'));
+    document.getElementById('btnNewFollowup').addEventListener('click', () => openAssessment('followup'));
+
+    function openAssessment(type, editIdx = -1) {
+        currentEditVisitIdx = editIdx;
+        document.getElementById('modalAssessment').classList.add('open');
+        document.getElementById('assessTitle').innerText = type === 'initial' ? 'Initial Assessment' : 'Follow-up Visit';
+        
+        const container = document.getElementById('assessmentRegionsContainer');
+        container.innerHTML = '';
+        
+        if(editIdx > -1) {
+            const v = currentPatient.visits[editIdx];
+            document.getElementById('v_date').value = v.date;
+            document.getElementById('v_dur').value = v.duration;
+            document.getElementById('v_notes').value = v.notes;
+            v.regions.forEach(r => addRegionToForm(r));
+        } else {
+            document.getElementById('v_date').valueAsDate = new Date();
+            document.getElementById('v_notes').value = '';
+            addRegionToForm(); // Start with one
+        }
+    }
+
+    function addRegionToForm(data = null) {
+        const container = document.getElementById('assessmentRegionsContainer');
+        const id = 'reg_' + Math.random().toString(36).substr(2, 9);
+        const div = document.createElement('div');
+        div.className = 'card region-entry';
+        div.id = id;
+        div.innerHTML = `
+            <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+                <select class="fc reg-select" style="width:200px;">
+                    ${globalOptions.regions.map(r => `<option ${data?.region === r ? 'selected' : ''}>${r}</option>`).join('')}
+                </select>
+                <button class="btn bd bs" onclick="this.closest('.region-entry').remove()">Remove Region</button>
+            </div>
+            <div class="assess-sections">
+                ${['diagnoses', 'complaints', 'findings', 'problems', 'treatment'].map(sec => `
+                    <div style="margin-top:15px;">
+                        <label style="font-size:11px; font-weight:bold; color:var(--muted); text-transform:uppercase;">${sec}</label>
+                        <div class="pg pills-container" data-type="${sec}"></div>
+                    </div>
+                `).join('')}
+                <div style="margin-top:15px;">
+                    <label style="font-size:11px; font-weight:bold;">PAIN SCALE (VAS)</label>
+                    <div class="vas-wrap">
+                        ${[0,1,2,3,4,5,6,7,8,9,10].map(n => `<button class="vas-btn" data-val="${n}">${n}</button>`).join('')}
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        container.appendChild(div);
+        
+        // Initialize Pills
+        const regSelect = div.querySelector('.reg-select');
+        const updatePills = () => {
+            const region = regSelect.value;
+            div.querySelectorAll('.pills-container').forEach(cont => {
+                const type = cont.dataset.type;
+                const options = type === 'problems' ? globalOptions.problems : (globalOptions[type][region] || []);
+                cont.innerHTML = options.map(opt => `
+                    <span class="pill ${data?.[type]?.includes(opt) ? 'sel' : ''}">${opt}</span>
+                `).join('');
+            });
+            
+            // Re-bind pill clicks
+            div.querySelectorAll('.pill').forEach(p => {
+                p.addEventListener('click', () => p.classList.toggle('sel'));
+            });
+        };
+
+        regSelect.addEventListener('change', updatePills);
+        updatePills();
+
+        // VAS Logic
+        const vasBtns = div.querySelectorAll('.vas-btn');
+        vasBtns.forEach(btn => {
+            if(data && parseInt(btn.dataset.val) === data.vas) btn.classList.add('sel');
+            btn.addEventListener('click', () => {
+                vasBtns.forEach(b => b.classList.remove('sel'));
+                btn.classList.add('sel');
+            });
+        });
+    }
+
+    document.getElementById('btnAddRegion').addEventListener('click', () => addRegionToForm());
+
+    document.getElementById('btnSaveAssess').addEventListener('click', async () => {
+        const visit = {
+            id: currentEditVisitIdx > -1 ? currentPatient.visits[currentEditVisitIdx].id : Math.random().toString(36).substr(2, 9),
+            type: document.getElementById('assessTitle').innerText.includes('Initial') ? 'initial' : 'followup',
+            date: document.getElementById('v_date').value,
+            duration: document.getElementById('v_dur').value,
+            notes: document.getElementById('v_notes').value,
+            savedAt: new Date().toISOString(),
+            regions: []
+        };
+
+        document.querySelectorAll('.region-entry').forEach(re => {
+            const regData = {
+                region: re.querySelector('.reg-select').value,
+                vas: parseInt(re.querySelector('.vas-btn.sel')?.dataset.val || 0),
+                diagnoses: Array.from(re.querySelectorAll('.pills-container[data-type="diagnoses"] .pill.sel')).map(p => p.innerText),
+                complaints: Array.from(re.querySelectorAll('.pills-container[data-type="complaints"] .pill.sel')).map(p => p.innerText),
+                findings: Array.from(re.querySelectorAll('.pills-container[data-type="findings"] .pill.sel')).map(p => p.innerText),
+                problems: Array.from(re.querySelectorAll('.pills-container[data-type="problems"] .pill.sel')).map(p => p.innerText),
+                treatment: Array.from(re.querySelectorAll('.pills-container[data-type="treatment"] .pill.sel')).map(p => p.innerText),
+            };
+            visit.regions.push(regData);
+        });
+
+        if(currentEditVisitIdx > -1) {
+            currentPatient.visits[currentEditVisitIdx] = visit;
+        } else {
+            currentPatient.visits.push(visit);
+        }
+
+        await updateDoc(doc(db, "patients", currentPatient.id), { visits: currentPatient.visits });
+        document.getElementById('modalAssessment').classList.remove('open');
+        renderProfile();
+        showToast("Clinical record saved");
+    });
+
+    document.getElementById('btnCancelAssess').addEventListener('click', () => {
+        document.getElementById('modalAssessment').classList.remove('open');
+    });
+
+    // --- Export Logic ---
+    async function generateVisitPDF(idx) {
+        const v = currentPatient.visits[idx];
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        doc.setFontSize(22);
+        doc.setTextColor(13, 61, 46);
+        doc.text("Physiclinic Clinical Report", 20, 20);
+        
+        doc.setFontSize(12);
+        doc.setTextColor(100);
+        doc.text(`Patient: ${currentPatient.name} | Date: ${v.date}`, 20, 30);
+        
+        let y = 45;
+        v.regions.forEach(r => {
+            doc.setFontSize(14);
+            doc.setTextColor(26, 92, 74);
+            doc.text(`Region: ${r.region}`, 20, y);
+            y += 8;
+            doc.setFontSize(10);
+            doc.setTextColor(0);
+            doc.text(`Diagnosis: ${r.diagnoses.join(', ')}`, 25, y);
+            y += 6;
+            doc.text(`Treatment: ${r.treatment.join(', ')}`, 25, y);
+            y += 15;
+        });
+
+        doc.save(`${currentPatient.name}_${v.date}.pdf`);
+    }
+
+    // --- User Management ---
+    async function renderUsers() {
+        const list = document.getElementById('userList');
+        list.innerHTML = 'Loading...';
+        const snap = await getDocs(collection(db, "users"));
+        list.innerHTML = '';
+        snap.forEach(d => {
+            const u = d.data();
+            const div = document.createElement('div');
+            div.className = 'pcard';
+            div.innerHTML = `
+                <h3>${u.name}</h3>
+                <p>${u.email}</p>
+                <span class="pill sel" style="font-size:10px;">${u.role}</span>
+            `;
+            list.appendChild(div);
+        });
+    }
+
+    document.getElementById('btnNewUser').addEventListener('click', () => document.getElementById('modalUser').classList.add('open'));
+    document.getElementById('btnCancelUser').addEventListener('click', () => document.getElementById('modalUser').classList.remove('open'));
+    
+    document.getElementById('btnSaveUser').addEventListener('click', async () => {
+        const name = document.getElementById('u_name').value;
+        const email = document.getElementById('u_email').value;
+        const pass = document.getElementById('u_pass').value;
+        const role = document.getElementById('u_role').value;
+        
+        try {
+            const res = await createUserWithEmailAndPassword(auth, email, pass);
+            await setDoc(doc(db, "users", res.user.uid), { name, email, role, createdAt: new Date().toISOString() });
+            showToast("User Created");
+            document.getElementById('modalUser').classList.remove('open');
+            renderUsers();
+        } catch (e) {
+            showToast(e.message, true);
+        }
+    });
 
 </script>
 </body>
 </html>
+
 
 
 
