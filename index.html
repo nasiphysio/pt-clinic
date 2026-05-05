@@ -1,763 +1,592 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Physiclinic | PT Patient Archive</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --p: #1a5c4a; --pl: #22776a; --pd: #0d3d2e;
-            --acc: #e8a020; --bg: #eef2f0; --card: #fff;
-            --txt: #162820; --muted: #5a7a6e; --border: #ccddd6;
-            --red: #d94f4f; --redl: #fdeaea;
-            --green: #27ae60; --greenl: #eafaf1;
-            --sh: 0 2px 14px rgba(13,61,46,.09);
-            --shl: 0 8px 36px rgba(13,61,46,.15);
-            --r: 14px; --rs: 8px;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--txt); font-size: 15px; overflow-x: hidden; }
-        
-        /* Layout */
-        #loginScreen { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--pd); }
-        .lbox { background: #fff; border-radius: 20px; padding: 40px; width: 100%; max-width: 400px; box-shadow: var(--shl); }
-        #appScreen { display: none; }
-        .wrap { display: flex; min-height: 100vh; }
-        
-        /* Sidebar */
-        .side { width: 250px; background: var(--pd); position: fixed; top: 0; left: 0; height: 100vh; display: flex; flex-direction: column; z-index: 100; color: #fff; }
-        .slogo { padding: 30px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .snav { padding: 20px 10px; flex: 1; }
-        .ni { display: flex; align-items: center; gap: 12px; padding: 12px 15px; border-radius: var(--rs); color: rgba(255,255,255,0.6); cursor: pointer; border: none; background: none; width: 100%; text-align: left; font-size: 14px; transition: 0.2s; margin-bottom: 5px; }
-        .ni:hover:not(.locked) { background: rgba(255,255,255,0.1); color: #fff; }
-        .ni.on { background: var(--acc); color: var(--pd); font-weight: 700; }
-        .ni.locked { opacity: 0.3; cursor: not-allowed; }
-        
-        /* Main Content */
-        .main { margin-left: 250px; flex: 1; padding: 30px; max-width: 1200px; }
-        .ph { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-        .pt { font-size: 24px; font-weight: 700; color: var(--pd); }
-
-        /* UI Elements */
-        .card { background: #fff; border-radius: var(--r); padding: 25px; box-shadow: var(--sh); margin-bottom: 20px; }
-        .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: var(--rs); cursor: pointer; border: none; font-weight: 600; font-family: inherit; transition: 0.2s; }
-        .bp { background: var(--p); color: #fff; }
-        .ba { background: var(--acc); color: var(--pd); }
-        .bd { background: var(--redl); color: var(--red); }
-        .bg { background: var(--bg); color: var(--muted); border: 1px solid var(--border); }
-        .fc { width: 100%; padding: 10px 15px; border-radius: var(--rs); border: 1px solid var(--border); font-family: inherit; margin-top: 5px; }
-        
-        /* Pills & Assessment */
-        .pg { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-        .pill { padding: 6px 14px; border-radius: 20px; border: 1.5px solid var(--border); background: var(--bg); cursor: pointer; font-size: 13px; }
-        .pill.sel { background: var(--green) !important; color: #fff !important; border-color: var(--green) !important; }
-        
-        /* Patient Cards */
-        .pgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-        .pcard { background: #fff; border-radius: var(--r); padding: 20px; border-left: 5px solid var(--p); box-shadow: var(--sh); position: relative; }
-        
-        /* Modals */
-        .mo { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
-        .mo.open { display: flex; }
-        .mdl { background: #fff; border-radius: var(--r); width: 95%; max-width: 800px; max-height: 90vh; overflow-y: auto; padding: 30px; }
-        
-        /* VAS */
-        .vas-wrap { display: flex; gap: 5px; margin-top: 10px; }
-        .vas-btn { width: 35px; height: 35px; border-radius: 50%; border: 1px solid var(--border); background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .vas-btn.sel { background: var(--acc); color: #fff; border-color: var(--acc); font-weight: bold; }
-
-        .toast { position: fixed; bottom: 20px; right: 20px; padding: 15px 25px; border-radius: var(--rs); color: #fff; z-index: 2000; display: none; }
-        
-        @media (max-width: 768px) {
-            .side { transform: translateX(-100%); }
-            .main { margin-left: 0; padding: 15px; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Physiclinic</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--p:#1a5c4a;--pl:#22776a;--pd:#0d3d2e;--acc:#e8a020;--bg:#eef2f0;--card:#fff;--txt:#162820;--muted:#5a7a6e;--border:#ccddd6;--red:#d94f4f;--redl:#fdeaea;--green:#27ae60;--greenl:#eafaf1;--sh:0 2px 14px rgba(13,61,46,.09);--shl:0 8px 36px rgba(13,61,46,.15);--r:14px;--rs:8px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);font-size:15px}
+#loginScreen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--pd)}
+.lbox{background:#fff;border-radius:20px;padding:44px 40px;width:100%;max-width:380px;box-shadow:var(--shl)}
+.lbox h1{font-size:26px;font-weight:700;color:var(--pd);margin-bottom:4px;text-align:center}
+.lbox p{font-size:13px;color:var(--muted);text-align:center;margin-bottom:26px}
+.lerr{background:var(--redl);color:var(--red);padding:10px 14px;border-radius:var(--rs);font-size:13px;margin-bottom:14px;display:none}
+#appScreen{display:none}
+.wrap{display:flex;min-height:100vh}
+.side{width:230px;background:var(--pd);position:fixed;top:0;left:0;height:100vh;display:flex;flex-direction:column;z-index:100;transition:transform .3s}
+.slogo{padding:22px 18px 14px;border-bottom:1px solid rgba(255,255,255,.1)}
+.slogo h2{color:#fff;font-size:17px;font-weight:700}
+.slogo small{color:rgba(255,255,255,.4);font-size:11px}
+.suser{padding:12px 18px;border-bottom:1px solid rgba(255,255,255,.1)}
+.suser strong{color:#fff;display:block;font-size:13px;font-weight:700}
+.suser small{color:rgba(255,255,255,.5);font-size:11px}
+.snav{padding:12px 10px;flex:1;display:flex;flex-direction:column;gap:3px}
+.ni{display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:var(--rs);color:rgba(255,255,255,.6);cursor:pointer;font-size:14px;font-weight:500;border:none;background:none;width:100%;text-align:left;transition:all .2s}
+.ni:hover{background:rgba(255,255,255,.1);color:#fff}
+.ni.on{background:var(--acc);color:var(--pd);font-weight:700}
+.ni.locked{opacity:.35;cursor:not-allowed}
+.ni.locked:hover{background:none;color:rgba(255,255,255,.6)}
+.sfooter{padding:14px 18px;border-top:1px solid rgba(255,255,255,.1)}
+.signout{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.07);color:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.12);border-radius:var(--rs);padding:10px 16px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;width:100%;transition:all .2s}
+.signout:hover{background:var(--red);color:#fff;border-color:var(--red)}
+.main{margin-left:230px;flex:1;padding:28px}
+.ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:10px}
+.pt{font-size:22px;font-weight:700;color:var(--pd)}
+.ps{font-size:13px;color:var(--muted);margin-top:2px}
+.card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:22px}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px}
+.pcard{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:18px;border:2px solid transparent;transition:all .2s;position:relative;overflow:hidden}
+.pcard::after{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--p)}
+.pcard:hover{box-shadow:var(--shl);border-color:var(--p);transform:translateY(-2px)}
+.pname{font-size:16px;font-weight:700;color:var(--pd);margin-bottom:4px}
+.pmeta{font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:3px;margin-bottom:10px}
+.badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;margin-bottom:8px}
+.bdone{background:var(--greenl);color:var(--green)}
+.bpend{background:#fff8e6;color:#b07a00}
+.pactions{display:flex;gap:7px;padding-top:10px;border-top:1px solid var(--border);flex-wrap:wrap}
+.sbar{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:var(--rs);padding:10px 14px;box-shadow:var(--sh);border:1.5px solid var(--border);margin-bottom:16px}
+.sbar input{border:none;outline:none;flex:1;font-family:'DM Sans',sans-serif;font-size:14px;background:transparent}
+.sbar input::placeholder{color:var(--muted)}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;white-space:nowrap}
+.bp{background:var(--p);color:#fff}.bp:hover{background:var(--pl)}
+.ba{background:var(--acc);color:var(--pd)}.ba:hover{opacity:.9}
+.bd{background:var(--redl);color:var(--red)}.bd:hover{background:var(--red);color:#fff}
+.bg{background:transparent;color:var(--muted);border:1.5px solid var(--border)}.bg:hover{border-color:var(--p);color:var(--p)}
+.bpdf{background:#c0392b;color:#fff}.bpdf:hover{background:#a93226}
+.bcsv{background:#1d6f42;color:#fff}.bcsv:hover{background:#155235}
+.bs{padding:6px 12px;font-size:13px}
+.mo{position:fixed;inset:0;background:rgba(13,61,46,.5);z-index:200;display:flex;align-items:center;justify-content:center;padding:14px;backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .25s}
+.mo.open{opacity:1;pointer-events:all}
+.mdl{background:#fff;border-radius:var(--r);width:100%;max-width:720px;max-height:92vh;overflow-y:auto;box-shadow:var(--shl);transform:translateY(24px);transition:transform .25s}
+.mo.open .mdl{transform:translateY(0)}
+.mhd{padding:20px 22px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:1}
+.mtt{font-size:17px;font-weight:700;color:var(--pd)}
+.mcl{background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted)}
+.mbody{padding:20px 22px;display:flex;flex-direction:column;gap:14px}
+.mft{padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fl{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+.fc{border:1.5px solid var(--border);border-radius:var(--rs);padding:9px 13px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--txt);outline:none;transition:border-color .2s;background:var(--bg);width:100%}
+.fc:focus{border-color:var(--p);background:#fff}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.sdiv{background:linear-gradient(90deg,var(--pd),var(--p));color:#fff;padding:8px 15px;border-radius:var(--rs);font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;margin:4px 0 5px}
+.rtabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.rtab{padding:7px 15px;border-radius:22px;font-size:13px;font-weight:600;cursor:pointer;border:2px solid var(--border);background:var(--bg);color:var(--muted);font-family:'DM Sans',sans-serif;transition:all .2s}
+.rtab.on{background:var(--p);color:#fff;border-color:var(--p)}
+.rtab-add{padding:7px 13px;border-radius:22px;font-size:13px;font-weight:600;cursor:pointer;border:2px dashed var(--border);background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;transition:all .2s}
+.rtab-add:hover{border-color:var(--p);color:var(--p)}
+.rpanel{display:none}.rpanel.on{display:block}
+.pg{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:4px}
+.pill{display:inline-flex;align-items:center;padding:6px 14px;border-radius:22px;border:2px solid var(--border);background:var(--bg);color:var(--txt);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .18s;-webkit-appearance:none;appearance:none}
+.pill:hover{border-color:var(--p);background:#e0ede8;color:var(--p)}
+.pill.sel{background:var(--p)!important;color:#fff!important;border-color:var(--p)!important;font-weight:700}
+.pill.sel::before{content:"✓ "}
+.addrow{display:flex;gap:8px;margin-top:8px}
+.addrow input{flex:1;border:1.5px dashed var(--border);border-radius:22px;padding:6px 14px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;background:transparent}
+.addrow input:focus{border-color:var(--p)}
+.addrow button{background:var(--p);color:#fff;border:none;border-radius:22px;padding:6px 14px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer}
+.vas-btn{width:36px;height:36px;border-radius:50%;border:2px solid var(--border);font-weight:700;font-size:12px;cursor:pointer;background:var(--bg);font-family:'DM Sans',sans-serif;transition:all .18s;color:var(--txt)}
+.vas-btn.sel{background:var(--p);color:#fff;border-color:var(--p);transform:scale(1.15)}
+.profhd{background:linear-gradient(135deg,var(--pd),var(--pl));border-radius:var(--r);padding:22px;color:#fff;margin-bottom:16px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.profname{font-size:20px;font-weight:700;margin-bottom:3px}
+.proftags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.ptag{background:rgba(255,255,255,.15);border-radius:20px;padding:3px 11px;font-size:12px;font-weight:500}
+.ptag.gold{background:var(--acc);color:var(--pd);font-weight:700}
+.vcard{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:18px;margin-bottom:14px;border-top:3px solid var(--p);position:relative}
+.vcard.fu{border-top-color:var(--acc)}
+.vlabel{display:inline-flex;align-items:center;gap:5px;padding:3px 11px;border-radius:20px;font-size:12px;font-weight:700;margin-bottom:12px}
+.vlabel.ini{background:var(--greenl);color:var(--green)}
+.vlabel.fup{background:#fff3cd;color:#b07a00}
+.vdel{position:absolute;top:14px;right:14px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:15px}
+.vdel:hover{color:var(--red)}
+.vedit{position:absolute;top:12px;right:40px;background:none;border:1.5px solid var(--border);color:var(--muted);cursor:pointer;font-size:12px;padding:3px 8px;border-radius:6px;font-family:'DM Sans',sans-serif;font-weight:600}
+.vedit:hover{border-color:var(--p);color:var(--p)}
+.rcard{background:var(--bg);border-radius:var(--rs);padding:14px;margin-bottom:10px;border-left:3px solid var(--p)}
+.rtitle{font-size:14px;font-weight:700;color:var(--pd);margin-bottom:10px}
+.asec{margin-bottom:12px}
+.attl{font-size:10px;font-weight:700;color:var(--p);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;border-bottom:1px solid var(--border);padding-bottom:4px}
+.atags{display:flex;flex-wrap:wrap;gap:6px}
+.atag{background:var(--bg);border:1.5px solid var(--border);padding:3px 11px;border-radius:20px;font-size:12px;font-weight:500}
+.atag.key{background:var(--greenl);border-color:var(--green);color:#1a6b40}
+.atag.red{background:var(--redl);border-color:var(--red);color:var(--red)}
+.conf-o{position:fixed;inset:0;background:rgba(13,61,46,.5);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .2s}
+.conf-o.open{opacity:1;pointer-events:all}
+.conf-b{background:#fff;border-radius:var(--r);padding:26px;max-width:320px;width:100%;text-align:center;box-shadow:var(--shl);transform:scale(.9);transition:transform .2s}
+.conf-o.open .conf-b{transform:scale(1)}
+.optrow{display:flex;align-items:center;gap:8px;background:var(--bg);padding:10px 14px;border-radius:var(--rs);margin-bottom:6px}
+.optrow span{flex:1;font-size:14px}
+.optdel{background:var(--redl);color:var(--red);border:1.5px solid var(--red);cursor:pointer;font-size:13px;padding:5px 12px;border-radius:6px;font-family:'DM Sans',sans-serif;font-weight:600;transition:all .2s}
+.optdel:hover{background:var(--red);color:#fff}
+.mtabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:14px}
+.mtab{padding:6px 13px;border-radius:var(--rs);font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:none;color:var(--muted);font-family:'DM Sans',sans-serif;transition:all .2s}
+.mtab.on{background:var(--p);color:#fff;border-color:var(--p)}
+.nbox{background:#f0f7f4;border-left:3px solid var(--p);padding:10px 14px;border-radius:0 var(--rs) var(--rs) 0;font-size:13px;color:var(--muted)}
+.loading{display:flex;align-items:center;justify-content:center;padding:50px;flex-direction:column;gap:12px;color:var(--muted)}
+.spin{width:34px;height:34px;border:3px solid var(--border);border-top-color:var(--p);border-radius:50%;animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--pd);color:#fff;padding:11px 18px;border-radius:var(--rs);font-size:14px;font-weight:600;z-index:999;transform:translateY(80px);transition:transform .3s;box-shadow:var(--shl)}
+.toast.show{transform:translateY(0)}
+.toast.err{background:var(--red)}
+.empty{text-align:center;padding:50px 20px;color:var(--muted)}
+.empty .ico{font-size:42px;display:block;margin-bottom:10px}
+.mtoggle{display:none;position:fixed;top:12px;left:12px;z-index:300;background:var(--pd);color:#fff;border:none;border-radius:var(--rs);padding:9px 11px;font-size:18px;cursor:pointer}
+.ovcl{display:none}
+@media(max-width:768px){.side{transform:translateX(-100%)}.side.open{transform:translateX(0)}.main{margin-left:0;padding:14px;padding-top:56px}.mtoggle{display:block}.ovcl{display:block;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:99}.fr{grid-template-columns:1fr}.pgrid{grid-template-columns:1fr}.lbox{padding:32px 22px}}
+</style>
 </head>
 <body>
-
 <div id="loginScreen">
-    <div class="lbox">
-        <h1 style="color: var(--pd); margin-bottom: 5px;">Physiclinic</h1>
-        <p style="color: var(--muted); margin-bottom: 25px;">PT Patient Archive Access</p>
-        <div id="loginError" style="color: var(--red); font-size: 13px; margin-bottom: 15px; display: none;"></div>
-        <label style="font-size: 12px; font-weight: 700; color: var(--muted);">EMAIL</label>
-        <input type="email" id="email" class="fc" placeholder="doctor@clinic.com">
-        <div style="margin-top: 15px;">
-            <label style="font-size: 12px; font-weight: 700; color: var(--muted);">PASSWORD</label>
-            <input type="password" id="password" class="fc" placeholder="••••••••">
-        </div>
-        <button id="btnLogin" class="btn bp" style="width: 100%; margin-top: 25px; justify-content: center;">Sign In</button>
-    </div>
+  <div class="lbox">
+    <h1>Physiclinic</h1>
+    <p>PT Patient Archive — Ortho</p>
+    <div class="lerr" id="lerr"></div>
+    <div class="fg" style="margin-bottom:12px"><label class="fl">Email</label><input class="fc" type="email" id="lEmail" placeholder="your@email.com" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div class="fg" style="margin-bottom:22px"><label class="fl">Password</label><input class="fc" type="password" id="lPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <button class="btn bp" id="loginBtn" style="width:100%;justify-content:center;padding:12px" onclick="doLogin()">Sign In →</button>
+  </div>
 </div>
-
 <div id="appScreen">
-    <div class="wrap">
-        <aside class="side">
-            <div class="slogo">
-                <h2 style="color: var(--acc);">Physiclinic</h2>
-                <p style="font-size: 11px; opacity: 0.6;">Ortho Patient Archive</p>
-            </div>
-            <div id="userInfo" style="padding: 15px 20px; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                <div id="userName" style="font-weight: 700; font-size: 14px;">User Name</div>
-                <div id="userRole" style="font-size: 11px; color: var(--acc); text-transform: uppercase;">Role</div>
-            </div>
-            <nav class="snav">
-                <button class="ni on" id="navPatients">👥 Patients</button>
-                <button class="ni" id="navManage">⚙️ Manage Options</button>
-                <button class="ni" id="navUsers">👤 Manage Users</button>
-            </nav>
-            <div style="padding: 20px;">
-                <button id="btnLogout" class="btn bg" style="width: 100%; background: rgba(255,255,255,0.1); color: #fff; border: none;">Sign Out</button>
-            </div>
-        </aside>
-
-        <main class="main">
-            <section id="view-patients">
-                <div class="ph">
-                    <h1 class="pt">Patient Archive</h1>
-                    <div style="display: flex; gap: 10px;">
-                        <button id="btnExportAll" class="btn bg">Export CSV</button>
-                        <button id="btnNewPatient" class="btn bp">+ New Patient</button>
-                    </div>
-                </div>
-                <input type="text" id="searchPatients" class="fc" placeholder="Search by name, region, or diagnosis..." style="margin-bottom: 20px; padding: 15px;">
-                <div id="patientGrid" class="pgrid"></div>
-            </section>
-
-            <section id="view-manage" style="display:none;">
-                <div class="ph"><h1 class="pt">Manage Assessment Options</h1></div>
-                <div class="card">
-                    <div class="pg" id="manageTabs">
-                        <button class="pill sel" data-tab="regions">Regions</button>
-                        <button class="pill" data-tab="diagnoses">Diagnoses</button>
-                        <button class="pill" data-tab="complaints">Complaints</button>
-                        <button class="pill" data-tab="findings">Findings</button>
-                        <button class="pill" data-tab="problems">Problem List</button>
-                        <button class="pill" data-tab="treatment">Treatment</button>
-                    </div>
-                    <div id="manageContainer" style="margin-top: 25px;">
-                        <div id="regionSelectWrapper" style="display:none; margin-bottom: 20px;">
-                            <label style="font-size: 12px; font-weight: bold;">SELECT REGION TO EDIT ITEMS FOR:</label>
-                            <select id="manageRegionContext" class="fc"></select>
-                        </div>
-                        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                            <input type="text" id="newOptionInput" class="fc" placeholder="Add new item...">
-                            <button id="btnAddOption" class="btn bp" style="margin-top: 5px;">Add</button>
-                        </div>
-                        <div id="optionsList" style="display: flex; flex-direction: column; gap: 10px;"></div>
-                    </div>
-                </div>
-            </section>
-
-            <section id="view-users" style="display:none;">
-                <div class="ph">
-                    <h1 class="pt">Staff Management</h1>
-                    <button id="btnNewUser" class="btn bp">+ Add Staff</button>
-                </div>
-                <div id="userList" class="pgrid"></div>
-            </section>
-
-            <section id="view-profile" style="display:none;">
-                <div id="profileHeader"></div>
-                <div style="margin: 20px 0; display: flex; gap: 10px;">
-                    <button id="btnNewAssessment" class="btn ba">+ Initial Assessment</button>
-                    <button id="btnNewFollowup" class="btn bp">+ Follow-up</button>
-                    <button id="btnProfileBack" class="btn bg">← Back</button>
-                </div>
-                <div id="visitHistory"></div>
-            </section>
-        </main>
-    </div>
-</div>
-
-<div class="mo" id="modalPatient">
-    <div class="mdl" style="max-width: 500px;">
-        <h2 style="margin-bottom: 20px;">Patient Registration</h2>
-        <div class="fg">
-            <label>Full Name *</label>
-            <input type="text" id="p_name" class="fc">
-        </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
-            <div><label>Age</label><input type="number" id="p_age" class="fc"></div>
-            <div><label>Gender</label><select id="p_gender" class="fc"><option>Male</option><option>Female</option></select></div>
-        </div>
-        <div style="margin-top: 15px;">
-            <label>Occupation</label>
-            <input type="text" id="p_job" class="fc">
-        </div>
-        <div style="margin-top: 15px;">
-            <label>Phone</label>
-            <input type="text" id="p_phone" class="fc">
-        </div>
-        <div style="margin-top: 25px; display: flex; justify-content: flex-end; gap: 10px;">
-            <button class="btn bg" id="btnCancelPatient">Cancel</button>
-            <button class="btn bp" id="btnSavePatient">Save Patient</button>
-        </div>
-    </div>
-</div>
-
-<div class="mo" id="modalAssessment">
-    <div class="mdl" style="max-width: 900px;">
+  <button class="mtoggle" onclick="toggleSide()">☰</button>
+  <div class="ovcl" id="ovcl" onclick="toggleSide()"></div>
+  <div class="wrap">
+    <aside class="side" id="side">
+      <div class="slogo"><h2>Physiclinic</h2><small>PT Patient Archive</small></div>
+      <div class="suser"><strong id="suName">...</strong><small id="suRole">...</small></div>
+      <nav class="snav">
+        <button class="ni on" id="nav0" onclick="goPage('patients')">👥 Patients</button>
+        <button class="ni" id="nav1">⚙️ Manage Options</button>
+        <button class="ni" id="nav2">👤 Manage Users</button>
+      </nav>
+      <div class="sfooter"><button class="signout" onclick="doLogout()">⇠ Sign Out</button></div>
+    </aside>
+    <main class="main">
+      <div id="pg-patients">
         <div class="ph">
-            <h2 id="assessTitle">Clinical Assessment</h2>
-            <button id="btnAddRegion" class="btn ba">+ Add Region</button>
+          <div><div class="pt">Patient Archive</div><div class="ps" id="pcnt"></div></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn bcsv" id="btnAll" onclick="exportAll()">📊 Export All</button>
+            <button class="btn bp" onclick="openAdd()">+ New Patient</button>
+          </div>
         </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-            <div><label>Date</label><input type="date" id="v_date" class="fc"></div>
-            <div><label>Duration (mins)</label><input type="number" id="v_dur" class="fc" value="30"></div>
-        </div>
-        <div id="assessmentRegionsContainer"></div>
-        <div style="margin-top: 20px;">
-            <label>Clinical Notes</label>
-            <textarea id="v_notes" class="fc" style="height: 80px;"></textarea>
-        </div>
-        <div style="margin-top: 25px; display: flex; justify-content: flex-end; gap: 10px;">
-            <button class="btn bg" id="btnCancelAssess">Cancel</button>
-            <button class="btn bp" id="btnSaveAssess">Save Clinical Record</button>
-        </div>
-    </div>
+        <div class="sbar"><span style="color:var(--muted)">🔍</span><input type="text" id="srch" placeholder="Search..." oninput="renderList()"></div>
+        <div class="pgrid" id="pgrid"></div>
+      </div>
+      <div id="pg-manage" style="display:none">
+        <div class="ph"><div><div class="pt">Manage Options</div><div class="ps">Add or remove options from lists</div></div></div>
+        <div class="card" id="manageCard"></div>
+      </div>
+      <div id="pg-users" style="display:none">
+        <div class="ph"><div><div class="pt">Manage Users</div></div></div>
+        <div class="card" id="usersBody"></div>
+      </div>
+      <div id="pg-profile" style="display:none"></div>
+    </main>
+  </div>
 </div>
-
-<div class="mo" id="modalUser">
-    <div class="mdl" style="max-width: 400px;">
-        <h2>Add Staff Member</h2>
-        <div style="margin-top: 15px;"><label>Full Name</label><input type="text" id="u_name" class="fc"></div>
-        <div style="margin-top: 15px;"><label>Email</label><input type="email" id="u_email" class="fc"></div>
-        <div style="margin-top: 15px;"><label>Password</label><input type="password" id="u_pass" class="fc"></div>
-        <div style="margin-top: 15px;">
-            <label>Role</label>
-            <select id="u_role" class="fc">
-                <option value="receptionist">Receptionist</option>
-                <option value="doctor">Doctor</option>
-            </select>
-        </div>
-        <div style="margin-top: 25px; display: flex; justify-content: flex-end; gap: 10px;">
-            <button class="btn bg" id="btnCancelUser">Cancel</button>
-            <button class="btn bp" id="btnSaveUser">Create Account</button>
-        </div>
+<div class="mo" id="moAdd">
+  <div class="mdl" style="max-width:460px">
+    <div class="mhd"><div class="mtt">New Patient</div><button class="mcl" onclick="closeM('moAdd')">✕</button></div>
+    <div class="mbody">
+      <div class="nbox">📝 Basic info — entered by receptionist</div>
+      <div class="fr">
+        <div class="fg"><label class="fl">Full Name *</label><input class="fc" id="iName" placeholder="Patient name"></div>
+        <div class="fg"><label class="fl">Age *</label><input class="fc" id="iAge" type="number" placeholder="Age"></div>
+      </div>
+      <div class="fr">
+        <div class="fg"><label class="fl">Gender</label><select class="fc" id="iGender"><option>Male</option><option>Female</option></select></div>
+        <div class="fg"><label class="fl">Occupation</label><input class="fc" id="iJob" placeholder="e.g. Office worker"></div>
+      </div>
+      <div class="fg"><label class="fl">Phone</label><input class="fc" id="iPhone" placeholder="Phone number"></div>
     </div>
+    <div class="mft"><button class="btn bg" onclick="closeM('moAdd')">Cancel</button><button class="btn bp" onclick="saveNew()">Save Patient</button></div>
+  </div>
 </div>
-
-<div id="toast" class="toast"></div>
-
+<div class="mo" id="moAssess">
+  <div class="mdl">
+    <div class="mhd"><div class="mtt" id="assessTtl">Assessment</div><button class="mcl" onclick="closeM('moAssess')">✕</button></div>
+    <div class="mbody" id="assessBody"></div>
+    <div class="mft"><button class="btn bg" onclick="closeM('moAssess')">Cancel</button><button class="btn bp" onclick="saveAssess()">💾 Save</button></div>
+  </div>
+</div>
+<div class="mo" id="moUser">
+  <div class="mdl" style="max-width:430px">
+    <div class="mhd"><div class="mtt">Add Staff Account</div><button class="mcl" onclick="closeM('moUser')">✕</button></div>
+    <div class="mbody">
+      <div class="fg"><label class="fl">Full Name</label><input class="fc" id="uName" placeholder="Staff name"></div>
+      <div class="fg"><label class="fl">Email *</label><input class="fc" id="uEmail" type="email" placeholder="email@example.com"></div>
+      <div class="fg"><label class="fl">Password *</label><input class="fc" id="uPass" type="password" placeholder="Min 6 characters"></div>
+      <div class="fg"><label class="fl">Role</label><select class="fc" id="uRole"><option value="doctor">Doctor (Full Access)</option><option value="receptionist">Receptionist (Add patients only)</option></select></div>
+    </div>
+    <div class="mft"><button class="btn bg" onclick="closeM('moUser')">Cancel</button><button class="btn bp" onclick="saveUser()">Create Account</button></div>
+  </div>
+</div>
+<div class="conf-o" id="confO">
+  <div class="conf-b">
+    <div style="font-size:34px;margin-bottom:10px">⚠️</div>
+    <div style="font-size:16px;font-weight:700;color:var(--pd);margin-bottom:7px" id="confTitle">Confirm</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:18px" id="confMsg"></div>
+    <div style="display:flex;gap:10px;justify-content:center"><button class="btn bg bs" onclick="closeConf()">Cancel</button><button class="btn bd bs" id="confBtn">Delete</button></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, deleteDoc, arrayUnion, arrayRemove, onSnapshot, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyBV6--Y8VTOIm0XhU1h-6GSJmJiWwbBMd8",
-        authDomain: "physiclinic-4a8d1.firebaseapp.com",
-        projectId: "physiclinic-4a8d1",
-        storageBucket: "physiclinic-4a8d1.firebasestorage.app",
-        messagingSenderId: "581907813652",
-        appId: "1:581907813652:web:c203369bb92e63d01b1e01"
-    };
+const FB = initializeApp({apiKey:"AIzaSyBV6--Y8VTOIm0XhU1h-6GSJmJiWwbBMd8",authDomain:"physiclinic-4a8d1.firebaseapp.com",projectId:"physiclinic-4a8d1",storageBucket:"physiclinic-4a8d1.firebasestorage.app",messagingSenderId:"581907813652",appId:"1:581907813652:web:c203369bb92e63d01b1e01"});
+const AUTH = getAuth(FB);
+const DB   = getFirestore(FB);
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+// STATE
+let ME=null, PTS=[], MG_TAB='regions';
+let AS_PID='', AS_TYPE='', AS_FU_ID=null, AS_DATE='', AS_REGIONS=[], AS_CUR=0, AS_DUR='', AS_ONSET='', AS_NOTES='';
 
-    // --- State ---
-    let currentUser = null;
-    let currentPatient = null;
-    let globalOptions = null;
-    let currentEditVisitIdx = -1;
+// OPTIONS — always fresh, no cache
+async function getOpts(){ const s=await getDoc(doc(DB,'config','options')); return s.exists()?s.data():DEF_OPTS(); }
+async function putOpts(o){ await setDoc(doc(DB,'config','options'),o); }
 
-    // --- Core UI Functions ---
-    function showToast(msg, isErr = false) {
-        const t = document.getElementById('toast');
-        t.innerText = msg;
-        t.style.display = 'block';
-        t.style.backgroundColor = isErr ? 'var(--red)' : 'var(--pd)';
-        setTimeout(() => t.style.display = 'none', 3000);
-    }
+// AUTH
+window.doLogin = async()=>{
+  const btn=document.getElementById('loginBtn'); btn.textContent='...'; btn.disabled=true;
+  const err=document.getElementById('lerr'); err.style.display='none';
+  try{ await signInWithEmailAndPassword(AUTH,document.getElementById('lEmail').value.trim(),document.getElementById('lPass').value); }
+  catch(e){ err.textContent='Invalid email or password'; err.style.display='block'; }
+  finally{ btn.textContent='Sign In →'; btn.disabled=false; }
+};
+window.doLogout=async()=>{
+  await signOut(AUTH); PTS=[]; ME=null;
+  document.getElementById('appScreen').style.display='none';
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('lEmail').value=''; document.getElementById('lPass').value='';
+};
+onAuthStateChanged(AUTH, async user=>{
+  if(!user)return;
+  const s=await getDoc(doc(DB,'users',user.uid));
+  ME=s.exists()?{uid:user.uid,email:user.email,...s.data()}:{uid:user.uid,email:user.email,name:user.email,role:'doctor'};
+  if(!s.exists())await setDoc(doc(DB,'users',user.uid),{name:user.email,role:'doctor',email:user.email});
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('appScreen').style.display='block';
+  document.getElementById('suName').textContent=ME.name||ME.email;
+  document.getElementById('suRole').textContent=ME.role==='doctor'?'👨‍⚕️ Doctor':'🗂️ Receptionist';
+  // nav1 & nav2 setup
+  const n1=document.getElementById('nav1'), n2=document.getElementById('nav2');
+  if(ME.role==='doctor'){
+    n1.addEventListener('click',()=>goPage('manage'));
+    n2.addEventListener('click',()=>goPage('users'));
+    document.getElementById('btnAll').style.display='';
+  } else {
+    n1.classList.add('locked'); n1.addEventListener('click',()=>toast('Doctor access only',true));
+    n2.classList.add('locked'); n2.addEventListener('click',()=>toast('Doctor access only',true));
+    document.getElementById('btnAll').style.display='none';
+  }
+  loadPts();
+});
 
-    function switchView(viewId) {
-        document.querySelectorAll('main section').forEach(s => s.style.display = 'none');
-        document.getElementById(`view-${viewId}`).style.display = 'block';
-        document.querySelectorAll('.ni').forEach(n => n.classList.remove('on'));
-        const activeNav = document.getElementById(`nav${viewId.charAt(0).toUpperCase() + viewId.slice(1)}`);
-        if(activeNav) activeNav.classList.add('on');
-    }
+// PATIENTS
+function loadPts(){
+  onSnapshot(query(collection(DB,'patients'),orderBy('createdAt','desc')),snap=>{
+    PTS=snap.docs.map(d=>({id:d.id,...d.data()})); renderList();
+  });
+}
+window.renderList=()=>{
+  const q=(document.getElementById('srch')?.value||'').toLowerCase();
+  const pts=PTS.filter(p=>p.name.toLowerCase().includes(q)||(p.visits||[]).flatMap(v=>(v.regions||[]).map(r=>r.region+' '+(r.diagnoses||[]).join(' '))).join(' ').toLowerCase().includes(q));
+  document.getElementById('pcnt').textContent=`${PTS.length} patient${PTS.length!==1?'s':''}`;
+  const g=document.getElementById('pgrid');
+  if(!pts.length){g.innerHTML=`<div class="empty" style="grid-column:1/-1"><span class="ico">👥</span><h3>${q?'No results':'No patients yet'}</h3></div>`;return;}
+  const isDoc=ME.role==='doctor';
+  g.innerHTML=pts.map(p=>{
+    const ini=(p.visits||[]).find(v=>v.type==='initial');
+    const fus=(p.visits||[]).filter(v=>v.type==='followup');
+    const regs=(ini?.regions||[]).map(r=>r.region).join(', ');
+    return `<div class="pcard"><div class="pname">${p.name}</div><span class="badge ${ini?'bdone':'bpend'}">${ini?'✅ Complete':'⏳ Pending'}</span><div class="pmeta"><span>👤 ${p.age} y/o — ${p.gender||''}${p.job?' · '+p.job:''}</span>${p.phone?`<span>📞 ${p.phone}</span>`:''} ${regs?`<span>📍 ${regs}</span>`:''} ${ini?`<span>📅 ${ini.date}</span>`:''} ${fus.length?`<span>🔄 ${fus.length} follow-up${fus.length>1?'s':''}</span>`:''}</div><div class="pactions"><button class="btn bp bs" onclick="openProfile('${p.id}')">📋 View</button>${isDoc?`<button class="btn bg bs" onclick="openAssess('${p.id}','initial')">✏️ Assessment</button>`:''} ${isDoc?`<button class="btn bd bs" onclick="askDel('${p.id}')">🗑️</button>`:''}</div></div>`;
+  }).join('');
+};
 
-    // --- Auth Logic ---
-    document.getElementById('btnLogin').addEventListener('click', async () => {
-        const e = document.getElementById('email').value;
-        const p = document.getElementById('password').value;
-        try {
-            await signInWithEmailAndPassword(auth, e, p);
-        } catch (err) {
-            const errDiv = document.getElementById('loginError');
-            errDiv.innerText = "Login failed. Check credentials.";
-            errDiv.style.display = 'block';
-        }
+// ADD PATIENT
+window.openAdd=()=>{ ['iName','iAge','iJob','iPhone'].forEach(id=>document.getElementById(id).value=''); document.getElementById('iGender').value='Male'; openM('moAdd'); };
+window.saveNew=async()=>{
+  const name=document.getElementById('iName').value.trim(), age=document.getElementById('iAge').value.trim();
+  if(!name||!age){toast('Name and age required',true);return;}
+  try{
+    const ref=await addDoc(collection(DB,'patients'),{name,age,gender:document.getElementById('iGender').value,job:document.getElementById('iJob').value.trim(),phone:document.getElementById('iPhone').value.trim(),createdAt:Date.now(),createdBy:ME.uid,visits:[]});
+    closeM('moAdd'); toast('Patient added ✅');
+    if(ME.role==='doctor')setTimeout(()=>openAssess(ref.id,'initial'),300);
+  }catch(e){toast('Error: '+e.message,true);}
+};
+
+// ASSESSMENT
+window.openAssess=async(pid,type,fuId=null)=>{
+  if(ME.role!=='doctor'){toast('Doctor access only',true);return;}
+  AS_PID=pid; AS_TYPE=type; AS_FU_ID=fuId;
+  const p=PTS.find(x=>x.id===pid); if(!p)return;
+  let ex=fuId?(p.visits||[]).find(v=>v.id===fuId):type==='initial'?(p.visits||[]).find(v=>v.type==='initial'):null;
+  if(ex){AS_DATE=ex.date||today();AS_REGIONS=JSON.parse(JSON.stringify(ex.regions||[]));AS_DUR=ex.duration||'';AS_ONSET=ex.onset||'';AS_NOTES=ex.notes||'';}
+  else{AS_DATE=today();AS_DUR='';AS_ONSET='';AS_NOTES='';AS_REGIONS=type==='followup'?((p.visits||[]).find(v=>v.type==='initial')?.regions||[]).map(r=>({region:r.region,diagnoses:[],complaints:[],findings:[],problems:[],treatment:[],vas:null,sessionsPlanned:'',freq:''})):[];}
+  AS_CUR=0;
+  document.getElementById('assessTtl').textContent=(type==='initial'?'Initial Assessment':'Follow-up')+' — '+p.name;
+  document.getElementById('assessBody').innerHTML='<div class="loading"><div class="spin"></div><span>Loading...</span></div>';
+  openM('moAssess');
+  const opts=await getOpts(); buildForm(opts);
+};
+function buildForm(opts){
+  const b=document.getElementById('assessBody'); b.innerHTML='';
+  const df=E('div','fg'); df.innerHTML='<label class="fl">Date</label>';
+  const di=E('input','fc'); di.type='date';di.id='as-date';di.value=AS_DATE;di.onchange=()=>AS_DATE=di.value; df.appendChild(di); b.appendChild(df);
+  const tabs=E('div','rtabs'); tabs.id='as-tabs';
+  AS_REGIONS.forEach((_,i)=>tabs.appendChild(mkRTab(AS_REGIONS[i].region,i)));
+  const addT=E('button','rtab-add'); addT.textContent='+ Add Region'; addT.onclick=()=>showPicker(opts); tabs.appendChild(addT); b.appendChild(tabs);
+  const panels=E('div'); panels.id='as-panels';
+  AS_REGIONS.forEach((_,i)=>panels.appendChild(mkPanel(AS_REGIONS[i],i,opts))); b.appendChild(panels);
+  if(!AS_REGIONS.length){const h=E('p');h.style.cssText='font-size:13px;color:var(--muted);padding:18px;text-align:center';h.textContent='Click "+ Add Region" to start';panels.appendChild(h);}
+  b.appendChild(mkSdiv('⏱ Duration & Onset'));
+  const dr=E('div','fr'); dr.appendChild(mkFG('Duration',mkInp('as-dur','e.g. 3 months',AS_DUR))); dr.appendChild(mkFG('Onset',mkSel('as-onset',['','Gradual','Sudden','Post-trauma','Post-surgical','Post-exercise','Unknown'],AS_ONSET))); b.appendChild(dr);
+  b.appendChild(mkSdiv('📝 Notes'));
+  const ta=E('textarea','fc'); ta.id='as-notes';ta.rows=3;ta.placeholder='Clinical notes...';ta.value=AS_NOTES; b.appendChild(ta);
+  if(AS_REGIONS.length)activateTab(0);
+}
+function mkRTab(name,idx){const b=E('button','rtab'+(idx===AS_CUR?' on':''));b.textContent=name;b.onclick=()=>activateTab(idx);return b;}
+function activateTab(idx){AS_CUR=idx;document.querySelectorAll('#as-tabs .rtab').forEach((t,i)=>t.classList.toggle('on',i===idx));document.querySelectorAll('#as-panels .rpanel').forEach((p,i)=>p.classList.toggle('on',i===idx));}
+function mkPanel(rd,idx,opts){
+  const p=E('div','rpanel'+(idx===AS_CUR?' on':''));
+  const rb=E('button','btn bd bs');rb.style.marginBottom='12px';rb.textContent=`🗑️ Remove ${rd.region}`;rb.onclick=()=>removeReg(idx,opts);p.appendChild(rb);
+  const r=rd.region;
+  [['🩺 Diagnosis','diagnoses',opts.diagnoses[r]||[]],['💬 Chief Complaints','complaints',opts.complaints[r]||[]],['🔬 Assessment Findings','findings',opts.findings[r]||[]],['📌 Problem List','problems',opts.problems],['💊 Treatment Plan','treatment',opts.treatment[r]||[]]].forEach(([t,k,all])=>{p.appendChild(mkSdiv(t));p.appendChild(mkPillsAdd(k,all,rd[k]||[],k==='problems'?null:r,opts,idx));});
+  p.appendChild(mkSdiv('😣 Pain Level — VAS (0–10)')); p.appendChild(mkVasEl(rd.vas,idx));
+  p.appendChild(mkSdiv('📅 Session Plan'));
+  const sr=E('div','fr'); sr.appendChild(mkFG('Sessions Planned',mkInp(`as-ss-${idx}`,'e.g. 12',rd.sessionsPlanned||'','number'))); sr.appendChild(mkFG('Frequency',mkSel(`as-fr-${idx}`,['','Daily','3x/week','2x/week','Weekly'],rd.freq||''))); p.appendChild(sr); return p;
+}
+function showPicker(opts){
+  const av=opts.regions.filter(r=>!AS_REGIONS.map(x=>x.region).includes(r));
+  if(!av.length){toast('All regions already added',true);return;}
+  const ov=E('div');ov.style.cssText='position:fixed;inset:0;background:rgba(13,61,46,.5);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px';ov.id='picker';
+  const box=E('div');box.style.cssText='background:#fff;border-radius:14px;padding:22px;max-width:440px;width:100%;box-shadow:0 8px 36px rgba(13,61,46,.2)';
+  box.innerHTML='<div style="font-size:16px;font-weight:700;color:var(--pd);margin-bottom:14px">Select Region</div>';
+  const pg=E('div','pg'); av.forEach(r=>{const b=E('button','pill');b.textContent=r;b.onclick=()=>{addReg(r,opts);document.getElementById('picker')?.remove();};pg.appendChild(b);});
+  box.appendChild(pg); const c=E('button','btn bg bs');c.style.marginTop='14px';c.textContent='Cancel';c.onclick=()=>ov.remove();box.appendChild(c);ov.appendChild(box);document.body.appendChild(ov);
+}
+function addReg(name,opts){AS_REGIONS.push({region:name,diagnoses:[],complaints:[],findings:[],problems:[],treatment:[],vas:null,sessionsPlanned:'',freq:''});const idx=AS_REGIONS.length-1;const tabs=document.getElementById('as-tabs');tabs.insertBefore(mkRTab(name,idx),tabs.querySelector('.rtab-add'));document.getElementById('as-panels').appendChild(mkPanel(AS_REGIONS[idx],idx,opts));activateTab(idx);}
+function removeReg(idx,opts){AS_REGIONS.splice(idx,1);buildForm(opts);}
+window.saveAssess=async()=>{
+  AS_DATE=document.getElementById('as-date')?.value||today(); AS_DUR=document.getElementById('as-dur')?.value.trim()||''; AS_ONSET=document.getElementById('as-onset')?.value||''; AS_NOTES=document.getElementById('as-notes')?.value.trim()||'';
+  AS_REGIONS.forEach((_,i)=>{AS_REGIONS[i].sessionsPlanned=document.getElementById(`as-ss-${i}`)?.value||'';AS_REGIONS[i].freq=document.getElementById(`as-fr-${i}`)?.value||'';});
+  const v={id:AS_FU_ID||uid(),type:AS_TYPE,date:AS_DATE,duration:AS_DUR,onset:AS_ONSET,notes:AS_NOTES,regions:AS_REGIONS,savedAt:Date.now()};
+  try{const p=PTS.find(x=>x.id===AS_PID);let visits=[...(p.visits||[])];if(AS_TYPE==='initial'){const i=visits.findIndex(x=>x.type==='initial');if(i>=0)visits[i]=v;else visits.unshift(v);}else{const i=visits.findIndex(x=>x.id===v.id);if(i>=0)visits[i]=v;else visits.push(v);}await updateDoc(doc(DB,'patients',AS_PID),{visits});closeM('moAssess');toast('Saved ✅');openProfile(AS_PID);}catch(e){toast('Error: '+e.message,true);}
+};
+
+// PROFILE
+window.openProfile=(pid)=>{
+  const p=PTS.find(x=>x.id===pid); if(!p)return;
+  const isDoc=ME.role==='doctor';
+  const tags=(arr,cls)=>(arr||[]).map(x=>`<span class="atag ${cls||''}">${x}</span>`).join('');
+  const visits=[...(p.visits||[])].sort((a,b)=>{if(a.type==='initial')return -1;if(b.type==='initial')return 1;return a.date>b.date?-1:1;});
+  const ini=visits.find(v=>v.type==='initial');
+  let html=`<button class="btn bg bs" onclick="goPage('patients')" style="margin-bottom:12px">← Back</button>
+  <div class="profhd"><div><div class="profname">${p.name}</div><div style="opacity:.75;font-size:13px">${p.age} y/o — ${p.gender||''}${p.job?' · '+p.job:''}${p.phone?' · '+p.phone:''}</div><div class="proftags">${(ini?.regions||[]).map(r=>`<span class="ptag gold">${r.region}</span>`).join('')}${ini?`<span class="ptag">📅 ${ini.date}</span>`:''} ${visits.filter(v=>v.type==='followup').length?`<span class="ptag">🔄 ${visits.filter(v=>v.type==='followup').length} Follow-up(s)</span>`:''}</div></div>
+  <div style="display:flex;gap:7px;flex-wrap:wrap">${isDoc?`<button class="btn ba bs" onclick="openAssess('${p.id}','initial')">✏️ Edit</button>`:''}${isDoc?`<button class="btn bp bs" onclick="openAssess('${p.id}','followup')">+ Follow-up</button>`:''}${isDoc?`<button class="btn bpdf bs" onclick="exportPDF('${p.id}')">📄 PDF</button>`:''}${isDoc?`<button class="btn bcsv bs" onclick="exportCSV('${p.id}')">📊 CSV</button>`:''}</div></div>`;
+  if(!ini){html+=`<div class="card" style="text-align:center;padding:40px;color:var(--muted)"><div style="font-size:40px;margin-bottom:10px">📋</div><p style="font-weight:600">No assessment yet</p>${isDoc?`<button class="btn bp" style="margin-top:14px" onclick="openAssess('${p.id}','initial')">Start Assessment</button>`:''}</div>`;}
+  else{visits.forEach(v=>{const ini_=v.type==='initial';html+=`<div class="vcard ${ini_?'':'fu'}">${isDoc&&!ini_?`<button class="vdel" onclick="askDelVisit('${p.id}','${v.id}')">🗑️</button>`:''}${isDoc&&!ini_?`<button class="vedit" onclick="openAssess('${p.id}','followup','${v.id}')">✏️ Edit</button>`:''}<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px"><span class="vlabel ${ini_?'ini':'fup'}">${ini_?'📋 Initial Assessment':'🔄 Follow-up'}</span><span style="font-size:12px;font-weight:600;color:var(--muted)">📅 ${v.date}</span>${v.duration?`<span style="font-size:12px;color:var(--muted)">⏱ ${v.duration}${v.onset?' — '+v.onset:''}</span>`:''}</div>`;(v.regions||[]).forEach(r=>{html+=`<div class="rcard"><div class="rtitle">📍 ${r.region}${r.sessionsPlanned?` <span style="font-size:11px;color:var(--muted);font-weight:400">💪 ${r.sessionsPlanned}${r.freq?' · '+r.freq:''}</span>`:''}</div>`;if(r.diagnoses?.length)html+=`<div class="asec"><div class="attl">🩺 Diagnosis</div><div class="atags">${tags(r.diagnoses,'key')}</div></div>`;if(r.complaints?.length)html+=`<div class="asec"><div class="attl">💬 Complaints</div><div class="atags">${tags(r.complaints)}</div></div>`;if(r.vas!=null){const c=r.vas<=3?'#27ae60':r.vas<=6?'#e8a020':'#d94f4f';html+=`<div class="asec"><div class="attl">😣 VAS</div><div style="display:inline-flex;align-items:center;gap:8px;background:var(--bg);padding:6px 14px;border-radius:22px"><span style="font-size:22px;font-weight:700;color:${c}">${r.vas}</span><span style="color:var(--muted);font-size:12px">/10</span><div style="height:5px;width:90px;background:#ddd;border-radius:5px;overflow:hidden"><div style="height:100%;width:${r.vas*10}%;background:${c}"></div></div></div></div>`;}if(r.findings?.length)html+=`<div class="asec"><div class="attl">🔬 Findings</div><div class="atags">${tags(r.findings)}</div></div>`;if(r.problems?.length)html+=`<div class="asec"><div class="attl">📌 Problems</div><div class="atags">${tags(r.problems,'red')}</div></div>`;if(r.treatment?.length)html+=`<div class="asec"><div class="attl">💊 Treatment</div><div class="atags">${tags(r.treatment)}</div></div>`;html+=`</div>`;});if(v.notes)html+=`<div style="font-size:13px;background:var(--bg);padding:10px;border-radius:var(--rs);margin-top:8px">${v.notes}</div>`;html+=`</div>`;});}
+  document.getElementById('pg-profile').innerHTML=html; goPage('profile');
+};
+
+// DELETE
+window.askDelVisit=(pid,vid)=>{document.getElementById('confTitle').textContent='Delete Follow-up';document.getElementById('confMsg').textContent='Delete this follow-up?';document.getElementById('confBtn').onclick=async()=>{const p=PTS.find(x=>x.id===pid);await updateDoc(doc(DB,'patients',pid),{visits:(p.visits||[]).filter(v=>v.id!==vid)});toast('Deleted');closeConf();openProfile(pid);};document.getElementById('confO').classList.add('open');};
+window.askDel=(pid)=>{const p=PTS.find(x=>x.id===pid);document.getElementById('confTitle').textContent='Delete Patient';document.getElementById('confMsg').textContent=`Delete "${p?.name}"?`;document.getElementById('confBtn').onclick=async()=>{await deleteDoc(doc(DB,'patients',pid));toast('Deleted');closeConf();goPage('patients');};document.getElementById('confO').classList.add('open');};
+
+// ════════════════════════════════
+// MANAGE OPTIONS — pure DOM, no innerHTML for list items
+// ════════════════════════════════
+window.goPage=(n)=>{
+  ['patients','manage','profile','users'].forEach(p=>document.getElementById('pg-'+p).style.display='none');
+  document.getElementById('pg-'+n).style.display='block';
+  document.querySelectorAll('.ni').forEach(x=>x.classList.remove('on'));
+  document.getElementById('nav0').classList.toggle('on',n==='patients');
+  document.getElementById('nav1').classList.toggle('on',n==='manage');
+  document.getElementById('nav2').classList.toggle('on',n==='users');
+  if(n==='manage')renderManage();
+  if(n==='users')renderUsers();
+  closeSide();
+};
+
+async function renderManage(){
+  const card=document.getElementById('manageCard');
+  // clear
+  while(card.firstChild)card.removeChild(card.firstChild);
+
+  // load fresh opts
+  const opts=await getOpts();
+
+  // tab bar
+  const TABS=['regions','diagnoses','complaints','findings','treatment','problems'];
+  const LABELS={regions:'Regions',diagnoses:'Diagnoses',complaints:'Complaints',findings:'Findings',treatment:'Treatment',problems:'Problem List'};
+  const bar=E('div','mtabs');
+  TABS.forEach(t=>{
+    const b=E('button','mtab'+(MG_TAB===t?' on':''));
+    b.textContent=LABELS[t];
+    b.addEventListener('click',()=>{ MG_TAB=t; renderManage(); });
+    bar.appendChild(b);
+  });
+  card.appendChild(bar);
+
+  // content
+  if(MG_TAB==='regions'||MG_TAB==='problems'){
+    const items=MG_TAB==='regions'?opts.regions:opts.problems;
+
+    items.forEach(item=>{
+      const row=E('div','optrow');
+      const span=E('span'); span.textContent=item;
+      const btn=E('button','optdel'); btn.textContent='✕ Remove';
+      btn.addEventListener('click', async function(){
+        this.disabled=true; this.textContent='...';
+        try{
+          // read fresh
+          const fresh=await getOpts();
+          if(MG_TAB==='regions') fresh.regions=fresh.regions.filter(x=>x!==item);
+          else fresh.problems=fresh.problems.filter(x=>x!==item);
+          // write
+          await putOpts(fresh);
+          toast(item+' removed ✅');
+          // re-render
+          await renderManage();
+        }catch(e){ toast('Error: '+e.message,true); this.disabled=false; this.textContent='✕ Remove'; }
+      });
+      row.appendChild(span); row.appendChild(btn); card.appendChild(row);
     });
 
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            const userSnap = await getDoc(doc(db, "users", user.uid));
-            currentUser = { uid: user.uid, ...userSnap.data() };
-            
-            document.getElementById('userName').innerText = currentUser.name;
-            document.getElementById('userRole').innerText = currentUser.role;
-            
-            // Role Based Access
-            if(currentUser.role === 'receptionist') {
-                document.getElementById('navManage').classList.add('locked');
-                document.getElementById('navUsers').classList.add('locked');
-                document.getElementById('btnExportAll').style.display = 'none';
-            }
+    const ar=E('div','addrow'); ar.style.marginTop='12px';
+    const ai=E('input'); ai.type='text'; ai.placeholder=MG_TAB==='regions'?'New region...':'New problem...';
+    const ab=E('button'); ab.textContent='+ Add';
+    ab.addEventListener('click',async()=>{
+      const val=ai.value.trim(); if(!val)return;
+      const fresh=await getOpts();
+      if(MG_TAB==='regions'){if(!fresh.regions.includes(val)){fresh.regions.push(val);['diagnoses','complaints','findings','treatment'].forEach(k=>{fresh[k][val]=[];});}}
+      else{if(!fresh.problems.includes(val))fresh.problems.push(val);}
+      await putOpts(fresh); toast('Added ✅'); await renderManage();
+    });
+    ar.appendChild(ai); ar.appendChild(ab); card.appendChild(ar);
 
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('appScreen').style.display = 'block';
-            loadOptions();
-            renderPatients();
-        } else {
-            document.getElementById('loginScreen').style.display = 'flex';
-            document.getElementById('appScreen').style.display = 'none';
-        }
+  } else {
+    // region-based tab
+    const curReg=card.dataset.selReg||opts.regions[0]||'';
+
+    // region selector
+    const sw=E('div'); sw.style.marginBottom='12px';
+    const sl=E('label','fl'); sl.style.cssText='display:block;margin-bottom:5px'; sl.textContent='Region';
+    const ss=E('select','fc'); ss.style.width='auto';
+    opts.regions.forEach(r=>{ const op=E('option');op.value=r;op.textContent=r;if(r===curReg)op.selected=true; ss.appendChild(op); });
+    ss.addEventListener('change',()=>{ card.dataset.selReg=ss.value; renderManage(); });
+    sw.appendChild(sl); sw.appendChild(ss); card.appendChild(sw);
+    card.dataset.selReg=curReg;
+
+    const items=(opts[MG_TAB]&&opts[MG_TAB][curReg])?opts[MG_TAB][curReg]:[];
+    items.forEach(item=>{
+      const row=E('div','optrow');
+      const span=E('span'); span.textContent=item;
+      const btn=E('button','optdel'); btn.textContent='✕ Remove';
+      btn.addEventListener('click', async function(){
+        this.disabled=true; this.textContent='...';
+        try{
+          const fresh=await getOpts();
+          if(fresh[MG_TAB]&&fresh[MG_TAB][curReg]){
+            fresh[MG_TAB][curReg]=fresh[MG_TAB][curReg].filter(x=>x!==item);
+          }
+          await putOpts(fresh);
+          toast(item+' removed ✅');
+          await renderManage();
+        }catch(e){ toast('Error: '+e.message,true); this.disabled=false; this.textContent='✕ Remove'; }
+      });
+      row.appendChild(span); row.appendChild(btn); card.appendChild(row);
     });
 
-    document.getElementById('btnLogout').addEventListener('click', () => signOut(auth));
-
-    // --- Navigation ---
-    document.getElementById('navPatients').addEventListener('click', () => switchView('patients'));
-    document.getElementById('navManage').addEventListener('click', () => {
-        if(currentUser.role !== 'doctor') return;
-        switchView('manage');
-        renderOptionsManager();
+    const ar=E('div','addrow'); ar.style.marginTop='10px';
+    const ai=E('input'); ai.type='text'; ai.placeholder='Add option...';
+    const ab=E('button'); ab.textContent='+ Add';
+    ab.addEventListener('click',async()=>{
+      const val=ai.value.trim(); if(!val)return;
+      const fresh=await getOpts();
+      if(!fresh[MG_TAB][curReg])fresh[MG_TAB][curReg]=[];
+      if(!fresh[MG_TAB][curReg].includes(val))fresh[MG_TAB][curReg].push(val);
+      await putOpts(fresh); toast('Added ✅'); await renderManage();
     });
-    document.getElementById('navUsers').addEventListener('click', () => {
-        if(currentUser.role !== 'doctor') return;
-        switchView('users');
-        renderUsers();
-    });
+    ar.appendChild(ai); ar.appendChild(ab); card.appendChild(ar);
+  }
+}
 
-    // --- Options Management ---
-    async function loadOptions() {
-        const snap = await getDoc(doc(db, "config", "options"));
-        globalOptions = snap.data();
-    }
+// USERS
+async function renderUsers(){
+  const b=document.getElementById('usersBody'); while(b.firstChild)b.removeChild(b.firstChild);
+  b.innerHTML='<div class="loading"><div class="spin"></div></div>';
+  const snap=await getDocs(collection(DB,'users'));
+  const users=snap.docs.map(d=>({id:d.id,...d.data()}));
+  b.innerHTML='';
+  const hdr=E('div');hdr.style.cssText='display:flex;justify-content:space-between;align-items:center;margin-bottom:14px';
+  hdr.innerHTML=`<div style="font-weight:700;color:var(--pd)">${users.length} staff account${users.length!==1?'s':''}</div>`;
+  const ab=E('button','btn bp bs');ab.textContent='+ Add Staff';ab.onclick=()=>openM('moUser');hdr.appendChild(ab);b.appendChild(hdr);
+  const list=E('div');list.style.cssText='display:flex;flex-direction:column;gap:9px';
+  users.forEach(u=>{
+    const row=E('div');row.style.cssText='display:flex;align-items:center;gap:12px;background:var(--bg);padding:12px 14px;border-radius:var(--rs)';
+    const av=E('div');av.style.cssText='width:38px;height:38px;border-radius:50%;background:var(--p);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0';av.textContent=(u.name||u.email).charAt(0).toUpperCase();
+    const info=E('div');info.style.flex='1';info.innerHTML=`<div style="font-weight:700">${u.name||u.email}</div><div style="font-size:12px;color:var(--muted)">${u.email} · <span style="color:${u.role==='doctor'?'var(--p)':'var(--acc)'};font-weight:600">${u.role==='doctor'?'👨‍⚕️ Doctor':'🗂️ Receptionist'}</span></div>`;
+    row.appendChild(av);row.appendChild(info);
+    if(u.id!==ME.uid){const d=E('button','btn bd bs');d.textContent='Remove';d.addEventListener('click',()=>{document.getElementById('confTitle').textContent='Remove Staff';document.getElementById('confMsg').textContent=`Remove "${u.name||u.email}"?`;document.getElementById('confBtn').onclick=async()=>{await deleteDoc(doc(DB,'users',u.id));toast('Removed');closeConf();renderUsers();};document.getElementById('confO').classList.add('open');});row.appendChild(d);}
+    else{const y=E('span');y.style.cssText='font-size:11px;color:var(--muted)';y.textContent='(you)';row.appendChild(y);}
+    list.appendChild(row);
+  });
+  b.appendChild(list);
+}
+window.saveUser=async()=>{
+  const email=document.getElementById('uEmail').value.trim(),pass=document.getElementById('uPass').value,name=document.getElementById('uName').value.trim(),role=document.getElementById('uRole').value;
+  if(!email||!pass){toast('Email and password required',true);return;}if(pass.length<6){toast('Password min 6 characters',true);return;}
+  try{const c=await createUserWithEmailAndPassword(AUTH,email,pass);await setDoc(doc(DB,'users',c.user.uid),{name:name||email,email,role,createdAt:Date.now()});closeM('moUser');toast('Staff created ✅');renderUsers();}catch(e){toast(e.message,true);}
+};
 
-    async function renderOptionsManager() {
-        const activeTab = document.querySelector('#manageTabs .sel').dataset.tab;
-        const list = document.getElementById('optionsList');
-        const regionWrap = document.getElementById('regionSelectWrapper');
-        list.innerHTML = '';
-        
-        // Handle Contextual Regions
-        const nestedTypes = ['diagnoses', 'complaints', 'findings', 'treatment'];
-        if(nestedTypes.includes(activeTab)) {
-            regionWrap.style.display = 'block';
-            const select = document.getElementById('manageRegionContext');
-            select.innerHTML = globalOptions.regions.map(r => `<option value="${r}">${r}</option>`).join('');
-            
-            const currentRegion = select.value;
-            const items = globalOptions[activeTab][currentRegion] || [];
-            items.forEach(item => createOptionRow(item, activeTab, currentRegion));
-        } else {
-            regionWrap.style.display = 'none';
-            const items = globalOptions[activeTab] || [];
-            items.forEach(item => createOptionRow(item, activeTab));
-        }
-    }
+// PDF
+window.exportPDF=async(pid)=>{
+  const p=PTS.find(x=>x.id===pid);if(!p)return;toast('Generating PDF...');
+  const visits=[...(p.visits||[])].sort((a,b)=>{if(a.type==='initial')return -1;if(b.type==='initial')return 1;return a.date>b.date?-1:1;});
+  const pill=(x,bg,bc,tc)=>`<span style="background:${bg};border:1px solid ${bc};padding:3px 9px;border-radius:12px;font-size:11px;color:${tc};display:inline-block;margin:2px">${x}</span>`;
+  const sec=(t,arr,type='')=>arr?.length?`<div style="margin-bottom:8px"><div style="font-size:10px;font-weight:700;color:#1a5c4a;text-transform:uppercase;margin-bottom:4px">${t}</div><div>${arr.map(x=>type==='key'?pill(x,'#eafaf1','#27ae60','#1a6b40'):type==='red'?pill(x,'#fdeaea','#d94f4f','#d94f4f'):pill(x,'#eef2f0','#ccddd6','#162820')).join('')}</div></div>`:'';
+  let html=`<div style="font-family:Arial,sans-serif;padding:24px;max-width:700px;color:#162820"><div style="border-bottom:3px solid #0d3d2e;padding-bottom:12px;margin-bottom:16px"><div style="font-size:18px;font-weight:700;color:#0d3d2e">PT Assessment Report</div><div style="font-size:14px;font-weight:700;margin-top:3px">${p.name}</div><div style="font-size:12px;color:#5a7a6e;margin-top:1px">${p.age} y/o ${p.gender||''} ${p.job?'· '+p.job:''} ${p.phone?'· '+p.phone:''}</div></div>`;
+  visits.forEach(v=>{const ini_=v.type==='initial';html+=`<div style="margin-bottom:18px;border-left:3px solid ${ini_?'#1a5c4a':'#e8a020'};padding-left:12px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap"><span style="background:${ini_?'#eafaf1':'#fff3cd'};color:${ini_?'#27ae60':'#b07a00'};padding:2px 10px;border-radius:12px;font-size:11px;font-weight:700">${ini_?'Initial Assessment':'Follow-up'}</span><span style="font-size:12px;font-weight:600;color:#5a7a6e">📅 ${v.date}</span>${v.duration?`<span style="font-size:11px;color:#5a7a6e">⏱ ${v.duration}${v.onset?' — '+v.onset:''}</span>`:''}</div>`;(v.regions||[]).forEach(r=>{html+=`<div style="background:#f8faf9;border-radius:7px;padding:12px;margin-bottom:8px;border-right:3px solid #1a5c4a"><div style="font-weight:700;color:#0d3d2e;font-size:12px;margin-bottom:8px">📍 ${r.region}${r.sessionsPlanned?` <span style="font-size:10px;color:#5a7a6e;font-weight:400">— ${r.sessionsPlanned} sessions${r.freq?' · '+r.freq:''}</span>`:''}</div>${sec('Diagnosis',r.diagnoses,'key')}${sec('Chief Complaints',r.complaints)}${r.vas!=null?`<div style="margin-bottom:8px"><div style="font-size:10px;font-weight:700;color:#1a5c4a;text-transform:uppercase;margin-bottom:3px">VAS</div><span style="font-size:20px;font-weight:700;color:${r.vas<=3?'#27ae60':r.vas<=6?'#e8a020':'#d94f4f'}">${r.vas}/10</span></div>`:''}${sec('Findings',r.findings)}${sec('Problem List',r.problems,'red')}${sec('Treatment',r.treatment)}</div>`;});if(v.notes)html+=`<div style="font-size:11px;color:#5a7a6e;padding:6px 10px;background:#f8faf9;border-radius:5px;margin-top:4px">📝 ${v.notes}</div>`;html+=`</div>`;});
+  html+=`<div style="margin-top:20px;padding-top:10px;border-top:1px solid #d0e4de;font-size:10px;color:#5a7a6e;text-align:center">Physiclinic PT Archive · ${today()}</div></div>`;
+  const div=document.createElement('div');div.innerHTML=html;div.style.cssText='position:fixed;left:-9999px;top:0;background:#fff;width:700px;z-index:-1';document.body.appendChild(div);
+  try{const canvas=await html2canvas(div,{scale:2,useCORS:true,backgroundColor:'#ffffff',logging:false});const {jsPDF}=window.jspdf;const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});const pW=pdf.internal.pageSize.getWidth()-20,pH=pdf.internal.pageSize.getHeight()-20,iH=(canvas.height*pW)/canvas.width;let srcY=0,page=0;while(srcY<iH){if(page>0)pdf.addPage();const sliceH=Math.min(pH,iH-srcY);const sc=document.createElement('canvas');sc.width=canvas.width;sc.height=Math.round((sliceH/iH)*canvas.height);sc.getContext('2d').drawImage(canvas,0,Math.round((srcY/iH)*canvas.height),canvas.width,sc.height,0,0,canvas.width,sc.height);pdf.addImage(sc.toDataURL('image/jpeg',.92),'JPEG',10,10,pW,sliceH);srcY+=sliceH;page++;}pdf.save(`PT_${p.name.replace(/\s+/g,'_')}_${today()}.pdf`);toast('PDF downloaded ✅');}catch(e){toast('PDF error: '+e.message,true);}finally{document.body.removeChild(div);}
+};
 
-    function createOptionRow(text, type, region = null) {
-        const div = document.createElement('div');
-        div.className = 'card';
-        div.style.display = 'flex';
-        div.style.justifyContent = 'space-between';
-        div.style.padding = '10px 15px';
-        div.innerHTML = `<span>${text}</span><button class="btn bd" style="padding:4px 10px; font-size:11px;">Remove</button>`;
-        div.querySelector('button').addEventListener('click', () => deleteOption(text, type, region));
-        document.getElementById('optionsList').appendChild(div);
-    }
+// CSV
+function csvE(v){if(v==null||v==='')return '';const s=String(v).replace(/\r\n|\r|\n/g,' ');return s.includes(',')||s.includes('"')?'"'+s.replace(/"/g,'""')+'"':s;}
+function csvDL(name,rows){const blob=new Blob(['\uFEFF'+rows.map(r=>r.map(csvE).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>document.body.removeChild(a),1000);}
+window.exportCSV=(pid)=>{const p=PTS.find(x=>x.id===pid);if(!p)return;const visits=[...(p.visits||[])].sort((a,b)=>{if(a.type==='initial')return -1;if(b.type==='initial')return 1;return a.date>b.date?1:-1;});const rows=[['Patient','Age','Gender','Job','Phone','Visit','Date','Duration','Onset','Region','Diagnosis','Complaints','VAS','Findings','Problems','Treatment','Sessions','Freq','Notes']];visits.forEach((v,vi)=>(v.regions||[]).forEach((r,ri)=>{rows.push([vi===0&&ri===0?p.name:'',vi===0&&ri===0?p.age:'',vi===0&&ri===0?p.gender:'',vi===0&&ri===0?p.job:'',vi===0&&ri===0?p.phone:'',ri===0?(v.type==='initial'?'Initial':'Follow-up '+vi):'',ri===0?v.date:'',ri===0?(v.duration||''):'',ri===0?(v.onset||''):'',r.region,(r.diagnoses||[]).join(' | '),(r.complaints||[]).join(' | '),r.vas!=null?r.vas+'/10':'',(r.findings||[]).join(' | '),(r.problems||[]).join(' | '),(r.treatment||[]).join(' | '),r.sessionsPlanned||'',r.freq||'',ri===0?(v.notes||''):'']);}));csvDL(`PT_${p.name.replace(/\s+/g,'_')}_${today()}.csv`,rows);toast('CSV downloaded ✅');};
+window.exportAll=()=>{if(!PTS.length){toast('No patients',true);return;}const rows=[['Name','Age','Gender','Job','Phone','Visit','Date','Region','Diagnosis','VAS','Complaints','Findings','Problems','Treatment']];PTS.forEach(p=>{if(!(p.visits||[]).length){rows.push([p.name,p.age,p.gender,p.job,p.phone,'No assessment','','','','','','','','']);return;}p.visits.forEach((v,vi)=>(v.regions||[]).forEach((r,ri)=>{rows.push([vi===0&&ri===0?p.name:'',vi===0&&ri===0?p.age:'',vi===0&&ri===0?p.gender:'',vi===0&&ri===0?p.job:'',vi===0&&ri===0?p.phone:'',ri===0?(v.type==='initial'?'Initial':'Follow-up '+vi):'',ri===0?v.date:'',r.region,(r.diagnoses||[]).join(' | '),r.vas!=null?r.vas+'/10':'',(r.complaints||[]).join(' | '),(r.findings||[]).join(' | '),(r.problems||[]).join(' | '),(r.treatment||[]).join(' | ')]);})});csvDL(`Physiclinic_All_${today()}.csv`,rows);toast(`Exported ${PTS.length} patients ✅`);};
 
-    async function deleteOption(val, type, region) {
-        // Fresh Read
-        const snap = await getDoc(doc(db, "config", "options"));
-        const data = snap.data();
-        
-        if(region) {
-            data[type][region] = data[type][region].filter(x => x !== val);
-        } else {
-            data[type] = data[type].filter(x => x !== val);
-        }
-        
-        await setDoc(doc(db, "config", "options"), data);
-        globalOptions = data;
-        renderOptionsManager();
-        showToast("Option removed");
-    }
+// DOM HELPERS
+function E(tag,cls){const e=document.createElement(tag);if(cls)e.className=cls;return e;}
+function mkSdiv(t){const d=E('div','sdiv');d.textContent=t;return d;}
+function mkInp(id,ph,val='',type='text'){const i=E('input','fc');i.id=id;i.type=type;i.placeholder=ph;i.value=val;return i;}
+function mkSel(id,opts,val){const s=E('select','fc');s.id=id;opts.forEach(o=>{const op=E('option');op.value=o;op.textContent=o||'Select...';if(o===val)op.selected=true;s.appendChild(op);});return s;}
+function mkFG(label,el){const w=E('div','fg');const l=E('label','fl');l.textContent=label;w.appendChild(l);w.appendChild(el);return w;}
+function mkPill(key,opt,sel,ri){const b=E('button','pill'+(sel?' sel':''));b.textContent=opt;b.onclick=function(){if(!AS_REGIONS[ri][key])AS_REGIONS[ri][key]=[];if(AS_REGIONS[ri][key].includes(opt)){AS_REGIONS[ri][key]=AS_REGIONS[ri][key].filter(x=>x!==opt);this.classList.remove('sel');}else{AS_REGIONS[ri][key].push(opt);this.classList.add('sel');}}; return b;}
+function mkPillsAdd(key,all,sel,reg,opts,ri){const w=E('div');const pg=E('div','pg');all.forEach(o=>pg.appendChild(mkPill(key,o,sel.includes(o),ri)));w.appendChild(pg);const row=E('div','addrow');const inp=E('input');inp.type='text';inp.placeholder='Add new option (saves permanently)...';const btn=E('button');btn.textContent='+ Add';btn.addEventListener('click',async()=>{const val=inp.value.trim();if(!val){toast('Type first',true);return;}const o2=await getOpts();if(reg&&o2[key]&&o2[key][reg]!==undefined){if(!o2[key][reg].includes(val))o2[key][reg].push(val);}else if(key==='problems'){if(!o2.problems.includes(val))o2.problems.push(val);}await putOpts(o2);if(!AS_REGIONS[ri][key])AS_REGIONS[ri][key]=[];if(!AS_REGIONS[ri][key].includes(val))AS_REGIONS[ri][key].push(val);pg.appendChild(mkPill(key,val,true,ri));inp.value='';toast('Added ✅');});row.appendChild(inp);row.appendChild(btn);w.appendChild(row);return w;}
+function mkVasEl(cur,ri){const w=E('div');w.style.cssText='display:flex;gap:6px;flex-wrap:wrap;margin-top:4px';for(let i=0;i<=10;i++){const b=E('button','vas-btn'+(cur===i?' sel':''));b.textContent=i;b.onclick=function(){AS_REGIONS[ri].vas=i;w.querySelectorAll('.vas-btn').forEach(x=>x.classList.remove('sel'));this.classList.add('sel');};w.appendChild(b);}return w;}
 
-    document.getElementById('btnAddOption').addEventListener('click', async () => {
-        const input = document.getElementById('newOptionInput');
-        const val = input.value.trim();
-        if(!val) return;
-        
-        const activeTab = document.querySelector('#manageTabs .sel').dataset.tab;
-        const region = document.getElementById('manageRegionContext').value;
-        
-        const snap = await getDoc(doc(db, "config", "options"));
-        const data = snap.data();
+// UTILS
+function today(){return new Date().toISOString().split('T')[0];}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2);}
+window.openM=id=>document.getElementById(id).classList.add('open');
+window.closeM=id=>document.getElementById(id).classList.remove('open');
+window.closeConf=()=>document.getElementById('confO').classList.remove('open');
+window.toggleSide=()=>{const s=document.getElementById('side'),ov=document.getElementById('ovcl');s.classList.toggle('open');ov.style.display=s.classList.contains('open')?'block':'none';};
+function closeSide(){if(window.innerWidth<=768){document.getElementById('side').classList.remove('open');document.getElementById('ovcl').style.display='none';}}
+window.toast=(msg,err=false)=>{const t=document.getElementById('toast');t.textContent=msg;t.className='toast show'+(err?' err':'');setTimeout(()=>t.classList.remove('show'),2800);};
 
-        if(['diagnoses', 'complaints', 'findings', 'treatment'].includes(activeTab)) {
-            if(!data[activeTab][region]) data[activeTab][region] = [];
-            data[activeTab][region].push(val);
-        } else {
-            data[activeTab].push(val);
-        }
-
-        await setDoc(doc(db, "config", "options"), data);
-        globalOptions = data;
-        input.value = '';
-        renderOptionsManager();
-    });
-
-    document.querySelectorAll('#manageTabs .pill').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            document.querySelectorAll('#manageTabs .pill').forEach(p => p.classList.remove('sel'));
-            e.target.classList.add('sel');
-            renderOptionsManager();
-        });
-    });
-
-    // --- Patient Management ---
-    document.getElementById('btnNewPatient').addEventListener('click', () => {
-        document.getElementById('modalPatient').classList.add('open');
-    });
-
-    document.getElementById('btnCancelPatient').addEventListener('click', () => {
-        document.getElementById('modalPatient').classList.remove('open');
-    });
-
-    document.getElementById('btnSavePatient').addEventListener('click', async () => {
-        const p = {
-            name: document.getElementById('p_name').value,
-            age: document.getElementById('p_age').value,
-            gender: document.getElementById('p_gender').value,
-            job: document.getElementById('p_job').value,
-            phone: document.getElementById('p_phone').value,
-            createdAt: new Date().toISOString(),
-            createdBy: currentUser.uid,
-            visits: []
-        };
-        
-        if(!p.name) return showToast("Name is required", true);
-        
-        await setDoc(doc(collection(db, "patients")), p);
-        document.getElementById('modalPatient').classList.remove('open');
-        renderPatients();
-        showToast("Patient added");
-    });
-
-    async function renderPatients() {
-        const grid = document.getElementById('patientGrid');
-        grid.innerHTML = '<div class="pt">Loading...</div>';
-        
-        const q = query(collection(db, "patients"), orderBy("createdAt", "desc"));
-        const snap = await getDocs(q);
-        
-        grid.innerHTML = '';
-        snap.forEach(docSnap => {
-            const p = docSnap.data();
-            const id = docSnap.id;
-            const div = document.createElement('div');
-            div.className = 'pcard';
-            div.innerHTML = `
-                <h3>${p.name}</h3>
-                <p style="font-size:13px; color:var(--muted)">${p.age}y | ${p.job || 'No Job'}</p>
-                <div style="margin-top:10px;">
-                    <button class="btn bp bs" data-id="${id}">View Profile</button>
-                    ${currentUser.role === 'doctor' ? `<button class="btn bd bs delete-p" data-id="${id}">Delete</button>` : ''}
-                </div>
-            `;
-            div.querySelector('.bp').addEventListener('click', () => openProfile(id));
-            if(currentUser.role === 'doctor') {
-                div.querySelector('.delete-p').addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    if(confirm("Delete patient forever?")) {
-                        deleteDoc(doc(db, "patients", id)).then(() => renderPatients());
-                    }
-                });
-            }
-            grid.appendChild(div);
-        });
-    }
-
-    // --- Profile & Visits ---
-    async function openProfile(id) {
-        const snap = await getDoc(doc(db, "patients", id));
-        currentPatient = { id: snap.id, ...snap.data() };
-        switchView('profile');
-        renderProfile();
-    }
-
-    function renderProfile() {
-        const header = document.getElementById('profileHeader');
-        header.innerHTML = `
-            <div class="card" style="background:var(--pd); color:#fff;">
-                <h1 style="color:var(--acc)">${currentPatient.name}</h1>
-                <p>${currentPatient.age} years old • ${currentPatient.gender} • ${currentPatient.phone}</p>
-            </div>
-        `;
-        
-        const hist = document.getElementById('visitHistory');
-        hist.innerHTML = '';
-        
-        // Show Visits (Newest First)
-        const sortedVisits = [...currentPatient.visits].reverse();
-        
-        sortedVisits.forEach((v, idx) => {
-            const actualIdx = currentPatient.visits.length - 1 - idx;
-            const vDiv = document.createElement('div');
-            vDiv.className = 'card';
-            vDiv.style.borderTop = v.type === 'initial' ? '4px solid var(--green)' : '4px solid var(--acc)';
-            
-            let regionsHtml = v.regions.map(r => `
-                <div style="background:var(--bg); padding:15px; border-radius:10px; margin-top:10px;">
-                    <strong style="color:var(--p)">${r.region}</strong>
-                    <div style="font-size:13px; margin-top:5px;">
-                        <div><strong>Diagnosis:</strong> ${r.diagnoses.join(', ')}</div>
-                        <div><strong>Plan:</strong> ${r.treatment.join(', ')}</div>
-                        <div style="margin-top:5px; font-weight:bold; color:var(--acc)">VAS: ${r.vas}/10</div>
-                    </div>
-                </div>
-            `).join('');
-
-            vDiv.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                    <div>
-                        <span class="pill sel" style="font-size:10px; background:${v.type === 'initial' ? 'var(--green)' : 'var(--acc)'}">${v.type.toUpperCase()}</span>
-                        <div style="font-weight:700; margin-top:5px;">${v.date} (${v.duration} min)</div>
-                    </div>
-                    <div>
-                        <button class="btn bg bs edit-v" data-idx="${actualIdx}">Edit</button>
-                        <button class="btn bg bs pdf-v" data-idx="${actualIdx}">PDF</button>
-                    </div>
-                </div>
-                ${regionsHtml}
-                <div style="margin-top:10px; font-size:13px; font-style:italic;">"${v.notes || ''}"</div>
-            `;
-            
-            vDiv.querySelector('.edit-v').addEventListener('click', () => openAssessment(v.type, actualIdx));
-            vDiv.querySelector('.pdf-v').addEventListener('click', () => generateVisitPDF(actualIdx));
-            hist.appendChild(vDiv);
-        });
-    }
-
-    document.getElementById('btnProfileBack').addEventListener('click', () => switchView('patients'));
-
-    // --- Assessment Logic ---
-    document.getElementById('btnNewAssessment').addEventListener('click', () => openAssessment('initial'));
-    document.getElementById('btnNewFollowup').addEventListener('click', () => openAssessment('followup'));
-
-    function openAssessment(type, editIdx = -1) {
-        currentEditVisitIdx = editIdx;
-        document.getElementById('modalAssessment').classList.add('open');
-        document.getElementById('assessTitle').innerText = type === 'initial' ? 'Initial Assessment' : 'Follow-up Visit';
-        
-        const container = document.getElementById('assessmentRegionsContainer');
-        container.innerHTML = '';
-        
-        if(editIdx > -1) {
-            const v = currentPatient.visits[editIdx];
-            document.getElementById('v_date').value = v.date;
-            document.getElementById('v_dur').value = v.duration;
-            document.getElementById('v_notes').value = v.notes;
-            v.regions.forEach(r => addRegionToForm(r));
-        } else {
-            document.getElementById('v_date').valueAsDate = new Date();
-            document.getElementById('v_notes').value = '';
-            addRegionToForm(); // Start with one
-        }
-    }
-
-    function addRegionToForm(data = null) {
-        const container = document.getElementById('assessmentRegionsContainer');
-        const id = 'reg_' + Math.random().toString(36).substr(2, 9);
-        const div = document.createElement('div');
-        div.className = 'card region-entry';
-        div.id = id;
-        div.innerHTML = `
-            <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
-                <select class="fc reg-select" style="width:200px;">
-                    ${globalOptions.regions.map(r => `<option ${data?.region === r ? 'selected' : ''}>${r}</option>`).join('')}
-                </select>
-                <button class="btn bd bs" onclick="this.closest('.region-entry').remove()">Remove Region</button>
-            </div>
-            <div class="assess-sections">
-                ${['diagnoses', 'complaints', 'findings', 'problems', 'treatment'].map(sec => `
-                    <div style="margin-top:15px;">
-                        <label style="font-size:11px; font-weight:bold; color:var(--muted); text-transform:uppercase;">${sec}</label>
-                        <div class="pg pills-container" data-type="${sec}"></div>
-                    </div>
-                `).join('')}
-                <div style="margin-top:15px;">
-                    <label style="font-size:11px; font-weight:bold;">PAIN SCALE (VAS)</label>
-                    <div class="vas-wrap">
-                        ${[0,1,2,3,4,5,6,7,8,9,10].map(n => `<button class="vas-btn" data-val="${n}">${n}</button>`).join('')}
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        container.appendChild(div);
-        
-        // Initialize Pills
-        const regSelect = div.querySelector('.reg-select');
-        const updatePills = () => {
-            const region = regSelect.value;
-            div.querySelectorAll('.pills-container').forEach(cont => {
-                const type = cont.dataset.type;
-                const options = type === 'problems' ? globalOptions.problems : (globalOptions[type][region] || []);
-                cont.innerHTML = options.map(opt => `
-                    <span class="pill ${data?.[type]?.includes(opt) ? 'sel' : ''}">${opt}</span>
-                `).join('');
-            });
-            
-            // Re-bind pill clicks
-            div.querySelectorAll('.pill').forEach(p => {
-                p.addEventListener('click', () => p.classList.toggle('sel'));
-            });
-        };
-
-        regSelect.addEventListener('change', updatePills);
-        updatePills();
-
-        // VAS Logic
-        const vasBtns = div.querySelectorAll('.vas-btn');
-        vasBtns.forEach(btn => {
-            if(data && parseInt(btn.dataset.val) === data.vas) btn.classList.add('sel');
-            btn.addEventListener('click', () => {
-                vasBtns.forEach(b => b.classList.remove('sel'));
-                btn.classList.add('sel');
-            });
-        });
-    }
-
-    document.getElementById('btnAddRegion').addEventListener('click', () => addRegionToForm());
-
-    document.getElementById('btnSaveAssess').addEventListener('click', async () => {
-        const visit = {
-            id: currentEditVisitIdx > -1 ? currentPatient.visits[currentEditVisitIdx].id : Math.random().toString(36).substr(2, 9),
-            type: document.getElementById('assessTitle').innerText.includes('Initial') ? 'initial' : 'followup',
-            date: document.getElementById('v_date').value,
-            duration: document.getElementById('v_dur').value,
-            notes: document.getElementById('v_notes').value,
-            savedAt: new Date().toISOString(),
-            regions: []
-        };
-
-        document.querySelectorAll('.region-entry').forEach(re => {
-            const regData = {
-                region: re.querySelector('.reg-select').value,
-                vas: parseInt(re.querySelector('.vas-btn.sel')?.dataset.val || 0),
-                diagnoses: Array.from(re.querySelectorAll('.pills-container[data-type="diagnoses"] .pill.sel')).map(p => p.innerText),
-                complaints: Array.from(re.querySelectorAll('.pills-container[data-type="complaints"] .pill.sel')).map(p => p.innerText),
-                findings: Array.from(re.querySelectorAll('.pills-container[data-type="findings"] .pill.sel')).map(p => p.innerText),
-                problems: Array.from(re.querySelectorAll('.pills-container[data-type="problems"] .pill.sel')).map(p => p.innerText),
-                treatment: Array.from(re.querySelectorAll('.pills-container[data-type="treatment"] .pill.sel')).map(p => p.innerText),
-            };
-            visit.regions.push(regData);
-        });
-
-        if(currentEditVisitIdx > -1) {
-            currentPatient.visits[currentEditVisitIdx] = visit;
-        } else {
-            currentPatient.visits.push(visit);
-        }
-
-        await updateDoc(doc(db, "patients", currentPatient.id), { visits: currentPatient.visits });
-        document.getElementById('modalAssessment').classList.remove('open');
-        renderProfile();
-        showToast("Clinical record saved");
-    });
-
-    document.getElementById('btnCancelAssess').addEventListener('click', () => {
-        document.getElementById('modalAssessment').classList.remove('open');
-    });
-
-    // --- Export Logic ---
-    async function generateVisitPDF(idx) {
-        const v = currentPatient.visits[idx];
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        
-        doc.setFontSize(22);
-        doc.setTextColor(13, 61, 46);
-        doc.text("Physiclinic Clinical Report", 20, 20);
-        
-        doc.setFontSize(12);
-        doc.setTextColor(100);
-        doc.text(`Patient: ${currentPatient.name} | Date: ${v.date}`, 20, 30);
-        
-        let y = 45;
-        v.regions.forEach(r => {
-            doc.setFontSize(14);
-            doc.setTextColor(26, 92, 74);
-            doc.text(`Region: ${r.region}`, 20, y);
-            y += 8;
-            doc.setFontSize(10);
-            doc.setTextColor(0);
-            doc.text(`Diagnosis: ${r.diagnoses.join(', ')}`, 25, y);
-            y += 6;
-            doc.text(`Treatment: ${r.treatment.join(', ')}`, 25, y);
-            y += 15;
-        });
-
-        doc.save(`${currentPatient.name}_${v.date}.pdf`);
-    }
-
-    // --- User Management ---
-    async function renderUsers() {
-        const list = document.getElementById('userList');
-        list.innerHTML = 'Loading...';
-        const snap = await getDocs(collection(db, "users"));
-        list.innerHTML = '';
-        snap.forEach(d => {
-            const u = d.data();
-            const div = document.createElement('div');
-            div.className = 'pcard';
-            div.innerHTML = `
-                <h3>${u.name}</h3>
-                <p>${u.email}</p>
-                <span class="pill sel" style="font-size:10px;">${u.role}</span>
-            `;
-            list.appendChild(div);
-        });
-    }
-
-    document.getElementById('btnNewUser').addEventListener('click', () => document.getElementById('modalUser').classList.add('open'));
-    document.getElementById('btnCancelUser').addEventListener('click', () => document.getElementById('modalUser').classList.remove('open'));
-    
-    document.getElementById('btnSaveUser').addEventListener('click', async () => {
-        const name = document.getElementById('u_name').value;
-        const email = document.getElementById('u_email').value;
-        const pass = document.getElementById('u_pass').value;
-        const role = document.getElementById('u_role').value;
-        
-        try {
-            const res = await createUserWithEmailAndPassword(auth, email, pass);
-            await setDoc(doc(db, "users", res.user.uid), { name, email, role, createdAt: new Date().toISOString() });
-            showToast("User Created");
-            document.getElementById('modalUser').classList.remove('open');
-            renderUsers();
-        } catch (e) {
-            showToast(e.message, true);
-        }
-    });
-
+// DEFAULT OPTIONS
+function DEF_OPTS(){return{regions:['Cervical Spine','Thoracic Spine','Lumbar Spine','Shoulder','Elbow','Wrist & Hand','Hip','Knee','Ankle & Foot','TMJ','Sacroiliac Joint'],diagnoses:{'Cervical Spine':['Cervical Disc Herniation','Cervical Spondylosis','Cervical Radiculopathy','Cervical Myelopathy','Neck Strain / Whiplash','Cervicogenic Headache','Cervical Facet Syndrome','Torticollis','Cervical Stenosis','Thoracic Outlet Syndrome'],'Thoracic Spine':['Thoracic Disc Herniation','Thoracic Spondylosis',"Scheuermann's Disease",'Costochondritis','Thoracic Facet Syndrome'],'Lumbar Spine':['Lumbar Disc Herniation','Lumbar Spondylosis','Lumbar Radiculopathy (Sciatica)','Spinal Stenosis','Spondylolisthesis','Spondylolysis','Lumbar Strain','Piriformis Syndrome','SI Joint Dysfunction','Facet Syndrome','Post-Surgical Lumbar'],'Shoulder':['Rotator Cuff Tear','Rotator Cuff Tendinopathy','Shoulder Impingement','Frozen Shoulder (Adhesive Capsulitis)','Shoulder Dislocation / Instability','AC Joint Sprain','Biceps Tendinopathy','SLAP Tear','Shoulder Bursitis','Post-Surgical Shoulder'],'Elbow':['Tennis Elbow (Lateral Epicondylitis)',"Golfer's Elbow (Medial Epicondylitis)",'Elbow Bursitis','Radial Tunnel Syndrome','Cubital Tunnel Syndrome','Elbow Fracture (Post-Surgical)','Elbow Stiffness'],'Wrist & Hand':['Carpal Tunnel Syndrome',"De Quervain's Tenosynovitis",'Trigger Finger','Wrist Sprain','TFCC Tear','Wrist Fracture (Post-Surgical)','Wrist Tendinopathy','Finger Stiffness'],'Hip':['Hip Osteoarthritis','Hip Impingement (FAI)','Trochanteric Bursitis','Hip Labral Tear','Hip Flexor Strain','Piriformis Syndrome','Hip Fracture (Post-Surgical)','Gluteal Tendinopathy'],'Knee':['Knee Osteoarthritis','Patellofemoral Pain Syndrome','ACL Tear / Post-Surgical','Meniscal Tear','PCL Injury','MCL / LCL Sprain','Patellar Tendinopathy','IT Band Syndrome','Total Knee Replacement (Post-Surgical)'],'Ankle & Foot':['Lateral Ankle Sprain','Achilles Tendinopathy','Plantar Fasciitis','Ankle OA','Peroneal Tendinopathy','Ankle Fracture (Post-Surgical)','Metatarsalgia','Hallux Valgus'],'TMJ':['TMJ Dysfunction','TMJ Disc Displacement','Bruxism-Related TMJ','Myofascial TMJ Pain'],'Sacroiliac Joint':['SI Joint Dysfunction','Sacroiliitis','Ankylosing Spondylitis','Pelvic Girdle Pain','Post-Partum SI Pain']},complaints:{'Cervical Spine':['Neck pain','Morning stiffness','Cervicogenic headache','Radiating arm pain','Finger numbness / tingling','Dizziness','Interscapular pain','Limited ROM','Pain on rotation','Pain on extension'],'Thoracic Spine':['Mid-back pain','Thoracic stiffness','Pain on breathing','Postural kyphosis','Pain with prolonged sitting'],'Lumbar Spine':['Low back pain','Radiating leg pain (Sciatica)','Morning stiffness','Leg weakness','Foot numbness / tingling','Pain on standing','Pain on prolonged sitting','Pain on bending forward','Pain on extension','Night pain'],'Shoulder':['Shoulder pain','Limited ROM','Night pain','Weakness','Clicking / crepitus','Pain on overhead activities','Pain on reaching behind back'],'Elbow':['Lateral elbow pain','Medial elbow pain','Pain on gripping','Pain on wrist extension','Stiffness','Swelling'],'Wrist & Hand':['Wrist pain','Hand numbness','Thumb pain','Trigger finger locking','Grip weakness','Morning stiffness','Swelling'],'Hip':['Hip pain','Groin pain','Lateral hip pain','Pain on walking','Limited ROM','Pain on stairs','Night pain'],'Knee':['Knee pain','Swelling','Crepitus','Limited flexion','Pain on stairs','Pain on squatting','Morning stiffness','Locking / giving way'],'Ankle & Foot':['Heel pain','Ankle pain','Morning heel pain','Swelling','Pain on walking','Limited dorsiflexion','Weakness','Instability'],'TMJ':['Jaw pain','Clicking on opening','Limited mouth opening','Difficulty chewing','Facial headache'],'Sacroiliac Joint':['Sacral pain','Pain radiating to buttock','Pain on prolonged standing','Pain on transitional movements','Pelvic asymmetry']},findings:{'Cervical Spine':['Limited Flexion','Limited Extension','Limited Rotation R','Limited Rotation L','Limited Lat. Flexion R','Limited Lat. Flexion L','Spurling Test +','Distraction Test +','Muscle weakness','Forward Head Posture','Upper Crossed Syndrome','Trigger points'],'Thoracic Spine':['Kyphosis','Limited thoracic rotation','Weak thoracic extensors','Hypomobility T-spine','Rib restriction'],'Lumbar Spine':['SLR +','Slump Test +','Limited Flexion','Limited Extension','Limited Lat. Flexion','Quad weakness','Hamstring tightness','Tight Hip Flexors','Pelvic Tilt','Reduced Lumbar Lordosis','Muscle spasm','Neurological deficits'],'Shoulder':['Neer Test +','Hawkins-Kennedy +','Empty Can +','Drop Arm +','Speed Test +','Apprehension Test +','Limited Abduction','Limited Flexion','Limited IR','Limited ER','Rotator cuff weakness','Scapular dyskinesia'],'Elbow':['Pain on resisted wrist extension','Pain on resisted wrist flexion','Limited Pronation','Limited Supination','Cozen Test +','Mill\'s Test +','Tinel at elbow'],'Wrist & Hand':['Phalen Test +','Tinel Test +','Limited wrist flexion','Limited wrist extension','Grip weakness','Finkelstein Test +'],'Hip':['FABER +','FADIR +','Thomas Test +','Trendelenburg +','Limited IR','Limited ER','Limited Flexion','Gluteal weakness'],'Knee':['Lachman Test +','Anterior Drawer +','McMurray +','Valgus Stress +','Varus Stress +','Patellar Grind +','Limited Flexion','Quad weakness','VMO atrophy','Joint effusion','Crepitus'],'Ankle & Foot':['Anterior Drawer +','Talar Tilt +','Thompson Test +','Limited Dorsiflexion','Calf weakness','Tight Achilles','Plantar tenderness'],'TMJ':['Limited mouth opening','Jaw deviation','TMJ Clicking','Joint tenderness','Masticatory muscle tightness'],'Sacroiliac Joint':['FABER +','Gaenslen Test +','Compression Test +','Distraction Test +','SI joint tenderness','Pelvic asymmetry']},treatment:{'Cervical Spine':['TENS','Ultrasound','Hot Pack','Cervical Traction','Manual Therapy','Mobilization','Strengthening','Stretching','Postural Correction','Dry Needling','Kinesio Taping','DNF Strengthening','Home Exercise Program'],'Thoracic Spine':['Hot Pack','Thoracic Mobilization','Manual Therapy','Strengthening','Stretching','Postural Correction','TENS','Breathing Exercises'],'Lumbar Spine':['TENS','Ultrasound','Hot Pack','Lumbar Traction','Manual Therapy','McKenzie Exercises','Core Stabilization','Stretching','Mobilization','Dry Needling','SWD','Kinesio Taping','Neural Mobilization','Home Exercise Program'],'Shoulder':['TENS','Ultrasound','Hot Pack','Joint Mobilization','Codman Exercises','Rotator Cuff Strengthening','Scapular Stabilization','Stretching','Manual Therapy','Kinesio Taping','Pulley Exercises','Home Exercise Program'],'Elbow':['TENS','Ultrasound','Friction Massage','Stretching','Eccentric Strengthening','Bracing','Ice','Kinesio Taping'],'Wrist & Hand':['TENS','Ultrasound','Splinting','Strengthening','Stretching','Mobilization','Nerve Gliding','Tendon Gliding'],'Hip':['TENS','Hot Pack','Hip Strengthening','Stretching','Manual Therapy','Gait Training','Mobilization','Core Stabilization','Home Exercise Program'],'Knee':['TENS','Ultrasound','Hot Pack','Quad Strengthening','VMO Exercises','Hamstring Stretching','Patellar Taping','Mobilization','Kinesio Taping','Balance Training','Gait Training','Home Exercise Program'],'Ankle & Foot':['TENS','Ultrasound','Ice','Calf Strengthening','Stretching','Balance Training','Taping','Orthotics Advice','Manual Therapy','Proprioception Training'],'TMJ':['TENS','Ultrasound','Manual Therapy','TMJ Mobilization','Jaw Stretching','Postural Correction','Patient Education'],'Sacroiliac Joint':['TENS','Manual Therapy','SI Belt','Stabilization Exercises','Stretching','Hot Pack','Pelvic Floor Exercises']},problems:['Pain','Stiffness','Limited ROM','Muscle weakness','Balance deficit','Gait impairment','Swelling / Oedema','Numbness / Tingling','Functional limitation','Postural dysfunction','Nerve Entrapment','Muscle Imbalance','Reduced proprioception','Decreased endurance']};}
 </script>
 </body>
 </html>
-
-
-
-
-
