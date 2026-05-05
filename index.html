@@ -1,846 +1,520 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Physiclinic | PT Patient Archive</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Physiclinic | Patient Archive</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --p:#1a5c4a;--pl:#22776a;--pd:#0d3d2e;
+  --acc:#e8a020;--bg:#eef2f0;--card:#fff;
+  --txt:#162820;--muted:#5a7a6e;--border:#ccddd6;
+  --red:#d94f4f;--redl:#fdeaea;
+  --green:#27ae60;--greenl:#eafaf1;
+  --sh:0 2px 14px rgba(13,61,46,.09);
+  --shl:0 8px 36px rgba(13,61,46,.15);
+  --r:18px;--rs:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);font-size:15px;line-height:1.5}
 
-    <style>
-        body { font-family: 'DM Sans', sans-serif; background-color: #f3f4f6; }
-        .bg-sidebar { background-color: #0d3d2e; }
-        .bg-primary { background-color: #1a5c4a; }
-        .text-accent { color: #e8a020; }
-        .bg-accent { background-color: #e8a020; }
-        .pill-selected { background-color: #1a5c4a !important; color: white !important; border-color: #1a5c4a !important; }
-        .pill-selected::after { content: ' ✓'; }
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 50; overflow-y: auto; }
-        .modal.active { display: flex; }
-        .sidebar-link.active { background-color: #1a5c4a; border-left: 4px solid #e8a020; }
-        .toast { position: fixed; bottom: 20px; right: 20px; padding: 12px 24px; border-radius: 8px; color: white; z-index: 100; transform: translateY(150%); transition: transform 0.3s ease; }
-        .toast.show { transform: translateY(0); }
-    </style>
+/* Login */
+#loginScreen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--pd)}
+.lbox{background:#fff;border-radius:24px;padding:44px 40px;width:100%;max-width:400px;box-shadow:var(--shl)}
+.lbox h1{font-size:28px;font-weight:700;color:var(--pd);margin-bottom:4px;text-align:center}
+.lbox p{font-size:14px;color:var(--muted);text-align:center;margin-bottom:30px}
+
+/* Sidebar */
+#appScreen{display:none}
+.wrap{display:flex;min-height:100vh}
+.side{width:260px;background:var(--pd);position:fixed;top:0;left:0;height:100vh;display:flex;flex-direction:column;z-index:100}
+.slogo{padding:30px 24px;border-bottom:1px solid rgba(255,255,255,.08)}
+.slogo h2{color:#fff;font-size:20px;letter-spacing:1px}
+.snav{padding:20px 12px;flex:1;display:flex;flex-direction:column;gap:5px}
+.ni{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:var(--rs);color:rgba(255,255,255,.6);cursor:pointer;font-size:14px;font-weight:500;border:none;background:none;width:100%;text-align:left;transition:0.2s}
+.ni:hover{background:rgba(255,255,255,.08);color:#fff}
+.ni.on{background:var(--p);color:#fff;font-weight:700;box-shadow:0 4px 12px rgba(0,0,0,0.1)}
+.sfooter{padding:20px;border-top:1px solid rgba(255,255,255,.08)}
+
+/* Main Content */
+.main{margin-left:260px;flex:1;padding:32px;max-width:1400px}
+.ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}
+.pt{font-size:26px;font-weight:700;color:var(--pd)}
+.card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:24px}
+
+/* Patient Cards */
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px}
+.pcard{background:#fff;border-radius:var(--r);padding:22px;border:1.5px solid var(--border);transition:0.3s;position:relative}
+.pcard:hover{border-color:var(--p);transform:translateY(-3px);box-shadow:var(--shl)}
+.pname{font-size:18px;font-weight:700;color:var(--pd);margin-bottom:6px}
+
+/* UI Elements from Screenshots */
+.sec-header{background:var(--pd);color:#fff;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:15px;text-transform:uppercase;letter-spacing:0.5px}
+.pill-container{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:15px}
+.pill{background:#f1f6f4;border:1.5px solid var(--border);padding:8px 18px;border-radius:25px;font-size:14px;font-weight:500;cursor:pointer;transition:0.2s;color:var(--txt)}
+.pill:hover{border-color:var(--p);background:#e8f0ed}
+.pill.sel{background:var(--p)!important;color:#fff!important;border-color:var(--p)!important}
+
+/* Forms */
+.fg{margin-bottom:18px}
+.fl{display:block;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:8px;letter-spacing:0.5px}
+.fc{width:100%;padding:12px 16px;border-radius:var(--rs);border:1.5px solid var(--border);background:#f9fbfb;font-family:inherit;font-size:15px;outline:none;transition:0.2s}
+.fc:focus{border-color:var(--p);background:#fff}
+
+/* Modal */
+.mo{position:fixed;inset:0;background:rgba(13,61,46,0.6);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+.mo.open{display:flex}
+.mdl{background:#fff;border-radius:24px;width:100%;max-width:700px;max-height:90vh;overflow-y:auto;box-shadow:var(--shl);position:relative}
+.mhd{padding:24px 30px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:10}
+.mbody{padding:30px}
+.mft{padding:20px 30px;border-top:1px solid var(--border);display:flex;gap:12px;justify-content:flex-end;background:#fcfdfd}
+
+/* VAS Styling */
+.vas-wrap{display:flex;justify-content:space-between;gap:5px;margin-top:10px}
+.vas-btn{width:42px;height:42px;border-radius:50%;border:2px solid var(--border);background:#fff;font-weight:700;cursor:pointer;transition:0.2s}
+.vas-btn.sel{background:var(--p);color:#fff;border-color:var(--p);transform:scale(1.1)}
+
+/* Buttons */
+.btn{padding:12px 24px;border-radius:var(--rs);font-weight:700;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:8px;transition:0.2s;font-size:14px}
+.bp{background:var(--p);color:#fff}.bp:hover{background:var(--pd)}
+.ba{background:var(--acc);color:var(--pd)}.ba:hover{opacity:0.9}
+.bg{background:#fff;color:var(--muted);border:1.5px solid var(--border)}.bg:hover{background:var(--bg)}
+
+.toast{position:fixed;bottom:30px;right:30px;background:var(--pd);color:#fff;padding:14px 24px;border-radius:var(--rs);box-shadow:var(--shl);transform:translateY(100px);transition:0.3s;z-index:2000}
+.toast.show{transform:translateY(0)}
+
+/* Mobile */
+@media(max-width:768px){
+  .side{display:none}
+  .main{margin-left:0;padding:20px}
+  .ph{flex-direction:column;align-items:flex-start;gap:15px}
+}
+</style>
 </head>
 <body>
 
-    <div id="login-screen" class="min-h-screen flex items-center justify-center bg-gray-100 hidden">
-        <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
-            <div class="text-center mb-8">
-                <h1 class="text-3xl font-bold text-sidebar">Physiclinic</h1>
-                <p class="text-gray-500">Orthopaedic Patient Archive</p>
-            </div>
-            <form id="login-form" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium mb-1">Email</label>
-                    <input type="email" id="login-email" class="w-full p-2 border rounded focus:ring-2 focus:ring-primary outline-none" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">Password</label>
-                    <input type="password" id="login-password" class="w-full p-2 border rounded focus:ring-2 focus:ring-primary outline-none" required>
-                </div>
-                <button type="submit" class="w-full bg-primary text-white py-2 rounded-lg hover:opacity-90 font-bold">Sign In</button>
-            </form>
+<div id="loginScreen">
+  <div class="lbox">
+    <h1>Physiclinic</h1>
+    <p>Orthopaedic Patient Archive</p>
+    <div id="lerr" style="color:var(--red);font-size:13px;margin-bottom:15px;display:none;text-align:center"></div>
+    <div class="fg">
+      <label class="fl">Email Address</label>
+      <input class="fc" type="email" id="lEmail" placeholder="doctor@physiclinic.com">
+    </div>
+    <div class="fg">
+      <label class="fl">Password</label>
+      <input class="fc" type="password" id="lPass" placeholder="••••••••">
+    </div>
+    <button class="btn bp" style="width:100%;justify-content:center" onclick="doLogin()">Sign In</button>
+  </div>
+</div>
+
+<div id="appScreen">
+  <div class="wrap">
+    <aside class="side">
+      <div class="slogo"><h2>PHYSICLINIC</h2></div>
+      <div style="padding:20px 24px; color:rgba(255,255,255,0.5); font-size:12px; font-weight:700" id="userDisplay">...</div>
+      <nav class="snav">
+        <button class="ni on" onclick="goPage('patients')">👥 Patients List</button>
+        <button class="ni" id="navManage" onclick="goPage('manage')">⚙️ App Settings</button>
+        <button class="ni" id="navUsers" onclick="goPage('users')">👤 Staff Management</button>
+      </nav>
+      <div class="sfooter">
+        <button class="btn bg" style="width:100%;background:rgba(255,255,255,0.05);color:#fff;border:none" onclick="doLogout()">Sign Out</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div id="pg-patients">
+        <div class="ph">
+          <div><h1 class="pt">Patient Archive</h1></div>
+          <button class="btn bp" onclick="openAdd()">+ Add New Patient</button>
         </div>
-    </div>
-
-    <div id="main-app" class="flex min-h-screen hidden">
-        <aside class="w-64 bg-sidebar text-white flex flex-col fixed h-full">
-            <div class="p-6 text-2xl font-bold border-b border-white/10">Physiclinic</div>
-            <nav class="flex-1 mt-4" id="main-nav">
-                <a href="#" data-page="patients" class="sidebar-link block py-3 px-6 hover:bg-white/5 flex items-center gap-3 active">
-                    <i class="fas fa-users"></i> Patients
-                </a>
-                <div id="admin-nav" class="hidden">
-                    <a href="#" data-page="options" class="sidebar-link block py-3 px-6 hover:bg-white/5 flex items-center gap-3">
-                        <i class="fas fa-cog"></i> Manage Options
-                    </a>
-                    <a href="#" data-page="users" class="sidebar-link block py-3 px-6 hover:bg-white/5 flex items-center gap-3">
-                        <i class="fas fa-user-shield"></i> Manage Users
-                    </a>
-                </div>
-            </nav>
-            <div class="p-4 border-t border-white/10 text-sm">
-                <div id="user-info" class="mb-4 text-gray-400"></div>
-                <button id="btn-signout" class="w-full text-left py-2 px-4 hover:bg-red-900/30 text-red-400 rounded flex items-center gap-2">
-                    <i class="fas fa-sign-out-alt"></i> Sign Out
-                </button>
-            </div>
-        </aside>
-
-        <main class="flex-1 ml-64 p-8 bg-gray-50 min-h-screen">
-            <div id="page-content">
-                </div>
-        </main>
-    </div>
-
-    <div id="assessment-modal" class="modal items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col">
-            <header class="p-6 border-b flex justify-between items-center bg-primary text-white rounded-t-xl">
-                <h2 id="modal-title" class="text-xl font-bold">New Assessment</h2>
-                <button class="close-modal text-2xl">&times;</button>
-            </header>
-            
-            <form id="assessment-form" class="p-6 overflow-y-auto flex-1 space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg">
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-gray-500">Date</label>
-                        <input type="date" id="visit-date" class="w-full p-2 border rounded" required>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-gray-500">Duration (mins)</label>
-                        <input type="number" id="visit-duration" class="w-full p-2 border rounded" placeholder="45">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-gray-500">Onset</label>
-                        <input type="text" id="visit-onset" class="w-full p-2 border rounded" placeholder="e.g. 2 weeks ago">
-                    </div>
-                </div>
-
-                <div class="border rounded-lg p-4">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="font-bold text-lg">Affected Regions</h3>
-                        <div class="flex gap-2">
-                            <select id="select-add-region" class="p-2 border rounded text-sm"></select>
-                            <button type="button" id="btn-add-region-tab" class="bg-accent text-white px-3 py-1 rounded text-sm font-bold">+ Add Region</button>
-                        </div>
-                    </div>
-                    
-                    <div id="region-tabs-container" class="flex border-b mb-4"></div>
-                    <div id="region-panels-container"></div>
-                </div>
-
-                <div>
-                    <label class="block font-bold mb-2">Global Clinical Notes</label>
-                    <textarea id="visit-notes" class="w-full p-3 border rounded h-24"></textarea>
-                </div>
-
-                <div class="flex justify-end gap-3 pt-4 border-t">
-                    <button type="button" class="close-modal px-6 py-2 border rounded hover:bg-gray-100">Cancel</button>
-                    <button type="submit" class="px-6 py-2 bg-primary text-white rounded font-bold">Save Assessment</button>
-                </div>
-            </form>
+        <div class="fg" style="max-width:400px">
+          <input class="fc" type="text" id="srch" placeholder="Search by name or region..." oninput="renderList()">
         </div>
+        <div class="pgrid" id="pgrid"></div>
+      </div>
+
+      <div id="pg-profile" style="display:none">
+        </div>
+
+      <div id="pg-manage" style="display:none">
+         <div class="ph"><h1 class="pt">System Options</h1></div>
+         <div class="card" id="manageContent"></div>
+      </div>
+      
+      <div id="pg-users" style="display:none">
+         <div class="ph"><h1 class="pt">Staff Access</h1></div>
+         <div class="card" id="usersContent"></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div class="mo" id="moAdd">
+  <div class="mdl" style="max-width:500px">
+    <div class="mhd"><div class="mtt" style="font-size:20px; font-weight:700; color:var(--pd)">New Patient</div><button onclick="closeM('moAdd')" style="background:none;border:none;font-size:24px;cursor:pointer">&times;</button></div>
+    <div class="mbody">
+      <div style="background:#f1f6f4; padding:15px; border-radius:8px; border-left:4px solid var(--p); margin-bottom:25px; display:flex; align-items:center; gap:10px; font-size:14px; color:var(--muted)">
+        📝 Entered by receptionist
+      </div>
+      <div class="fg"><label class="fl">Full Name *</label><input class="fc" id="iName" placeholder="Patient name"></div>
+      <div class="fg"><label class="fl">Age *</label><input class="fc" id="iAge" type="number" placeholder="Age"></div>
+      <div class="fg">
+        <label class="fl">Gender</label>
+        <select class="fc" id="iGender"><option>Male</option><option>Female</option></select>
+      </div>
+      <div class="fg"><label class="fl">Occupation</label><input class="fc" id="iJob" placeholder="e.g. Office worker"></div>
+      <div class="fg"><label class="fl">Phone</label><input class="fc" id="iPhone" placeholder="Phone number"></div>
+    </div>
+    <div class="mft">
+      <button class="btn bg" onclick="closeM('moAdd')">Cancel</button>
+      <button class="btn bp" onclick="saveNew()">Save & Open File</button>
+    </div>
+  </div>
+</div>
+
+<div class="mo" id="moAssess">
+  <div class="mdl">
+    <div class="mhd"><div class="mtt" id="assessTtl" style="font-size:20px; font-weight:700; color:var(--pd)">Assessment</div><button onclick="closeM('moAssess')" style="background:none;border:none;font-size:24px;cursor:pointer">&times;</button></div>
+    <div class="mbody" id="assessBody">
+      </div>
+    <div class="mft">
+      <button class="btn bg" onclick="closeM('moAssess')">Cancel</button>
+      <button class="btn bp" onclick="saveAssess()">💾 Save Assessment</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey:"AIzaSyBV6--Y8VTOIm0XhU1h-6GSJmJiWwbBMd8",
+  authDomain:"physiclinic-4a8d1.firebaseapp.com",
+  projectId:"physiclinic-4a8d1",
+  storageBucket:"physiclinic-4a8d1.firebasestorage.app",
+  messagingSenderId:"581907813652",
+  appId:"1:581907813652:web:c203369bb92e63d01b1e01"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// Global State
+let ME=null, PTS=[], OPTS=null;
+let activeVisit = { type: 'Initial Assessment', regions: [], duration: '', onset: '', notes: '', vas: 0 };
+
+// Auth Logic
+window.doLogin = async () => {
+  const email = document.getElementById('lEmail').value;
+  const pass = document.getElementById('lPass').value;
+  try { await signInWithEmailAndPassword(auth, email, pass); } 
+  catch(e) { document.getElementById('lerr').textContent="Invalid Login Details"; document.getElementById('lerr').style.display='block'; }
+};
+
+onAuthStateChanged(auth, async user => {
+  if (user) {
+    const snap = await getDoc(doc(db, 'users', user.uid));
+    ME = snap.data();
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('appScreen').style.display = 'block';
+    document.getElementById('userDisplay').textContent = ME.name.toUpperCase();
+    if(ME.role !== 'doctor') {
+        document.getElementById('navManage').style.opacity = '0.3';
+        document.getElementById('navUsers').style.opacity = '0.3';
+    }
+    loadData();
+  } else {
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('appScreen').style.display = 'none';
+  }
+});
+
+window.doLogout = () => signOut(auth);
+
+// Data Management
+async function loadData() {
+  const oSnap = await getDoc(doc(db, 'config', 'options'));
+  OPTS = oSnap.data();
+
+  onSnapshot(query(collection(db, 'patients'), orderBy('createdAt', 'desc')), snap => {
+    PTS = snap.docs.map(d => ({id:d.id, ...d.data()}));
+    renderList();
+  });
+}
+
+window.renderList = () => {
+  const q = document.getElementById('srch').value.toLowerCase();
+  const grid = document.getElementById('pgrid');
+  const filtered = PTS.filter(p => p.name.toLowerCase().includes(q));
+  
+  grid.innerHTML = filtered.map(p => `
+    <div class="pcard">
+      <div class="pname">${p.name}</div>
+      <div style="font-size:13px; color:var(--muted); margin-bottom:15px">
+        ${p.age} years · ${p.gender} · ${p.job}
+      </div>
+      <div style="display:flex; gap:8px">
+        <button class="btn bp" style="padding:8px 16px; font-size:12px" onclick="openProfile('${p.id}')">View File</button>
+        ${ME.role==='doctor' ? `<button class="btn bg" style="padding:8px 16px; font-size:12px" onclick="openAssess('${p.id}')">New Assessment</button>` : ''}
+      </div>
+    </div>
+  `).join('');
+};
+
+// Assessment UI Builder (The Core Logic for Region-First)
+let selectedRegion = null;
+let currentPatientId = null;
+
+window.openAssess = (pid) => {
+  currentPatientId = pid;
+  const p = PTS.find(x => x.id === pid);
+  document.getElementById('assessTtl').textContent = `Assessment — ${p.name}`;
+  activeVisit = { type: 'Initial Assessment', regions: [], duration: '', onset: '', notes: '', vas: 5, sessions: '', freq: '' };
+  selectedRegion = null;
+  renderAssessForm();
+  openM('moAssess');
+};
+
+function renderAssessForm() {
+  const body = document.getElementById('assessBody');
+  body.innerHTML = `
+    <div class="sec-header">🏥 Visit Type</div>
+    <div class="pill-container">
+      ${['Initial Assessment', 'Follow-up', 'Re-assessment', 'Discharge'].map(t => `
+        <div class="pill ${activeVisit.type === t ? 'sel' : ''}" onclick="setVisitType('${t}')">${t}</div>
+      `).join('')}
     </div>
 
-    <div id="toast" class="toast"></div>
+    <div class="sec-header">📍 Affected Region</div>
+    <div class="pill-container">
+      ${OPTS.regions.map(r => `
+        <div class="pill ${selectedRegion === r ? 'sel' : ''}" onclick="setRegion('${r}')">${r}</div>
+      `).join('')}
+    </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, query, getDocs, where, deleteDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-        // CONFIG
-        const firebaseConfig = {
-            apiKey: "AIzaSyBV6--Y8VTOIm0XhU1h-6GSJmJiWwbBMd8",
-            authDomain: "physiclinic-4a8d1.firebaseapp.com",
-            projectId: "physiclinic-4a8d1",
-            storageBucket: "physiclinic-4a8d1.firebasestorage.app",
-            messagingSenderId: "581907813652",
-            appId: "1:581907813652:web:c203369bb92e63d01b1e01"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        // STATE
-        let currentUser = null;
-        let userData = null;
-        let options = null;
-        let currentPatient = null;
-        let activeAssessmentData = { regions: [] }; // Temporary state for the modal
-        let activeRegionIndex = 0;
-
-        // --- CORE UTILS ---
-        const showToast = (msg, type = 'success') => {
-            const t = document.getElementById('toast');
-            t.textContent = msg;
-            t.className = `toast show ${type === 'success' ? 'bg-green-600' : 'bg-red-600'}`;
-            setTimeout(() => t.classList.remove('show'), 3000);
-        };
-
-        const loadOptions = async () => {
-            const docRef = doc(db, "config", "options");
-            const snap = await getDoc(docRef);
-            if (snap.exists()) options = snap.data();
-            return options;
-        };
-
-        // --- AUTH OBSERVER ---
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                const userDoc = await getDoc(doc(db, "users", user.uid));
-                if (userDoc.exists()) {
-                    currentUser = user;
-                    userData = userDoc.data();
-                    document.getElementById('login-screen').classList.add('hidden');
-                    document.getElementById('main-app').classList.remove('hidden');
-                    document.getElementById('user-info').textContent = `${userData.name} (${userData.role})`;
-                    if (userData.role === 'doctor') document.getElementById('admin-nav').classList.remove('hidden');
-                    else document.getElementById('admin-nav').classList.add('hidden');
-                    navigateTo('patients');
-                } else {
-                    await signOut(auth);
-                }
-            } else {
-                document.getElementById('main-app').classList.add('hidden');
-                document.getElementById('login-screen').classList.remove('hidden');
-            }
-        });
-
-        // --- ROUTING ---
-        const navigateTo = async (page, id = null) => {
-            const content = document.getElementById('page-content');
-            document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
-            const link = document.querySelector(`[data-page="${page}"]`);
-            if (link) link.classList.add('active');
-
-            switch(page) {
-                case 'patients': renderPatientsPage(); break;
-                case 'profile': renderProfilePage(id); break;
-                case 'options': renderOptionsPage(); break;
-                case 'users': renderUsersPage(); break;
-            }
-        };
-
-        // --- PAGE RENDERING ---
+    <div id="dynamic-fields" style="${selectedRegion ? '' : 'opacity:0.3; pointer-events:none'}">
         
-        async function renderPatientsPage() {
-            const content = document.getElementById('page-content');
-            content.innerHTML = `
-                <div class="flex justify-between items-center mb-8">
-                    <h1 class="text-3xl font-bold text-sidebar">Patients</h1>
-                    <div class="flex gap-4">
-                        ${userData.role === 'doctor' ? '<button id="btn-export-all" class="bg-gray-200 px-4 py-2 rounded font-medium">Export CSV (All)</button>' : ''}
-                        <button id="btn-new-patient" class="bg-accent text-white px-6 py-2 rounded-lg font-bold shadow-lg">+ Add Patient</button>
+        <div class="sec-header">🩺 Diagnosis</div>
+        <div class="pill-container" id="diag-pills">
+            ${selectedRegion ? renderPills('diagnoses', selectedRegion) : '<p style="font-size:12px; color:var(--muted)">Select a region first</p>'}
+        </div>
+
+        <div class="sec-header">⏱ Duration & Onset (Screenshot 3)</div>
+        <div class="fg">
+          <label class="fl">Duration</label>
+          <input class="fc" id="vDur" placeholder="e.g. 3 months" value="${activeVisit.duration}" oninput="activeVisit.duration=this.value">
+        </div>
+        <div class="fg">
+          <label class="fl">Onset</label>
+          <select class="fc" id="vOnset" onchange="activeVisit.onset=this.value">
+            <option value="">Select...</option>
+            <option ${activeVisit.onset==='Gradual'?'selected':''}>Gradual</option>
+            <option ${activeVisit.onset==='Sudden'?'selected':''}>Sudden</option>
+          </select>
+        </div>
+
+        <div class="sec-header">💬 Chief Complaints</div>
+        <div class="pill-container">
+            ${selectedRegion ? renderPills('complaints', selectedRegion) : '<p style="font-size:12px; color:var(--muted)">Select a region first</p>'}
+        </div>
+
+        <div class="sec-header">😣 Pain Level — VAS (0-10)</div>
+        <div class="vas-wrap">
+          ${[0,1,2,3,4,5,6,7,8,9,10].map(n => `
+            <button class="vas-btn ${activeVisit.vas === n ? 'sel' : ''}" onclick="setVas(${n})">${n}</button>
+          `).join('')}
+        </div>
+
+        <div class="sec-header">🔬 Assessment Findings</div>
+        <div class="pill-container">
+            ${selectedRegion ? renderPills('findings', selectedRegion) : '<p style="font-size:12px; color:var(--muted)">Select a region first</p>'}
+        </div>
+
+        <div class="sec-header">📌 Problem List (Screenshot 4)</div>
+        <div class="pill-container">
+            ${renderGlobalPills('problems')}
+        </div>
+
+        <div class="sec-header">💊 Treatment Plan (Screenshot 5)</div>
+        <div class="pill-container">
+            ${selectedRegion ? renderPills('treatment', selectedRegion) : '<p style="font-size:12px; color:var(--muted)">Select a region first</p>'}
+        </div>
+
+        <div class="sec-header">📅 Session Plan (Screenshot 5)</div>
+        <div class="fg">
+          <label class="fl">No. of Sessions</label>
+          <input class="fc" type="number" id="vSess" placeholder="e.g. 12" value="${activeVisit.sessions}" oninput="activeVisit.sessions=this.value">
+        </div>
+        <div class="fg">
+          <label class="fl">Frequency</label>
+          <select class="fc" onchange="activeVisit.freq=this.value">
+            <option value="">Select...</option>
+            <option ${activeVisit.freq==='2x/week'?'selected':''}>2x/week</option>
+            <option ${activeVisit.freq==='3x/week'?'selected':''}>3x/week</option>
+          </select>
+        </div>
+
+        <div class="sec-header">📝 Additional Notes</div>
+        <textarea class="fc" style="height:100px" oninput="activeVisit.notes=this.value" placeholder="Any important clinical notes...">${activeVisit.notes}</textarea>
+    </div>
+  `;
+}
+
+// Helper functions for pills
+window.setVisitType = (t) => { activeVisit.type = t; renderAssessForm(); }
+window.setRegion = (r) => { selectedRegion = r; renderAssessForm(); }
+window.setVas = (n) => { activeVisit.vas = n; renderAssessForm(); }
+
+function renderPills(category, region) {
+    const items = OPTS[category][region] || [];
+    if(!activeVisit[category]) activeVisit[category] = [];
+    
+    let html = items.map(item => `
+        <div class="pill ${activeVisit[category].includes(item) ? 'sel' : ''}" 
+             onclick="togglePill('${category}', '${item}')">${item}</div>
+    `).join('');
+    
+    html += `
+        <div style="display:flex; gap:5px; width:100%; margin-top:10px">
+            <input class="fc" style="padding:6px 12px; font-size:12px" placeholder="Add new..." id="new-${category}">
+            <button class="btn bp" style="padding:6px 12px" onclick="addNewOption('${category}', '${region}')">+ Add</button>
+        </div>
+    `;
+    return html;
+}
+
+function renderGlobalPills(category) {
+    const items = OPTS[category] || [];
+    if(!activeVisit[category]) activeVisit[category] = [];
+    return items.map(item => `
+        <div class="pill ${activeVisit[category].includes(item) ? 'sel' : ''}" 
+             onclick="togglePill('${category}', '${item}')">${item}</div>
+    `).join('');
+}
+
+window.togglePill = (cat, val) => {
+    if(!activeVisit[cat]) activeVisit[cat] = [];
+    const idx = activeVisit[cat].indexOf(val);
+    if(idx > -1) activeVisit[cat].splice(idx, 1);
+    else activeVisit[cat].push(val);
+    renderAssessForm();
+};
+
+window.addNewOption = async (cat, reg) => {
+    const val = document.getElementById(`new-${cat}`).value.trim();
+    if(!val) return;
+    
+    // Update Database permanently
+    if(!OPTS[cat][reg]) OPTS[cat][reg] = [];
+    OPTS[cat][reg].push(val);
+    await updateDoc(doc(db, 'config', 'options'), OPTS);
+    
+    // Add to current visit
+    togglePill(cat, val);
+    toast("Option Added Permanently ✅");
+};
+
+// Saving
+window.saveAssess = async () => {
+    if(!selectedRegion) return toast("Please select a region first", true);
+    
+    const visitData = {
+        ...activeVisit,
+        region: selectedRegion,
+        date: new Date().toISOString().split('T')[0],
+        timestamp: Date.now()
+    };
+    
+    const p = PTS.find(x => x.id === currentPatientId);
+    const visits = p.visits || [];
+    visits.push(visitData);
+    
+    await updateDoc(doc(db, 'patients', currentPatientId), { visits });
+    closeM('moAssess');
+    toast("Assessment Saved Successfully");
+    openProfile(currentPatientId);
+};
+
+// Navigation & Misc
+window.goPage = (pg) => {
+    ['patients', 'profile', 'manage', 'users'].forEach(p => document.getElementById('pg-'+p).style.display='none');
+    document.getElementById('pg-'+pg).style.display='block';
+    document.querySelectorAll('.ni').forEach(n => n.classList.remove('on'));
+    // Set active link logic...
+};
+
+window.openAdd = () => openM('moAdd');
+window.saveNew = async () => {
+    const name = document.getElementById('iName').value;
+    if(!name) return;
+    const ref = await addDoc(collection(db, 'patients'), {
+        name,
+        age: document.getElementById('iAge').value,
+        gender: document.getElementById('iGender').value,
+        job: document.getElementById('iJob').value,
+        phone: document.getElementById('iPhone').value,
+        createdAt: Date.now(),
+        visits: []
+    });
+    closeM('moAdd');
+    openAssess(ref.id);
+};
+
+window.openProfile = (pid) => {
+    const p = PTS.find(x => x.id === pid);
+    const pg = document.getElementById('pg-profile');
+    pg.style.display = 'block';
+    document.getElementById('pg-patients').style.display = 'none';
+    
+    pg.innerHTML = `
+        <button class="btn bg" style="margin-bottom:20px" onclick="goPage('patients')">← Back to List</button>
+        <div class="ph">
+            <h1 class="pt">${p.name}</h1>
+            <div style="display:flex; gap:10px">
+                <button class="btn bp" onclick="openAssess('${p.id}')">+ New Visit</button>
+            </div>
+        </div>
+        <div class="card">
+            ${(p.visits || []).reverse().map(v => `
+                <div style="border-bottom:1px solid var(--border); padding:20px 0">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:10px">
+                        <strong style="color:var(--p)">${v.type}</strong>
+                        <span style="color:var(--muted); font-size:13px">${v.date}</span>
                     </div>
+                    <p style="font-size:14px"><strong>Region:</strong> ${v.region}</p>
+                    <p style="font-size:14px"><strong>Diagnosis:</strong> ${(v.diagnoses || []).join(', ')}</p>
                 </div>
-                <div class="mb-6 bg-white p-4 rounded-lg shadow-sm flex gap-4">
-                    <input type="text" id="search-patients" placeholder="Search by name, region or diagnosis..." class="flex-1 p-2 border rounded outline-none focus:ring-2 focus:ring-primary">
-                </div>
-                <div id="patients-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-            `;
+            `).join('') || '<p style="text-align:center; padding:40px; color:var(--muted)">No visits recorded yet.</p>'}
+        </div>
+    `;
+};
 
-            const querySnapshot = await getDocs(collection(db, "patients"));
-            const patients = [];
-            querySnapshot.forEach(doc => patients.push({ id: doc.id, ...doc.data() }));
+window.openM = (id) => document.getElementById(id).classList.add('open');
+window.closeM = (id) => document.getElementById(id).classList.remove('open');
+window.toast = (msg, isErr=false) => {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.background = isErr ? 'var(--red)' : 'var(--pd)';
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+};
 
-            const drawGrid = (list) => {
-                const grid = document.getElementById('patients-grid');
-                grid.innerHTML = list.map(p => {
-                    const latestVisit = p.visits?.length > 0 ? p.visits[p.visits.length - 1] : null;
-                    const regions = latestVisit ? latestVisit.regions.map(r => r.region).join(', ') : 'No data';
-                    return `
-                    <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-sidebar">${p.name}</h3>
-                                <p class="text-sm text-gray-500">${p.age}y | ${p.gender} | ${p.job}</p>
-                            </div>
-                            <span class="bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded">${p.visits?.length || 0} Visits</span>
-                        </div>
-                        <div class="text-sm text-gray-600 mb-6">
-                            <p><strong>Recent Regions:</strong> ${regions}</p>
-                            <p><strong>Last Visit:</strong> ${latestVisit?.date || 'N/A'}</p>
-                        </div>
-                        <div class="flex gap-2">
-                            <button class="view-profile flex-1 bg-primary text-white py-2 rounded text-sm" data-id="${p.id}">Profile</button>
-                            <button class="new-assessment flex-1 border border-primary text-primary py-2 rounded text-sm" data-id="${p.id}">+ Assessment</button>
-                            ${userData.role === 'doctor' ? `<button class="delete-patient p-2 text-red-500 hover:bg-red-50 rounded" data-id="${p.id}"><i class="fas fa-trash"></i></button>` : ''}
-                        </div>
-                    </div>
-                    `;
-                }).join('');
-
-                // Events
-                grid.querySelectorAll('.view-profile').forEach(b => b.addEventListener('click', () => navigateTo('profile', b.dataset.id)));
-                grid.querySelectorAll('.new-assessment').forEach(b => b.addEventListener('click', () => openAssessmentModal(b.dataset.id)));
-                grid.querySelectorAll('.delete-patient').forEach(b => b.addEventListener('click', async () => {
-                    if(confirm('Are you sure? This deletes all patient data.')) {
-                        await deleteDoc(doc(db, "patients", b.dataset.id));
-                        renderPatientsPage();
-                    }
-                }));
-            };
-
-            drawGrid(patients);
-
-            document.getElementById('search-patients').addEventListener('input', (e) => {
-                const term = e.target.value.toLowerCase();
-                const filtered = patients.filter(p => 
-                    p.name.toLowerCase().includes(term) || 
-                    p.visits?.some(v => v.regions.some(r => r.region.toLowerCase().includes(term) || r.diagnoses.some(d => d.toLowerCase().includes(term))))
-                );
-                drawGrid(filtered);
-            });
-
-            document.getElementById('btn-new-patient').addEventListener('click', () => {
-                const name = prompt("Patient Full Name:");
-                if (!name) return;
-                const age = prompt("Age:");
-                const gender = prompt("Gender:");
-                const job = prompt("Occupation:");
-                const phone = prompt("Phone:");
-
-                setDoc(doc(collection(db, "patients")), {
-                    name, age, gender, job, phone,
-                    createdAt: new Date().toISOString(),
-                    createdBy: currentUser.uid,
-                    visits: []
-                }).then(() => renderPatientsPage());
-            });
-            
-            if(userData.role === 'doctor') {
-                document.getElementById('btn-export-all').addEventListener('click', () => exportPatientsCSV(patients));
-            }
-        }
-
-        async function renderProfilePage(id) {
-            const docRef = doc(db, "patients", id);
-            const snap = await getDoc(docRef);
-            if (!snap.exists()) return navigateTo('patients');
-            const p = { id: snap.id, ...snap.data() };
-            currentPatient = p;
-
-            const content = document.getElementById('page-content');
-            content.innerHTML = `
-                <div class="flex justify-between items-start mb-8">
-                    <div>
-                        <button onclick="window.history.back()" class="text-primary mb-2 flex items-center gap-1"><i class="fas fa-arrow-left"></i> Back to list</button>
-                        <h1 class="text-3xl font-bold text-sidebar">${p.name}</h1>
-                        <p class="text-gray-500">${p.gender} • ${p.age} years old • ${p.job} • ${p.phone}</p>
-                    </div>
-                    <div class="flex gap-3">
-                        <button id="btn-patient-pdf" class="bg-red-600 text-white px-4 py-2 rounded font-bold shadow flex items-center gap-2">
-                            <i class="fas fa-file-pdf"></i> Download PDF
-                        </button>
-                        ${userData.role === 'doctor' ? `
-                        <button id="btn-patient-csv" class="bg-blue-600 text-white px-4 py-2 rounded font-bold shadow flex items-center gap-2">
-                            <i class="fas fa-file-csv"></i> Download CSV
-                        </button>` : ''}
-                        <button id="btn-profile-new" class="bg-accent text-white px-6 py-2 rounded font-bold shadow-lg">+ New Follow-up</button>
-                    </div>
-                </div>
-
-                <div id="report-content" class="space-y-8">
-                    ${p.visits && p.visits.length > 0 ? 
-                        [...p.visits].reverse().map((v, idx) => `
-                        <div class="bg-white rounded-xl shadow-sm border p-6 relative">
-                            <div class="flex justify-between items-center mb-6 border-b pb-4">
-                                <div>
-                                    <span class="uppercase tracking-widest text-xs font-bold ${v.type === 'initial' ? 'text-blue-600' : 'text-green-600'}">${v.type} Assessment</span>
-                                    <h3 class="text-xl font-bold">${v.date}</h3>
-                                </div>
-                                <div class="text-right">
-                                    <p class="text-sm text-gray-500">Duration: ${v.duration || '--'} min</p>
-                                    <p class="text-sm text-gray-500">Recorded: ${new Date(v.savedAt).toLocaleDateString()}</p>
-                                </div>
-                            </div>
-                            
-                            <div class="space-y-8">
-                                ${v.regions.map(r => `
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 border-l-4 border-primary pl-4">
-                                        <div>
-                                            <h4 class="text-lg font-bold text-primary mb-3">${r.region}</h4>
-                                            <div class="mb-3">
-                                                <span class="text-xs font-bold text-gray-400 uppercase">Diagnosis</span>
-                                                <p class="text-gray-800">${r.diagnoses.join(', ') || 'None'}</p>
-                                            </div>
-                                            <div class="mb-3">
-                                                <span class="text-xs font-bold text-gray-400 uppercase">Chief Complaints</span>
-                                                <p class="text-gray-800">${r.complaints.join(', ') || 'None'}</p>
-                                            </div>
-                                            <div class="mb-3">
-                                                <span class="text-xs font-bold text-gray-400 uppercase">Findings</span>
-                                                <p class="text-gray-800">${r.findings.join(', ') || 'None'}</p>
-                                            </div>
-                                        </div>
-                                        <div class="bg-gray-50 p-4 rounded-lg">
-                                            <div class="mb-3">
-                                                <span class="text-xs font-bold text-gray-400 uppercase">Pain Scale (VAS)</span>
-                                                <div class="text-2xl font-bold text-accent">${r.vas}/10</div>
-                                            </div>
-                                            <div class="mb-3">
-                                                <span class="text-xs font-bold text-gray-400 uppercase">Plan & Treatment</span>
-                                                <p class="text-sm italic mb-1">${r.treatment.join(', ') || 'None'}</p>
-                                                <p class="text-xs text-gray-500 font-bold">${r.sessionsPlanned} sessions @ ${r.freq}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                `).join('<hr class="my-4">')}
-                            </div>
-                            
-                            <div class="mt-6 pt-4 border-t text-sm text-gray-600">
-                                <span class="font-bold">Clinical Notes:</span> ${v.notes || 'No additional notes.'}
-                            </div>
-                            <button class="edit-visit absolute top-6 right-6 text-gray-300 hover:text-primary" data-idx="${p.visits.length - 1 - idx}">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                        </div>
-                    `).join('') : '<div class="text-center py-20 bg-white rounded-xl text-gray-400">No assessment records found for this patient.</div>'}
-                </div>
-            `;
-
-            document.getElementById('btn-profile-new').addEventListener('click', () => openAssessmentModal(id));
-            document.getElementById('btn-patient-pdf').addEventListener('click', () => exportPatientPDF(p));
-            if(userData.role === 'doctor') {
-                document.getElementById('btn-patient-csv').addEventListener('click', () => exportPatientsCSV([p]));
-            }
-            document.querySelectorAll('.edit-visit').forEach(b => b.addEventListener('click', () => openAssessmentModal(id, parseInt(b.dataset.idx))));
-        }
-
-        // --- ASSESSMENT MODAL LOGIC ---
-        
-        async function openAssessmentModal(patientId, visitIndex = null) {
-            await loadOptions();
-            const pSnap = await getDoc(doc(db, "patients", patientId));
-            currentPatient = { id: pSnap.id, ...pSnap.data() };
-            
-            const modal = document.getElementById('assessment-modal');
-            const form = document.getElementById('assessment-form');
-            form.reset();
-            
-            // Populate select
-            const regSel = document.getElementById('select-add-region');
-            regSel.innerHTML = options.regions.map(r => `<option value="${r}">${r}</option>`).join('');
-
-            if (visitIndex !== null) {
-                const v = currentPatient.visits[visitIndex];
-                document.getElementById('modal-title').textContent = `Edit Assessment - ${currentPatient.name}`;
-                document.getElementById('visit-date').value = v.date;
-                document.getElementById('visit-duration').value = v.duration;
-                document.getElementById('visit-onset').value = v.onset;
-                document.getElementById('visit-notes').value = v.notes;
-                activeAssessmentData = JSON.parse(JSON.stringify(v));
-                activeAssessmentData.visitIndex = visitIndex;
-            } else {
-                document.getElementById('modal-title').textContent = `New Assessment - ${currentPatient.name}`;
-                document.getElementById('visit-date').value = new Date().toISOString().split('T')[0];
-                activeAssessmentData = {
-                    type: currentPatient.visits.length === 0 ? 'initial' : 'followup',
-                    date: '', duration: '', onset: '', notes: '', savedAt: '',
-                    regions: []
-                };
-            }
-
-            renderRegionTabs();
-            modal.classList.add('active');
-        }
-
-        function renderRegionTabs() {
-            const tabs = document.getElementById('region-tabs-container');
-            const panels = document.getElementById('region-panels-container');
-            tabs.innerHTML = '';
-            panels.innerHTML = '';
-
-            activeAssessmentData.regions.forEach((r, idx) => {
-                const tab = document.createElement('button');
-                tab.type = "button";
-                tab.className = `px-4 py-2 text-sm font-bold border-b-2 transition-colors ${activeRegionIndex === idx ? 'border-primary text-primary' : 'border-transparent text-gray-400'}`;
-                tab.innerHTML = `${r.region} <span class="ml-2 text-red-500 remove-reg" data-idx="${idx}">&times;</span>`;
-                tab.addEventListener('click', (e) => {
-                    if (e.target.classList.contains('remove-reg')) {
-                        activeAssessmentData.regions.splice(idx, 1);
-                        activeRegionIndex = 0;
-                        renderRegionTabs();
-                    } else {
-                        activeRegionIndex = idx;
-                        renderRegionTabs();
-                    }
-                });
-                tabs.appendChild(tab);
-            });
-
-            if (activeAssessmentData.regions.length > 0) {
-                const r = activeAssessmentData.regions[activeRegionIndex];
-                const panel = document.createElement('div');
-                panel.className = "space-y-6 animate-fadeIn";
-                
-                panel.innerHTML = `
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        ${renderPillGroup('Diagnosis', options.diagnoses[r.region] || [], r.diagnoses, 'diagnoses', r.region)}
-                        ${renderPillGroup('Chief Complaints', options.complaints[r.region] || [], r.complaints, 'complaints', r.region)}
-                        ${renderPillGroup('Assessment Findings', options.findings[r.region] || [], r.findings, 'findings', r.region)}
-                        ${renderPillGroup('Problem List', options.problems || [], r.problems, 'problems')}
-                        ${renderPillGroup('Treatment Plan', options.treatment[r.region] || [], r.treatment, 'treatment', r.region)}
-                        
-                        <div class="col-span-full bg-gray-50 p-4 rounded">
-                            <label class="block font-bold mb-2">Pain Scale (VAS: ${r.vas}/10)</label>
-                            <div class="flex gap-1">
-                                ${[0,1,2,3,4,5,6,7,8,9,10].map(v => `
-                                    <button type="button" class="vas-btn flex-1 py-2 border rounded ${r.vas == v ? 'bg-accent text-white' : 'bg-white'}" data-val="${v}">${v}</button>
-                                `).join('')}
-                            </div>
-                            <div class="grid grid-cols-2 gap-4 mt-4">
-                                <div>
-                                    <label class="block text-xs font-bold">Planned Sessions</label>
-                                    <input type="number" value="${r.sessionsPlanned}" class="w-full p-2 border rounded reg-input" data-key="sessionsPlanned">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-bold">Frequency</label>
-                                    <input type="text" value="${r.freq}" class="w-full p-2 border rounded reg-input" data-key="freq" placeholder="e.g. 2x/week">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                
-                // Pill Toggle Event
-                panel.querySelectorAll('.pill').forEach(p => {
-                    p.addEventListener('click', () => {
-                        const val = p.dataset.val;
-                        const key = p.dataset.key;
-                        const arr = activeAssessmentData.regions[activeRegionIndex][key];
-                        if (arr.includes(val)) {
-                            activeAssessmentData.regions[activeRegionIndex][key] = arr.filter(i => i !== val);
-                        } else {
-                            arr.push(val);
-                        }
-                        renderRegionTabs();
-                    });
-                });
-
-                // Add New Option Event
-                panel.querySelectorAll('.add-opt-btn').forEach(b => {
-                    b.addEventListener('click', async () => {
-                        const key = b.dataset.key;
-                        const reg = b.dataset.reg;
-                        const val = b.previousElementSibling.value.trim();
-                        if (!val) return;
-                        
-                        const docRef = doc(db, "config", "options");
-                        const freshSnap = await getDoc(docRef);
-                        let freshOptions = freshSnap.data();
-
-                        if (reg) {
-                            if(!freshOptions[key][reg]) freshOptions[key][reg] = [];
-                            freshOptions[key][reg].push(val);
-                        } else {
-                            freshOptions[key].push(val);
-                        }
-
-                        await setDoc(docRef, freshOptions);
-                        options = freshOptions;
-                        activeAssessmentData.regions[activeRegionIndex][key].push(val);
-                        renderRegionTabs();
-                    });
-                });
-
-                // VAS & Input Events
-                panel.querySelectorAll('.vas-btn').forEach(b => b.addEventListener('click', () => {
-                    activeAssessmentData.regions[activeRegionIndex].vas = b.dataset.val;
-                    renderRegionTabs();
-                }));
-                panel.querySelectorAll('.reg-input').forEach(i => i.addEventListener('change', (e) => {
-                    activeAssessmentData.regions[activeRegionIndex][e.target.dataset.key] = e.target.value;
-                }));
-
-                panels.appendChild(panel);
-            }
-        }
-
-        function renderPillGroup(label, allOpts, selectedOpts, key, regName = null) {
-            return `
-                <div class="border p-3 rounded shadow-sm">
-                    <label class="block text-xs font-bold uppercase text-gray-400 mb-2">${label}</label>
-                    <div class="flex flex-wrap gap-2 mb-3">
-                        ${allOpts.map(opt => `
-                            <button type="button" data-key="${key}" data-val="${opt}" class="pill text-sm px-3 py-1 rounded-full border transition-all ${selectedOpts.includes(opt) ? 'pill-selected' : 'bg-white hover:bg-gray-50'}">${opt}</button>
-                        `).join('')}
-                    </div>
-                    <div class="flex gap-1">
-                        <input type="text" class="flex-1 text-sm p-1 border rounded" placeholder="New ${label}...">
-                        <button type="button" class="add-opt-btn text-xs bg-gray-200 px-2 rounded" data-key="${key}" ${regName ? `data-reg="${regName}"` : ''}>Add</button>
-                    </div>
-                </div>
-            `;
-        }
-
-        document.getElementById('btn-add-region-tab').addEventListener('click', () => {
-            const reg = document.getElementById('select-add-region').value;
-            if (activeAssessmentData.regions.find(r => r.region === reg)) return showToast('Region already added', 'error');
-            
-            activeAssessmentData.regions.push({
-                region: reg, diagnoses: [], complaints: [], findings: [],
-                problems: [], treatment: [], vas: 0, sessionsPlanned: 12, freq: '3x/week'
-            });
-            activeRegionIndex = activeAssessmentData.regions.length - 1;
-            renderRegionTabs();
-        });
-
-        document.getElementById('assessment-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if (activeAssessmentData.regions.length === 0) return alert('Add at least one region');
-
-            activeAssessmentData.date = document.getElementById('visit-date').value;
-            activeAssessmentData.duration = document.getElementById('visit-duration').value;
-            activeAssessmentData.onset = document.getElementById('visit-onset').value;
-            activeAssessmentData.notes = document.getElementById('visit-notes').value;
-            activeAssessmentData.savedAt = new Date().toISOString();
-
-            const pRef = doc(db, "patients", currentPatient.id);
-            let updatedVisits = [...currentPatient.visits];
-            
-            if (activeAssessmentData.hasOwnProperty('visitIndex')) {
-                const idx = activeAssessmentData.visitIndex;
-                delete activeAssessmentData.visitIndex;
-                updatedVisits[idx] = activeAssessmentData;
-            } else {
-                updatedVisits.push(activeAssessmentData);
-            }
-
-            await updateDoc(pRef, { visits: updatedVisits });
-            showToast('Assessment saved successfully!');
-            document.getElementById('assessment-modal').classList.remove('active');
-            navigateTo('profile', currentPatient.id);
-        });
-
-        // --- MANAGE OPTIONS PAGE ---
-        
-        async function renderOptionsPage() {
-            if (userData.role !== 'doctor') return navigateTo('patients');
-            await loadOptions();
-            const content = document.getElementById('page-content');
-            content.innerHTML = `
-                <h1 class="text-3xl font-bold text-sidebar mb-8">Clinical Options</h1>
-                <div class="flex gap-4 mb-6 border-b" id="options-tabs">
-                    <button class="px-4 py-2 border-b-2 border-primary text-primary font-bold" data-tab="regions">Regions</button>
-                    <button class="px-4 py-2 border-b-2 border-transparent text-gray-500" data-tab="diagnoses">Diagnoses</button>
-                    <button class="px-4 py-2 border-b-2 border-transparent text-gray-500" data-tab="complaints">Complaints</button>
-                    <button class="px-4 py-2 border-b-2 border-transparent text-gray-500" data-tab="findings">Findings</button>
-                    <button class="px-4 py-2 border-b-2 border-transparent text-gray-500" data-tab="treatment">Treatment</button>
-                    <button class="px-4 py-2 border-b-2 border-transparent text-gray-500" data-tab="problems">Problem List</button>
-                </div>
-                <div id="options-manager-content" class="bg-white p-6 rounded-xl shadow-sm"></div>
-            `;
-
-            const renderSub = (tabName) => {
-                const container = document.getElementById('options-manager-content');
-                let html = `<div class="mb-6"><input type="text" id="new-opt-val" class="p-2 border rounded w-64" placeholder="Add new..."> `;
-                
-                const isGrouped = ['diagnoses','complaints','findings','treatment'].includes(tabName);
-                
-                if (isGrouped) {
-                    html += `<select id="new-opt-reg" class="p-2 border rounded">${options.regions.map(r => `<option value="${r}">${r}</option>`).join('')}</select> `;
-                }
-                
-                html += `<button id="btn-add-global" class="bg-primary text-white px-4 py-2 rounded">Add</button></div>`;
-                
-                if (isGrouped) {
-                    Object.keys(options[tabName]).forEach(reg => {
-                        html += `<div class="mb-6"><h3 class="font-bold border-b mb-2">${reg}</h3><div class="flex flex-wrap gap-2">`;
-                        options[tabName][reg].forEach(item => {
-                            html += `<span class="bg-gray-100 px-3 py-1 rounded-full text-sm flex items-center gap-2">${item} 
-                            <button class="text-red-500 del-opt" data-tab="${tabName}" data-reg="${reg}" data-val="${item}">&times;</button></span>`;
-                        });
-                        html += `</div></div>`;
-                    });
-                } else {
-                    html += `<div class="flex flex-wrap gap-2">`;
-                    options[tabName].forEach(item => {
-                        html += `<span class="bg-gray-100 px-3 py-1 rounded-full text-sm flex items-center gap-2">${item} 
-                        <button class="text-red-500 del-opt" data-tab="${tabName}" data-val="${item}">&times;</button></span>`;
-                    });
-                    html += `</div>`;
-                }
-                
-                container.innerHTML = html;
-
-                // Events
-                container.querySelectorAll('.del-opt').forEach(b => b.addEventListener('click', async () => {
-                    const { tab, reg, val } = b.dataset;
-                    const docRef = doc(db, "config", "options");
-                    const fresh = (await getDoc(docRef)).data();
-                    
-                    if (reg) fresh[tab][reg] = fresh[tab][reg].filter(i => i !== val);
-                    else fresh[tab] = fresh[tab].filter(i => i !== val);
-
-                    await setDoc(docRef, fresh);
-                    options = fresh;
-                    renderSub(tab);
-                }));
-
-                document.getElementById('btn-add-global').addEventListener('click', async () => {
-                    const val = document.getElementById('new-opt-val').value.trim();
-                    const reg = document.getElementById('new-opt-reg')?.value;
-                    if(!val) return;
-
-                    const docRef = doc(db, "config", "options");
-                    const fresh = (await getDoc(docRef)).data();
-                    
-                    if (reg) {
-                        if(!fresh[tabName][reg]) fresh[tabName][reg] = [];
-                        fresh[tabName][reg].push(val);
-                    } else {
-                        fresh[tabName].push(val);
-                    }
-
-                    await setDoc(docRef, fresh);
-                    options = fresh;
-                    renderSub(tabName);
-                });
-            };
-
-            renderSub('regions');
-
-            document.getElementById('options-tabs').querySelectorAll('button').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.getElementById('options-tabs').querySelectorAll('button').forEach(b => {
-                        b.classList.remove('border-primary', 'text-primary');
-                        b.classList.add('border-transparent', 'text-gray-500');
-                    });
-                    btn.classList.add('border-primary', 'text-primary');
-                    renderSub(btn.dataset.tab);
-                });
-            });
-        }
-
-        // --- MANAGE USERS PAGE ---
-        
-        async function renderUsersPage() {
-            if (userData.role !== 'doctor') return navigateTo('patients');
-            const content = document.getElementById('page-content');
-            content.innerHTML = `
-                <div class="flex justify-between items-center mb-8">
-                    <h1 class="text-3xl font-bold text-sidebar">Staff Management</h1>
-                    <button id="btn-add-staff" class="bg-primary text-white px-6 py-2 rounded-lg font-bold shadow">+ Add Staff</button>
-                </div>
-                <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-                    <table class="w-full text-left">
-                        <thead class="bg-gray-50 border-b">
-                            <tr>
-                                <th class="p-4">Name</th>
-                                <th class="p-4">Email</th>
-                                <th class="p-4">Role</th>
-                                <th class="p-4">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="users-table-body"></tbody>
-                    </table>
-                </div>
-            `;
-
-            const querySnapshot = await getDocs(collection(db, "users"));
-            const tbody = document.getElementById('users-table-body');
-            querySnapshot.forEach(uDoc => {
-                const u = uDoc.data();
-                const tr = document.createElement('tr');
-                tr.className = "border-b hover:bg-gray-50";
-                tr.innerHTML = `
-                    <td class="p-4 font-bold">${u.name}</td>
-                    <td class="p-4">${u.email}</td>
-                    <td class="p-4"><span class="px-2 py-1 rounded text-xs font-bold ${u.role === 'doctor' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}">${u.role.toUpperCase()}</span></td>
-                    <td class="p-4">
-                        ${uDoc.id !== currentUser.uid ? `<button class="del-user text-red-500" data-id="${uDoc.id}">Remove</button>` : '<span class="text-gray-400 italic">You</span>'}
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            document.getElementById('btn-add-staff').addEventListener('click', async () => {
-                const name = prompt("Staff Name:");
-                const email = prompt("Email:");
-                const pass = prompt("Password (min 6 chars):");
-                const role = prompt("Role (doctor or receptionist):").toLowerCase();
-
-                if (!['doctor', 'receptionist'].includes(role)) return alert('Invalid role');
-
-                try {
-                    // Note: In a real app, use Firebase Functions to create users. 
-                    // This creates a user and signs them in, so we must be careful.
-                    alert('Registering staff...');
-                    const res = await createUserWithEmailAndPassword(auth, email, pass);
-                    await setDoc(doc(db, "users", res.user.uid), {
-                        name, email, role, createdAt: new Date().toISOString()
-                    });
-                    showToast('Staff added! Note: You have been signed in as the new user.');
-                    location.reload(); 
-                } catch (e) {
-                    alert(e.message);
-                }
-            });
-
-            tbody.querySelectorAll('.del-user').forEach(b => b.addEventListener('click', async () => {
-                if(confirm('Delete this user?')) {
-                    await deleteDoc(doc(db, "users", b.dataset.id));
-                    renderUsersPage();
-                }
-            }));
-        }
-
-        // --- EXPORT LOGIC ---
-
-        function exportPatientsCSV(list) {
-            let csv = "\uFEFFName,Age,Gender,Job,Phone,Visits,Last Region,Latest Diagnosis\n";
-            list.forEach(p => {
-                const latest = p.visits?.[p.visits.length - 1];
-                const region = latest?.regions[0]?.region || 'N/A';
-                const diag = latest?.regions[0]?.diagnoses.join('; ') || 'N/A';
-                csv += `"${p.name}","${p.age}","${p.gender}","${p.job}","${p.phone}","${p.visits?.length || 0}","${region}","${diag}"\n`;
-            });
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.setAttribute("download", `Physiclinic_Export_${new Date().toISOString().split('T')[0]}.csv`);
-            link.click();
-        }
-
-        async function exportPatientPDF(p) {
-            const { jsPDF } = window.jspdf;
-            const element = document.getElementById('report-content');
-            
-            showToast('Generating PDF...', 'success');
-            
-            html2canvas(element, { scale: 2, useCORS: true }).then(canvas => {
-                const imgData = canvas.toDataURL('image/png');
-                const pdf = new jsPDF('p', 'mm', 'a4');
-                const imgProps = pdf.getImageProperties(imgData);
-                const pdfWidth = pdf.internal.pageSize.getWidth();
-                const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-                
-                pdf.setFontSize(18);
-                pdf.setTextColor(13, 61, 46);
-                pdf.text(`Patient Report: ${p.name}`, 10, 15);
-                pdf.setFontSize(10);
-                pdf.text(`Age: ${p.age} | Phone: ${p.phone} | Printed: ${new Date().toLocaleDateString()}`, 10, 22);
-                
-                pdf.addImage(imgData, 'PNG', 0, 30, pdfWidth, pdfHeight);
-                pdf.save(`Report_${p.name.replace(/\s/g, '_')}.pdf`);
-            });
-        }
-
-        // --- GLOBAL UI EVENTS ---
-        document.getElementById('login-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            try {
-                await signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-password').value);
-            } catch (err) {
-                alert("Login Failed: " + err.message);
-            }
-        });
-
-        document.getElementById('btn-signout').addEventListener('click', () => signOut(auth));
-
-        document.querySelectorAll('.close-modal').forEach(b => b.addEventListener('click', () => {
-            document.getElementById('assessment-modal').classList.remove('active');
-        }));
-
-        document.querySelectorAll('.sidebar-link').forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                navigateTo(link.dataset.page);
-            });
-        });
-
-    </script>
+</script>
 </body>
 </html>
+
 
 
 
