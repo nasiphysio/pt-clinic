@@ -1038,7 +1038,7 @@ document.getElementById('search-input').addEventListener('input', renderPatientL
 // ─────────────────────────────────────────
 // ASSESSMENT MODAL
 // ─────────────────────────────────────────
-async function openAssessment(pid, type, fuId = null) {
+window.openAssessment = async function openAssessment(pid, type, fuId = null) {
   if (currentUser.role !== 'doctor') { showToast('Doctor access only', true); return; }
 
   assessPid   = pid;
@@ -1096,8 +1096,9 @@ function buildAssessmentForm(opts) {
   body.innerHTML = '';
 
   // Date
-  const dateGroup = makeFormGroup('Date', makeInput('assess-date', 'date', assessDate));
-  document.getElementById('assess-date').addEventListener('change', e => assessDate = e.target.value);
+  const dateInp = makeInput('assess-date', 'date', assessDate);
+  dateInp.addEventListener('change', e => assessDate = e.target.value);
+  const dateGroup = makeFormGroup('Date', dateInp);
   body.appendChild(dateGroup);
 
   // Region tabs
@@ -1403,7 +1404,7 @@ document.getElementById('save-assess').addEventListener('click', async () => {
 // ─────────────────────────────────────────
 // PROFILE VIEW
 // ─────────────────────────────────────────
-function openProfile(pid) {
+window.openProfile = function openProfile(pid) {
   const p = patients.find(x => x.id === pid);
   if (!p) return;
 
