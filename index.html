@@ -559,6 +559,59 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   .login-card { padding: 32px 22px; }
   .profile-header { flex-direction: column; }
 }
+
+/* ===== SCHEDULE ===== */
+.schedule-grid { display: grid; gap: 8px; }
+.appt-slot {
+  background: white;
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: var(--shadow);
+  border-left: 4px solid var(--border);
+  transition: all 0.2s;
+}
+.appt-slot.status-scheduled  { border-left-color: #3498db; }
+.appt-slot.status-confirmed  { border-left-color: var(--accent); }
+.appt-slot.status-attended   { border-left-color: var(--green); }
+.appt-slot.status-cancelled  { border-left-color: var(--red); opacity: 0.6; }
+.appt-slot.status-rescheduled{ border-left-color: #9b59b6; }
+.appt-time  { font-size: 15px; font-weight: 700; color: var(--primary-dark); min-width: 52px; }
+.appt-info  { flex: 1; }
+.appt-name  { font-size: 14px; font-weight: 700; color: var(--text); }
+.appt-sub   { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.appt-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.status-pill {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.sp-scheduled  { background:#ebf5fb; color:#2980b9; }
+.sp-confirmed  { background:#fff8e6; color:#b07a00; }
+.sp-attended   { background:var(--green-light); color:var(--green); }
+.sp-cancelled  { background:var(--red-light); color:var(--red); }
+.sp-rescheduled{ background:#f5eef8; color:#8e44ad; }
+
+/* ===== SETTINGS ===== */
+.settings-section { background: white; border-radius: var(--radius); box-shadow: var(--shadow); padding: 22px; margin-bottom: 18px; }
+.settings-section-title { font-size: 14px; font-weight: 700; color: var(--primary-dark); margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+
+/* ===== SESSIONS LEDGER ===== */
+.session-row { display: flex; align-items: center; gap: 10px; background: var(--bg); padding: 9px 14px; border-radius: var(--radius-sm); margin-bottom: 6px; font-size: 13px; }
+.session-row .sr-date { min-width: 90px; color: var(--muted); }
+.session-row .sr-status { min-width: 80px; }
+.session-row .sr-price { margin-left: auto; font-weight: 700; color: var(--primary-dark); }
+.finance-summary { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 14px; }
+.fin-card { background: white; border-radius: var(--radius-sm); padding: 14px; text-align: center; box-shadow: var(--shadow); }
+.fin-card .fin-num { font-size: 22px; font-weight: 700; color: var(--primary-dark); }
+.fin-card .fin-lbl { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+/* ===== PDF RECEIPT ===== */
+@media print { body > *:not(#print-area) { display: none !important; } }
 </style>
 </head>
 <body>
@@ -601,8 +654,10 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
       </div>
       <nav class="sidebar-nav">
         <button class="nav-item active" id="nav-patients">👥 Patients</button>
+        <button class="nav-item" id="nav-schedule">📅 Schedule</button>
         <button class="nav-item" id="nav-manage">⚙️ Manage Options</button>
         <button class="nav-item" id="nav-users">👤 Manage Users</button>
+        <button class="nav-item" id="nav-settings">🏥 Clinic Settings</button>
       </nav>
       <div class="sidebar-footer">
         <button class="signout-btn" onclick="logoutSubmit()">⇠ Sign Out</button>
@@ -655,6 +710,90 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 
       <!-- PROFILE PAGE -->
       <div id="page-profile" style="display:none"></div>
+
+      <!-- SCHEDULE PAGE -->
+      <div id="page-schedule" style="display:none">
+        <div class="page-header">
+          <div>
+            <div class="page-title">📅 Daily Schedule</div>
+            <div class="page-subtitle" id="schedule-date-label"></div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <input type="date" class="form-control" id="schedule-date-picker" style="width:160px">
+            <button class="btn btn-primary" id="btn-new-appt">+ New Appointment</button>
+          </div>
+        </div>
+        <div id="schedule-body"></div>
+      </div>
+
+      <!-- SETTINGS PAGE -->
+      <div id="page-settings" style="display:none">
+        <div class="page-header">
+          <div>
+            <div class="page-title">🏥 Clinic Settings</div>
+            <div class="page-subtitle">Customize your clinic profile and PDF</div>
+          </div>
+          <button class="btn btn-primary" id="btn-save-settings">💾 Save Settings</button>
+        </div>
+        <div class="settings-section">
+          <div class="settings-section-title">🏥 Clinic Information</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Clinic Name</label>
+              <input class="form-control" id="set-clinic-name" placeholder="e.g. Physiclinic">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Doctor Name &amp; Title</label>
+              <input class="form-control" id="set-doctor-name" placeholder="e.g. Dr. Ahmed Hassan, PT">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Address</label>
+              <input class="form-control" id="set-address" placeholder="Clinic address">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone</label>
+              <input class="form-control" id="set-phone" placeholder="+20 ...">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Logo URL</label>
+            <input class="form-control" id="set-logo-url" placeholder="https://...">
+            <div id="logo-preview" style="margin-top:10px;display:none">
+              <img id="logo-img" style="max-height:70px;border-radius:8px;border:1px solid var(--border);padding:6px" src="" alt="Logo">
+            </div>
+          </div>
+        </div>
+        <div class="settings-section">
+          <div class="settings-section-title">📅 Schedule Settings</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Work Start Time</label>
+              <input class="form-control" type="time" id="set-work-start" value="09:00">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Work End Time</label>
+              <input class="form-control" type="time" id="set-work-end" value="21:00">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Default Session Duration (minutes)</label>
+            <select class="form-control" id="set-session-dur">
+              <option value="30">30 minutes</option>
+              <option value="45" selected>45 minutes</option>
+              <option value="60">60 minutes</option>
+            </select>
+          </div>
+        </div>
+        <div class="settings-section">
+          <div class="settings-section-title">💰 Pricing</div>
+          <div class="form-group">
+            <label class="form-label">Default Session Price</label>
+            <input class="form-control" type="number" id="set-session-price" placeholder="e.g. 300">
+          </div>
+        </div>
+      </div>
 
     </main>
   </div>
@@ -754,6 +893,56 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   </div>
 </div>
 
+<!-- ===== MODAL: NEW APPOINTMENT ===== -->
+<div class="modal-overlay" id="modal-appt">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <div class="modal-title" id="appt-modal-title">New Appointment</div>
+      <button class="modal-close" id="close-appt">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Date</label>
+          <input class="form-control" type="date" id="appt-date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Time</label>
+          <input class="form-control" type="time" id="appt-time">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Patient *</label>
+        <select class="form-control" id="appt-patient-select"></select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Session Type</label>
+          <select class="form-control" id="appt-type">
+            <option value="followup">Follow-up</option>
+            <option value="initial">Initial Assessment</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Price (optional)</label>
+          <input class="form-control" type="number" id="appt-price" placeholder="Leave blank = default">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notes</label>
+        <input class="form-control" id="appt-notes" placeholder="Optional notes...">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="cancel-appt">Cancel</button>
+      <button class="btn btn-primary" id="save-appt">💾 Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: RECEIPT PDF ===== -->
+<div id="print-area" style="display:none"></div>
+
 <!-- ===== CONFIRM DIALOG ===== -->
 <div class="confirm-overlay" id="confirm-overlay">
   <div class="confirm-box">
@@ -820,6 +1009,13 @@ let assessActiveRegion = 0;
 let assessDuration = '';
 let assessOnset  = '';
 let assessNotes  = '';
+
+// Clinic settings
+let clinicSettings = {};
+// Current schedule date
+let scheduleDate = '';
+// Editing appointment id
+let editApptId = null;
 
 // ─────────────────────────────────────────
 // OPTIONS — always read fresh from Firestore
@@ -915,6 +1111,9 @@ onAuthStateChanged(AUTH, async (user) => {
   document.getElementById('user-name').textContent = currentUser.name || currentUser.email;
   document.getElementById('user-role').textContent = currentUser.role === 'doctor' ? '👨‍⚕️ Doctor' : '🗂️ Receptionist';
 
+  // Load clinic settings
+  await loadClinicSettings();
+
   // Setup nav based on role
   setupNav();
 
@@ -929,8 +1128,10 @@ function setupNav() {
   if (!navSetupDone) {
     navSetupDone = true;
     document.getElementById('nav-patients').addEventListener('click', () => showPage('patients'));
+    document.getElementById('nav-schedule').addEventListener('click', () => showPage('schedule'));
     document.getElementById('nav-manage').addEventListener('click', () => { if (currentUser.role === 'doctor') showPage('manage'); });
     document.getElementById('nav-users').addEventListener('click', () => { if (currentUser.role === 'doctor') showPage('users'); });
+    document.getElementById('nav-settings').addEventListener('click', () => { if (currentUser.role === 'doctor') showPage('settings'); });
   }
 
   if (isDoctor) {
@@ -1946,31 +2147,21 @@ document.getElementById('save-add-user').addEventListener('click', async () => {
   if (!email || !pass) { showToast('Email and password required', true); return; }
   if (pass.length < 6) { showToast('Password min 6 characters', true); return; }
   try {
-    // حفظ الـ user الحالي قبل إنشاء الحساب الجديد
-    const savedUser = currentUser;
-
-    const cred = await createUserWithEmailAndPassword(AUTH, email, pass);
-    const newUid = cred.user.uid;
-
-    // حفظ بيانات الـ user الجديد في Firestore
+    // إنشاء الحساب عبر Firebase REST API عشان منعملش auto-login
+    const apiKey = fbApp.options.apiKey;
+    const res = await fetch(
+      `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${apiKey}`,
+      { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ email, password: pass, returnSecureToken: false }) }
+    );
+    const data = await res.json();
+    if (data.error) { showToast(data.error.message, true); return; }
+    const newUid = data.localId;
     await setDoc(doc(DB, 'users', newUid), { name: name || email, email, role, createdAt: Date.now() });
-
-    // إرجاع الـ login للـ doctor الأصلي
-    await signInWithEmailAndPassword(AUTH, savedUser.email, '');
-
     closeModal('modal-add-user');
     showToast('Staff account created ✅');
     renderUsers();
-  } catch(e) {
-    // لو الـ re-login فشل (عادي لأننا مش بنحفظ الباسورد)، نكتفي بإنشاء الـ user فقط
-    if (e.code !== 'auth/wrong-password' && e.code !== 'auth/invalid-credential') {
-      showToast(e.message, true);
-      return;
-    }
-    closeModal('modal-add-user');
-    showToast('Staff account created ✅ (Please re-login)');
-    renderUsers();
-  }
+  } catch(e) { showToast(e.message, true); }
 });
 
 // ─────────────────────────────────────────
@@ -2151,15 +2342,17 @@ document.getElementById('btn-export-all').addEventListener('click', () => {
 // PAGE NAVIGATION
 // ─────────────────────────────────────────
 window.showPage = function(name) {
-  ['patients', 'manage', 'profile', 'users'].forEach(p => {
+  ['patients', 'manage', 'profile', 'users', 'schedule', 'settings'].forEach(p => {
     document.getElementById('page-' + p).style.display = 'none';
   });
   document.getElementById('page-' + name).style.display = 'block';
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  const navMap = { patients: 'nav-patients', manage: 'nav-manage', users: 'nav-users' };
+  const navMap = { patients:'nav-patients', manage:'nav-manage', users:'nav-users', schedule:'nav-schedule', settings:'nav-settings' };
   if (navMap[name]) document.getElementById(navMap[name]).classList.add('active');
-  if (name === 'manage') renderManage();
-  if (name === 'users')  renderUsers();
+  if (name === 'manage')   renderManage();
+  if (name === 'users')    renderUsers();
+  if (name === 'schedule') renderSchedule();
+  if (name === 'settings') renderSettings();
   closeSidebar();
 };
 
@@ -2339,6 +2532,358 @@ function getDefaultOptions() {
     },
     problems: ['Pain','Stiffness','Limited ROM','Muscle weakness','Balance deficit','Gait impairment','Swelling / Oedema','Numbness / Tingling','Functional limitation','Postural dysfunction','Nerve Entrapment','Muscle Imbalance','Reduced proprioception','Decreased endurance'],
   };
+}
+
+
+// ═══════════════════════════════════════════
+// CLINIC SETTINGS
+// ═══════════════════════════════════════════
+async function loadClinicSettings() {
+  const snap = await getDoc(doc(DB, 'config', 'clinic'));
+  clinicSettings = snap.exists() ? snap.data() : {
+    clinicName: 'Physiclinic', doctorName: '', address: '', phone: '',
+    logoUrl: '', workStart: '09:00', workEnd: '21:00', sessionDur: 45, sessionPrice: 0
+  };
+}
+
+function renderSettings() {
+  const s = clinicSettings;
+  document.getElementById('set-clinic-name').value   = s.clinicName  || '';
+  document.getElementById('set-doctor-name').value   = s.doctorName  || '';
+  document.getElementById('set-address').value        = s.address     || '';
+  document.getElementById('set-phone').value          = s.phone       || '';
+  document.getElementById('set-logo-url').value       = s.logoUrl     || '';
+  document.getElementById('set-work-start').value     = s.workStart   || '09:00';
+  document.getElementById('set-work-end').value       = s.workEnd     || '21:00';
+  document.getElementById('set-session-dur').value    = String(s.sessionDur || 45);
+  document.getElementById('set-session-price').value  = s.sessionPrice || '';
+  updateLogoPreview(s.logoUrl);
+}
+
+function updateLogoPreview(url) {
+  const prev = document.getElementById('logo-preview');
+  const img  = document.getElementById('logo-img');
+  if (url) { img.src = url; prev.style.display = 'block'; }
+  else { prev.style.display = 'none'; }
+}
+
+document.getElementById('set-logo-url').addEventListener('input', e => updateLogoPreview(e.target.value));
+
+document.getElementById('btn-save-settings').addEventListener('click', async () => {
+  clinicSettings = {
+    clinicName:   document.getElementById('set-clinic-name').value.trim(),
+    doctorName:   document.getElementById('set-doctor-name').value.trim(),
+    address:      document.getElementById('set-address').value.trim(),
+    phone:        document.getElementById('set-phone').value.trim(),
+    logoUrl:      document.getElementById('set-logo-url').value.trim(),
+    workStart:    document.getElementById('set-work-start').value,
+    workEnd:      document.getElementById('set-work-end').value,
+    sessionDur:   parseInt(document.getElementById('set-session-dur').value),
+    sessionPrice: parseFloat(document.getElementById('set-session-price').value) || 0,
+  };
+  await setDoc(doc(DB, 'config', 'clinic'), clinicSettings);
+  showToast('Settings saved ✅');
+});
+
+// ═══════════════════════════════════════════
+// SCHEDULE
+// ═══════════════════════════════════════════
+async function renderSchedule() {
+  if (!scheduleDate) scheduleDate = todayStr();
+  const picker = document.getElementById('schedule-date-picker');
+  picker.value = scheduleDate;
+  document.getElementById('schedule-date-label').textContent =
+    new Date(scheduleDate + 'T00:00:00').toLocaleDateString('en-GB', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+  const body = document.getElementById('schedule-body');
+  body.innerHTML = '<div class="loading"><div class="spinner"></div><span>Loading...</span></div>';
+
+  const q = query(collection(DB, 'appointments'), orderBy('time', 'asc'));
+  const snap = await getDocs(q);
+  const appts = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(a => a.date === scheduleDate);
+
+  body.innerHTML = '';
+
+  if (!appts.length) {
+    body.innerHTML = '<div class="empty-state"><span class="icon">📅</span><h3>No appointments</h3><p>Click New Appointment to add one</p></div>';
+    return;
+  }
+
+  const grid = document.createElement('div');
+  grid.className = 'schedule-grid';
+
+  appts.forEach(a => {
+    const p = patients.find(x => x.id === a.patientId);
+    const pName = p ? p.name : (a.patientName || 'Unknown');
+    const statusLabels = { scheduled:'Scheduled', confirmed:'Confirmed', attended:'Attended', cancelled:'Cancelled', rescheduled:'Rescheduled' };
+    const slot = document.createElement('div');
+    slot.className = `appt-slot status-${a.status || 'scheduled'}`;
+    slot.innerHTML = `
+      <div class="appt-time">${a.time || '--:--'}</div>
+      <div class="appt-info">
+        <div class="appt-name">${pName}</div>
+        <div class="appt-sub">${a.type === 'initial' ? '🔵 Initial Assessment' : '🟡 Follow-up'}${a.notes ? ' · ' + a.notes : ''}</div>
+      </div>
+      <span class="status-pill sp-${a.status || 'scheduled'}">${statusLabels[a.status] || 'Scheduled'}</span>
+      <div class="appt-actions">
+        ${a.status !== 'attended' && a.status !== 'cancelled' ? `
+          <button class="btn btn-sm btn-primary" onclick="updateApptStatus('${a.id}','attended')">✓ Attended</button>
+          <button class="btn btn-sm btn-ghost" onclick="updateApptStatus('${a.id}','confirmed')">Confirm</button>
+          <button class="btn btn-sm btn-danger" onclick="updateApptStatus('${a.id}','cancelled')">Cancel</button>
+        ` : ''}
+        <button class="btn btn-sm btn-ghost" onclick="openEditAppt('${a.id}')">✏️</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteAppt('${a.id}')">🗑</button>
+      </div>`;
+    grid.appendChild(slot);
+  });
+  body.appendChild(grid);
+
+  // Summary
+  const attended  = appts.filter(a => a.status === 'attended').length;
+  const cancelled = appts.filter(a => a.status === 'cancelled').length;
+  const summary = document.createElement('div');
+  summary.style.cssText = 'margin-top:16px;display:flex;gap:10px;flex-wrap:wrap';
+  summary.innerHTML = `
+    <div class="card" style="flex:1;min-width:120px;text-align:center;padding:14px">
+      <div style="font-size:22px;font-weight:700;color:var(--primary-dark)">${appts.length}</div>
+      <div style="font-size:12px;color:var(--muted)">Total</div>
+    </div>
+    <div class="card" style="flex:1;min-width:120px;text-align:center;padding:14px">
+      <div style="font-size:22px;font-weight:700;color:var(--green)">${attended}</div>
+      <div style="font-size:12px;color:var(--muted)">Attended</div>
+    </div>
+    <div class="card" style="flex:1;min-width:120px;text-align:center;padding:14px">
+      <div style="font-size:22px;font-weight:700;color:var(--red)">${cancelled}</div>
+      <div style="font-size:12px;color:var(--muted)">Cancelled</div>
+    </div>`;
+  body.appendChild(summary);
+}
+
+document.getElementById('schedule-date-picker').addEventListener('change', e => {
+  scheduleDate = e.target.value;
+  renderSchedule();
+});
+
+document.getElementById('btn-new-appt').addEventListener('click', () => openNewAppt());
+document.getElementById('close-appt').addEventListener('click', () => closeModal('modal-appt'));
+document.getElementById('cancel-appt').addEventListener('click', () => closeModal('modal-appt'));
+
+function openNewAppt() {
+  editApptId = null;
+  document.getElementById('appt-modal-title').textContent = 'New Appointment';
+  document.getElementById('appt-date').value  = scheduleDate || todayStr();
+  document.getElementById('appt-time').value  = '09:00';
+  document.getElementById('appt-price').value = clinicSettings.sessionPrice || '';
+  document.getElementById('appt-notes').value = '';
+  document.getElementById('appt-type').value  = 'followup';
+  // fill patient select
+  const sel = document.getElementById('appt-patient-select');
+  sel.innerHTML = patients.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+  openModal('modal-appt');
+}
+
+async function openEditAppt(id) {
+  const snap = await getDoc(doc(DB, 'appointments', id));
+  if (!snap.exists()) return;
+  const a = snap.data();
+  editApptId = id;
+  document.getElementById('appt-modal-title').textContent = 'Edit Appointment';
+  document.getElementById('appt-date').value  = a.date  || '';
+  document.getElementById('appt-time').value  = a.time  || '';
+  document.getElementById('appt-price').value = a.price || '';
+  document.getElementById('appt-notes').value = a.notes || '';
+  document.getElementById('appt-type').value  = a.type  || 'followup';
+  const sel = document.getElementById('appt-patient-select');
+  sel.innerHTML = patients.map(p => `<option value="${p.id}" ${p.id === a.patientId ? 'selected' : ''}>${p.name}</option>`).join('');
+  openModal('modal-appt');
+}
+
+document.getElementById('save-appt').addEventListener('click', async () => {
+  const date     = document.getElementById('appt-date').value;
+  const time     = document.getElementById('appt-time').value;
+  const patientId= document.getElementById('appt-patient-select').value;
+  const type     = document.getElementById('appt-type').value;
+  const notes    = document.getElementById('appt-notes').value.trim();
+  const price    = parseFloat(document.getElementById('appt-price').value) || clinicSettings.sessionPrice || 0;
+  if (!date || !time || !patientId) { showToast('Please fill required fields', true); return; }
+  const p = patients.find(x => x.id === patientId);
+  const data = { date, time, patientId, patientName: p?.name || '', type, notes, price, status: 'scheduled', createdAt: Date.now() };
+  if (editApptId) {
+    await updateDoc(doc(DB, 'appointments', editApptId), { date, time, patientId, patientName: p?.name || '', type, notes, price });
+    showToast('Appointment updated ✅');
+  } else {
+    await addDoc(collection(DB, 'appointments'), data);
+    showToast('Appointment saved ✅');
+  }
+  closeModal('modal-appt');
+  if (date === scheduleDate) renderSchedule();
+});
+
+async function updateApptStatus(id, status) {
+  await updateDoc(doc(DB, 'appointments', id), { status });
+  // لو attended — سجل جلسة في المريض
+  if (status === 'attended') {
+    const snap = await getDoc(doc(DB, 'appointments', id));
+    if (snap.exists()) {
+      const a = snap.data();
+      const sessionRecord = {
+        date: a.date, time: a.time, type: a.type,
+        price: a.price || clinicSettings.sessionPrice || 0,
+        apptId: id
+      };
+      const pSnap = await getDoc(doc(DB, 'patients', a.patientId));
+      if (pSnap.exists()) {
+        const pData = pSnap.data();
+        const sessions = pData.sessions || [];
+        // منع التكرار
+        if (!sessions.find(s => s.apptId === id)) {
+          sessions.push(sessionRecord);
+          await updateDoc(doc(DB, 'patients', a.patientId), { sessions });
+        }
+      }
+    }
+  }
+  renderSchedule();
+  showToast('Status updated ✅');
+}
+
+async function deleteAppt(id) {
+  confirmAction('Delete Appointment', 'Are you sure?', async () => {
+    await deleteDoc(doc(DB, 'appointments', id));
+    renderSchedule();
+    showToast('Deleted');
+  });
+}
+
+// ═══════════════════════════════════════════
+// SESSION LEDGER في بروفايل المريض
+// ═══════════════════════════════════════════
+function renderSessionLedger(patient, container) {
+  const sessions = patient.sessions || [];
+  const price    = clinicSettings.sessionPrice || 0;
+
+  const totalSessions = sessions.length;
+  const totalRevenue  = sessions.reduce((s, x) => s + (x.price || price), 0);
+
+  const wrap = document.createElement('div');
+  wrap.innerHTML = `
+    <div style="font-size:15px;font-weight:700;color:var(--primary-dark);margin-bottom:12px">💰 Sessions & Payments</div>
+    <div class="finance-summary">
+      <div class="fin-card"><div class="fin-num">${totalSessions}</div><div class="fin-lbl">Sessions</div></div>
+      <div class="fin-card"><div class="fin-num" style="color:var(--green)">${totalRevenue}</div><div class="fin-lbl">Total Paid</div></div>
+      <div class="fin-card"><div class="fin-num" style="color:var(--accent)">${price}</div><div class="fin-lbl">Per Session</div></div>
+    </div>`;
+
+  if (sessions.length) {
+    const list = document.createElement('div');
+    [...sessions].reverse().forEach(s => {
+      const row = document.createElement('div');
+      row.className = 'session-row';
+      row.innerHTML = `
+        <span class="sr-date">${s.date || ''}</span>
+        <span>${s.time || ''}</span>
+        <span class="sr-status"><span class="status-pill sp-attended">✓ Attended</span></span>
+        <span style="color:var(--muted);font-size:12px">${s.type === 'initial' ? 'Initial' : 'Follow-up'}</span>
+        <span class="sr-price">${s.price || price} EGP</span>`;
+      list.appendChild(row);
+    });
+    wrap.appendChild(list);
+  } else {
+    wrap.innerHTML += '<div style="color:var(--muted);font-size:13px;text-align:center;padding:12px">No sessions recorded yet</div>';
+  }
+
+  // زر PDF إيصال
+  const receiptBtn = document.createElement('button');
+  receiptBtn.className = 'btn btn-ghost btn-sm';
+  receiptBtn.style.marginTop = '12px';
+  receiptBtn.textContent = '🧾 Print Receipt';
+  receiptBtn.addEventListener('click', () => printReceipt(patient));
+  wrap.appendChild(receiptBtn);
+
+  container.appendChild(wrap);
+}
+
+// ═══════════════════════════════════════════
+// PDF — التقرير الطبي الاحترافي
+// ═══════════════════════════════════════════
+function buildClinicHeader() {
+  const s = clinicSettings;
+  return `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:14px;border-bottom:2px solid #1a5c4a;margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:14px">
+        ${s.logoUrl ? `<img src="${s.logoUrl}" style="height:60px;object-fit:contain">` : ''}
+        <div>
+          <div style="font-size:20px;font-weight:700;color:#0d3d2e">${s.clinicName || 'Physiclinic'}</div>
+          ${s.doctorName ? `<div style="font-size:13px;color:#1a5c4a;font-weight:600">${s.doctorName}</div>` : ''}
+          ${s.address ? `<div style="font-size:12px;color:#5a7a6e">${s.address}</div>` : ''}
+          ${s.phone ? `<div style="font-size:12px;color:#5a7a6e">📞 ${s.phone}</div>` : ''}
+        </div>
+      </div>
+      <div style="text-align:right;font-size:12px;color:#5a7a6e">
+        <div style="font-weight:700;font-size:14px;color:#0d3d2e">Medical Report</div>
+        <div>Date: ${new Date().toLocaleDateString('en-GB')}</div>
+      </div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════
+// PDF — إيصال الكشف الحساب
+// ═══════════════════════════════════════════
+function printReceipt(patient) {
+  const s       = clinicSettings;
+  const sessions = patient.sessions || [];
+  const price   = s.sessionPrice || 0;
+  const total   = sessions.reduce((sum, x) => sum + (x.price || price), 0);
+
+  const html = `
+    <html><head><meta charset="UTF-8">
+    <style>
+      body { font-family: Arial, sans-serif; padding: 30px; color: #162820; }
+      .header { display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #1a5c4a;padding-bottom:14px;margin-bottom:20px }
+      .logo { height:55px;object-fit:contain }
+      .clinic-info h2 { font-size:18px;color:#0d3d2e;margin:0 }
+      .clinic-info p  { font-size:12px;color:#5a7a6e;margin:2px 0 }
+      table { width:100%;border-collapse:collapse;margin-top:16px }
+      th { background:#0d3d2e;color:white;padding:8px 12px;text-align:left;font-size:13px }
+      td { padding:8px 12px;border-bottom:1px solid #ccddd6;font-size:13px }
+      tr:nth-child(even) td { background:#eef2f0 }
+      .total-row td { font-weight:700;background:#eaf7f0;color:#0d3d2e;font-size:14px }
+      .patient-box { background:#eef2f0;border-radius:8px;padding:12px 16px;margin-bottom:16px }
+      .patient-box h3 { margin:0 0 4px;font-size:16px;color:#0d3d2e }
+      .patient-box p  { margin:0;font-size:13px;color:#5a7a6e }
+      .footer { margin-top:24px;text-align:center;font-size:11px;color:#5a7a6e;border-top:1px solid #ccddd6;padding-top:12px }
+    </style></head><body>
+    <div class="header">
+      <div style="display:flex;align-items:center;gap:12px">
+        ${s.logoUrl ? `<img class="logo" src="${s.logoUrl}">` : ''}
+        <div class="clinic-info">
+          <h2>${s.clinicName || 'Physiclinic'}</h2>
+          ${s.doctorName ? `<p>${s.doctorName}</p>` : ''}
+          ${s.address ? `<p>${s.address}</p>` : ''}
+          ${s.phone ? `<p>📞 ${s.phone}</p>` : ''}
+        </div>
+      </div>
+      <div style="text-align:right;font-size:12px;color:#5a7a6e">
+        <div style="font-weight:700;font-size:15px;color:#0d3d2e">🧾 Receipt</div>
+        <div>${new Date().toLocaleDateString('en-GB')}</div>
+      </div>
+    </div>
+    <div class="patient-box">
+      <h3>${patient.name}</h3>
+      <p>${patient.age ? patient.age + ' yrs' : ''} ${patient.gender || ''} ${patient.phone ? '· 📞 ' + patient.phone : ''}</p>
+    </div>
+    <table>
+      <tr><th>#</th><th>Date</th><th>Type</th><th>Price</th></tr>
+      ${sessions.map((s, i) => `<tr><td>${i+1}</td><td>${s.date||''} ${s.time||''}</td><td>${s.type==='initial'?'Initial Assessment':'Follow-up'}</td><td>${s.price||price} EGP</td></tr>`).join('')}
+      <tr class="total-row"><td colspan="3">Total (${sessions.length} sessions)</td><td>${total} EGP</td></tr>
+    </table>
+    <div class="footer">${s.clinicName || 'Physiclinic'} · ${s.address || ''} · ${s.phone || ''}</div>
+    </body></html>`;
+
+  const win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
+  win.print();
 }
 
 </script>
