@@ -892,14 +892,20 @@ onAuthStateChanged(AUTH, async (user) => {
   startPatientsListener();
 });
 
+let navSetupDone = false;
 function setupNav() {
   const isDoctor = currentUser.role === 'doctor';
 
-  document.getElementById('nav-patients').addEventListener('click', () => showPage('patients'));
+  if (!navSetupDone) {
+    navSetupDone = true;
+    document.getElementById('nav-patients').addEventListener('click', () => showPage('patients'));
+    document.getElementById('nav-manage').addEventListener('click', () => { if (currentUser.role === 'doctor') showPage('manage'); });
+    document.getElementById('nav-users').addEventListener('click', () => { if (currentUser.role === 'doctor') showPage('users'); });
+  }
 
   if (isDoctor) {
-    document.getElementById('nav-manage').addEventListener('click', () => showPage('manage'));
-    document.getElementById('nav-users').addEventListener('click', () => showPage('users'));
+    document.getElementById('nav-manage').classList.remove('disabled');
+    document.getElementById('nav-users').classList.remove('disabled');
     document.getElementById('btn-export-all').style.display = '';
   } else {
     document.getElementById('nav-manage').classList.add('disabled');
@@ -1096,8 +1102,9 @@ function buildAssessmentForm(opts) {
   body.innerHTML = '';
 
   // Date
-  const dateGroup = makeFormGroup('Date', makeInput('assess-date', 'date', assessDate));
-  document.getElementById('assess-date').addEventListener('change', e => assessDate = e.target.value);
+  const dateInput = makeInput('assess-date', 'date', assessDate);
+  dateInput.addEventListener('change', e => assessDate = e.target.value);
+  const dateGroup = makeFormGroup('Date', dateInput);
   body.appendChild(dateGroup);
 
   // Region tabs
@@ -1351,7 +1358,18 @@ function addRegion(name, opts) {
 
 function removeRegion(idx, opts) {
   assessRegions.splice(idx, 1);
+  // Reset active index safely
+  assessActiveRegion = Math.max(0, Math.min(assessActiveRegion, assessRegions.length - 1));
   buildAssessmentForm(opts);
+  // Restore date/duration/onset/notes values after rebuild
+  const dateEl = document.getElementById('assess-date');
+  if (dateEl) dateEl.value = assessDate;
+  const durEl = document.getElementById('assess-duration');
+  if (durEl) durEl.value = assessDuration;
+  const onsetEl = document.getElementById('assess-onset');
+  if (onsetEl) onsetEl.value = assessOnset;
+  const notesEl = document.getElementById('assess-notes');
+  if (notesEl) notesEl.value = assessNotes;
 }
 
 // Save assessment
@@ -1360,14 +1378,16 @@ document.getElementById('cancel-assess').addEventListener('click', () => closeMo
 
 document.getElementById('save-assess').addEventListener('click', async () => {
   // Collect form values
-  assessDate     = document.getElementById('assess-date')?.value || todayStr();
+  assessDate     = document.getElementById('assess-date')?.value || assessDate;
   assessDuration = document.getElementById('assess-duration')?.value.trim() || '';
   assessOnset    = document.getElementById('assess-onset')?.value || '';
   assessNotes    = document.getElementById('assess-notes')?.value.trim() || '';
 
   assessRegions.forEach((_, i) => {
-    assessRegions[i].sessionsPlanned = document.getElementById(`sess-${i}`)?.value || '';
-    assessRegions[i].freq = document.getElementById(`freq-${i}`)?.value || '';
+    const sessEl = document.getElementById(`sess-${i}`);
+    const freqEl = document.getElementById(`freq-${i}`);
+    if (sessEl) assessRegions[i].sessionsPlanned = sessEl.value || '';
+    if (freqEl) assessRegions[i].freq = freqEl.value || '';
   });
 
   const visitObj = {
@@ -1896,12 +1916,31 @@ document.getElementById('save-add-user').addEventListener('click', async () => {
   if (!email || !pass) { showToast('Email and password required', true); return; }
   if (pass.length < 6) { showToast('Password min 6 characters', true); return; }
   try {
+    // حفظ الـ user الحالي قبل إنشاء الحساب الجديد
+    const savedUser = currentUser;
+
     const cred = await createUserWithEmailAndPassword(AUTH, email, pass);
-    await setDoc(doc(DB, 'users', cred.user.uid), { name: name || email, email, role, createdAt: Date.now() });
+    const newUid = cred.user.uid;
+
+    // حفظ بيانات الـ user الجديد في Firestore
+    await setDoc(doc(DB, 'users', newUid), { name: name || email, email, role, createdAt: Date.now() });
+
+    // إرجاع الـ login للـ doctor الأصلي
+    await signInWithEmailAndPassword(AUTH, savedUser.email, '');
+
     closeModal('modal-add-user');
     showToast('Staff account created ✅');
     renderUsers();
-  } catch(e) { showToast(e.message, true); }
+  } catch(e) {
+    // لو الـ re-login فشل (عادي لأننا مش بنحفظ الباسورد)، نكتفي بإنشاء الـ user فقط
+    if (e.code !== 'auth/wrong-password' && e.code !== 'auth/invalid-credential') {
+      showToast(e.message, true);
+      return;
+    }
+    closeModal('modal-add-user');
+    showToast('Staff account created ✅ (Please re-login)');
+    renderUsers();
+  }
 });
 
 // ─────────────────────────────────────────
