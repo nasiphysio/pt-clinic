@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
@@ -2213,18 +2214,56 @@ function makeSelect(id, options, value) {
 // DEFAULT OPTIONS
 // ─────────────────────────────────────────
 function getDefaultOptions() {
+  const S = arr => [...arr];
+
+  const shoulderDx  = ['Rotator Cuff Tear','Rotator Cuff Tendinopathy','Shoulder Impingement','Frozen Shoulder (Adhesive Capsulitis)','Shoulder Dislocation / Instability','AC Joint Sprain','Biceps Tendinopathy','SLAP Tear','Shoulder Bursitis','Post-Surgical Shoulder'];
+  const elbowDx     = ['Tennis Elbow (Lateral Epicondylitis)',"Golfer's Elbow (Medial Epicondylitis)",'Elbow Bursitis','Radial Tunnel Syndrome','Cubital Tunnel Syndrome','Elbow Fracture (Post-Surgical)','Elbow Stiffness'];
+  const wristDx     = ['Carpal Tunnel Syndrome',"De Quervain's Tenosynovitis",'Trigger Finger','Wrist Sprain','TFCC Tear','Wrist Fracture (Post-Surgical)','Wrist Tendinopathy','Finger Stiffness'];
+  const hipDx       = ['Hip Osteoarthritis','Hip Impingement (FAI)','Trochanteric Bursitis','Hip Labral Tear','Hip Flexor Strain','Piriformis Syndrome','Hip Fracture (Post-Surgical)','Gluteal Tendinopathy'];
+  const kneeDx      = ['Knee Osteoarthritis','Patellofemoral Pain Syndrome','ACL Tear / Post-Surgical','Meniscal Tear','PCL Injury','MCL / LCL Sprain','Patellar Tendinopathy','IT Band Syndrome','Total Knee Replacement (Post-Surgical)'];
+  const ankleDx     = ['Lateral Ankle Sprain','Achilles Tendinopathy','Plantar Fasciitis','Ankle OA','Peroneal Tendinopathy','Ankle Fracture (Post-Surgical)','Metatarsalgia','Hallux Valgus'];
+
+  const shoulderCmp = ['Shoulder pain','Limited ROM','Night pain','Weakness','Clicking / crepitus','Pain on overhead activities','Pain on reaching behind back'];
+  const elbowCmp    = ['Lateral elbow pain','Medial elbow pain','Pain on gripping','Pain on wrist extension','Stiffness','Swelling'];
+  const wristCmp    = ['Wrist pain','Hand numbness','Thumb pain','Trigger finger locking','Grip weakness','Morning stiffness','Swelling'];
+  const hipCmp      = ['Hip pain','Groin pain','Lateral hip pain','Pain on walking','Limited ROM','Pain on stairs','Night pain'];
+  const kneeCmp     = ['Knee pain','Swelling','Crepitus','Limited flexion','Pain on stairs','Pain on squatting','Morning stiffness','Locking / giving way'];
+  const ankleCmp    = ['Heel pain','Ankle pain','Morning heel pain','Swelling','Pain on walking','Limited dorsiflexion','Weakness','Instability'];
+
+  const shoulderFnd = ['Neer Test +','Hawkins-Kennedy +','Empty Can +','Drop Arm +','Speed Test +','Apprehension Test +','Limited Abduction','Limited Flexion','Limited IR','Limited ER','Rotator cuff weakness','Scapular dyskinesia'];
+  const elbowFnd    = ['Pain on resisted wrist extension','Pain on resisted wrist flexion','Limited Pronation','Limited Supination','Cozen Test +',"Mill's Test +",'Tinel at elbow'];
+  const wristFnd    = ['Phalen Test +','Tinel Test +','Limited wrist flexion','Limited wrist extension','Grip weakness','Finkelstein Test +'];
+  const hipFnd      = ['FABER +','FADIR +','Thomas Test +','Trendelenburg +','Limited IR','Limited ER','Limited Flexion','Gluteal weakness'];
+  const kneeFnd     = ['Lachman Test +','Anterior Drawer +','McMurray +','Valgus Stress +','Varus Stress +','Patellar Grind +','Limited Flexion','Quad weakness','VMO atrophy','Joint effusion','Crepitus'];
+  const ankleFnd    = ['Anterior Drawer +','Talar Tilt +','Thompson Test +','Limited Dorsiflexion','Calf weakness','Tight Achilles','Plantar tenderness'];
+
+  const shoulderTx  = ['TENS','Ultrasound','Hot Pack','Joint Mobilization','Codman Exercises','Rotator Cuff Strengthening','Scapular Stabilization','Stretching','Manual Therapy','Kinesio Taping','Pulley Exercises','Home Exercise Program'];
+  const elbowTx     = ['TENS','Ultrasound','Friction Massage','Stretching','Eccentric Strengthening','Bracing','Ice','Kinesio Taping'];
+  const wristTx     = ['TENS','Ultrasound','Splinting','Strengthening','Stretching','Mobilization','Nerve Gliding','Tendon Gliding'];
+  const hipTx       = ['TENS','Hot Pack','Hip Strengthening','Stretching','Manual Therapy','Gait Training','Mobilization','Core Stabilization','Home Exercise Program'];
+  const kneeTx      = ['TENS','Ultrasound','Hot Pack','Quad Strengthening','VMO Exercises','Hamstring Stretching','Patellar Taping','Mobilization','Kinesio Taping','Balance Training','Gait Training','Home Exercise Program'];
+  const ankleTx     = ['TENS','Ultrasound','Ice','Calf Strengthening','Stretching','Balance Training','Taping','Orthotics Advice','Manual Therapy','Proprioception Training'];
+
   return {
-    regions: ['Cervical Spine','Thoracic Spine','Lumbar Spine','Shoulder','Elbow','Wrist & Hand','Hip','Knee','Ankle & Foot','TMJ','Sacroiliac Joint'],
+    regions: [
+      'Cervical Spine','Thoracic Spine','Lumbar Spine','Sacroiliac Joint','TMJ',
+      'Shoulder R','Shoulder L',
+      'Elbow R','Elbow L',
+      'Wrist & Hand R','Wrist & Hand L',
+      'Hip R','Hip L',
+      'Knee R','Knee L',
+      'Ankle & Foot R','Ankle & Foot L'
+    ],
     diagnoses: {
       'Cervical Spine':    ['Cervical Disc Herniation','Cervical Spondylosis','Cervical Radiculopathy','Cervical Myelopathy','Neck Strain / Whiplash','Cervicogenic Headache','Cervical Facet Syndrome','Torticollis','Cervical Stenosis','Thoracic Outlet Syndrome'],
-      'Thoracic Spine':   ['Thoracic Disc Herniation','Thoracic Spondylosis','Scheuermann\'s Disease','Costochondritis','Thoracic Facet Syndrome'],
+      'Thoracic Spine':   ['Thoracic Disc Herniation','Thoracic Spondylosis',"Scheuermann's Disease",'Costochondritis','Thoracic Facet Syndrome'],
       'Lumbar Spine':     ['Lumbar Disc Herniation','Lumbar Spondylosis','Lumbar Radiculopathy (Sciatica)','Spinal Stenosis','Spondylolisthesis','Spondylolysis','Lumbar Strain','Piriformis Syndrome','SI Joint Dysfunction','Facet Syndrome','Post-Surgical Lumbar'],
-      'Shoulder':         ['Rotator Cuff Tear','Rotator Cuff Tendinopathy','Shoulder Impingement','Frozen Shoulder (Adhesive Capsulitis)','Shoulder Dislocation / Instability','AC Joint Sprain','Biceps Tendinopathy','SLAP Tear','Shoulder Bursitis','Post-Surgical Shoulder'],
-      'Elbow':            ['Tennis Elbow (Lateral Epicondylitis)','Golfer\'s Elbow (Medial Epicondylitis)','Elbow Bursitis','Radial Tunnel Syndrome','Cubital Tunnel Syndrome','Elbow Fracture (Post-Surgical)','Elbow Stiffness'],
-      'Wrist & Hand':     ['Carpal Tunnel Syndrome','De Quervain\'s Tenosynovitis','Trigger Finger','Wrist Sprain','TFCC Tear','Wrist Fracture (Post-Surgical)','Wrist Tendinopathy','Finger Stiffness'],
-      'Hip':              ['Hip Osteoarthritis','Hip Impingement (FAI)','Trochanteric Bursitis','Hip Labral Tear','Hip Flexor Strain','Piriformis Syndrome','Hip Fracture (Post-Surgical)','Gluteal Tendinopathy'],
-      'Knee':             ['Knee Osteoarthritis','Patellofemoral Pain Syndrome','ACL Tear / Post-Surgical','Meniscal Tear','PCL Injury','MCL / LCL Sprain','Patellar Tendinopathy','IT Band Syndrome','Total Knee Replacement (Post-Surgical)'],
-      'Ankle & Foot':     ['Lateral Ankle Sprain','Achilles Tendinopathy','Plantar Fasciitis','Ankle OA','Peroneal Tendinopathy','Ankle Fracture (Post-Surgical)','Metatarsalgia','Hallux Valgus'],
+      'Shoulder R': S(shoulderDx), 'Shoulder L': S(shoulderDx),
+      'Elbow R':    S(elbowDx),    'Elbow L':    S(elbowDx),
+      'Wrist & Hand R': S(wristDx), 'Wrist & Hand L': S(wristDx),
+      'Hip R':      S(hipDx),      'Hip L':      S(hipDx),
+      'Knee R':     S(kneeDx),     'Knee L':     S(kneeDx),
+      'Ankle & Foot R': S(ankleDx), 'Ankle & Foot L': S(ankleDx),
       'TMJ':              ['TMJ Dysfunction','TMJ Disc Displacement','Bruxism-Related TMJ','Myofascial TMJ Pain'],
       'Sacroiliac Joint': ['SI Joint Dysfunction','Sacroiliitis','Ankylosing Spondylitis','Pelvic Girdle Pain','Post-Partum SI Pain'],
     },
@@ -2232,12 +2271,12 @@ function getDefaultOptions() {
       'Cervical Spine':    ['Neck pain','Morning stiffness','Cervicogenic headache','Radiating arm pain','Finger numbness / tingling','Dizziness','Interscapular pain','Limited ROM','Pain on rotation','Pain on extension'],
       'Thoracic Spine':   ['Mid-back pain','Thoracic stiffness','Pain on breathing','Postural kyphosis','Pain with prolonged sitting'],
       'Lumbar Spine':     ['Low back pain','Radiating leg pain (Sciatica)','Morning stiffness','Leg weakness','Foot numbness / tingling','Pain on standing','Pain on prolonged sitting','Pain on bending forward','Pain on extension','Night pain'],
-      'Shoulder':         ['Shoulder pain','Limited ROM','Night pain','Weakness','Clicking / crepitus','Pain on overhead activities','Pain on reaching behind back'],
-      'Elbow':            ['Lateral elbow pain','Medial elbow pain','Pain on gripping','Pain on wrist extension','Stiffness','Swelling'],
-      'Wrist & Hand':     ['Wrist pain','Hand numbness','Thumb pain','Trigger finger locking','Grip weakness','Morning stiffness','Swelling'],
-      'Hip':              ['Hip pain','Groin pain','Lateral hip pain','Pain on walking','Limited ROM','Pain on stairs','Night pain'],
-      'Knee':             ['Knee pain','Swelling','Crepitus','Limited flexion','Pain on stairs','Pain on squatting','Morning stiffness','Locking / giving way'],
-      'Ankle & Foot':     ['Heel pain','Ankle pain','Morning heel pain','Swelling','Pain on walking','Limited dorsiflexion','Weakness','Instability'],
+      'Shoulder R': S(shoulderCmp), 'Shoulder L': S(shoulderCmp),
+      'Elbow R':    S(elbowCmp),    'Elbow L':    S(elbowCmp),
+      'Wrist & Hand R': S(wristCmp), 'Wrist & Hand L': S(wristCmp),
+      'Hip R':      S(hipCmp),      'Hip L':      S(hipCmp),
+      'Knee R':     S(kneeCmp),     'Knee L':     S(kneeCmp),
+      'Ankle & Foot R': S(ankleCmp), 'Ankle & Foot L': S(ankleCmp),
       'TMJ':              ['Jaw pain','Clicking on opening','Limited mouth opening','Difficulty chewing','Facial headache'],
       'Sacroiliac Joint': ['Sacral pain','Pain radiating to buttock','Pain on prolonged standing','Pain on transitional movements','Pelvic asymmetry'],
     },
@@ -2245,12 +2284,12 @@ function getDefaultOptions() {
       'Cervical Spine':    ['Limited Flexion','Limited Extension','Limited Rotation R','Limited Rotation L','Limited Lat. Flexion R','Limited Lat. Flexion L','Spurling Test +','Distraction Test +','Muscle weakness','Forward Head Posture','Upper Crossed Syndrome','Trigger points'],
       'Thoracic Spine':   ['Kyphosis','Limited thoracic rotation','Weak thoracic extensors','Hypomobility T-spine','Rib restriction'],
       'Lumbar Spine':     ['SLR +','Slump Test +','Limited Flexion','Limited Extension','Limited Lat. Flexion','Quad weakness','Hamstring tightness','Tight Hip Flexors','Pelvic Tilt','Reduced Lumbar Lordosis','Muscle spasm','Neurological deficits'],
-      'Shoulder':         ['Neer Test +','Hawkins-Kennedy +','Empty Can +','Drop Arm +','Speed Test +','Apprehension Test +','Limited Abduction','Limited Flexion','Limited IR','Limited ER','Rotator cuff weakness','Scapular dyskinesia'],
-      'Elbow':            ['Pain on resisted wrist extension','Pain on resisted wrist flexion','Limited Pronation','Limited Supination','Cozen Test +','Mill\'s Test +','Tinel at elbow'],
-      'Wrist & Hand':     ['Phalen Test +','Tinel Test +','Limited wrist flexion','Limited wrist extension','Grip weakness','Finkelstein Test +'],
-      'Hip':              ['FABER +','FADIR +','Thomas Test +','Trendelenburg +','Limited IR','Limited ER','Limited Flexion','Gluteal weakness'],
-      'Knee':             ['Lachman Test +','Anterior Drawer +','McMurray +','Valgus Stress +','Varus Stress +','Patellar Grind +','Limited Flexion','Quad weakness','VMO atrophy','Joint effusion','Crepitus'],
-      'Ankle & Foot':     ['Anterior Drawer +','Talar Tilt +','Thompson Test +','Limited Dorsiflexion','Calf weakness','Tight Achilles','Plantar tenderness'],
+      'Shoulder R': S(shoulderFnd), 'Shoulder L': S(shoulderFnd),
+      'Elbow R':    S(elbowFnd),    'Elbow L':    S(elbowFnd),
+      'Wrist & Hand R': S(wristFnd), 'Wrist & Hand L': S(wristFnd),
+      'Hip R':      S(hipFnd),      'Hip L':      S(hipFnd),
+      'Knee R':     S(kneeFnd),     'Knee L':     S(kneeFnd),
+      'Ankle & Foot R': S(ankleFnd), 'Ankle & Foot L': S(ankleFnd),
       'TMJ':              ['Limited mouth opening','Jaw deviation','TMJ Clicking','Joint tenderness','Masticatory muscle tightness'],
       'Sacroiliac Joint': ['FABER +','Gaenslen Test +','Compression Test +','Distraction Test +','SI joint tenderness','Pelvic asymmetry'],
     },
@@ -2258,12 +2297,12 @@ function getDefaultOptions() {
       'Cervical Spine':    ['TENS','Ultrasound','Hot Pack','Cervical Traction','Manual Therapy','Mobilization','Strengthening','Stretching','Postural Correction','Dry Needling','Kinesio Taping','DNF Strengthening','Home Exercise Program'],
       'Thoracic Spine':   ['Hot Pack','Thoracic Mobilization','Manual Therapy','Strengthening','Stretching','Postural Correction','TENS','Breathing Exercises'],
       'Lumbar Spine':     ['TENS','Ultrasound','Hot Pack','Lumbar Traction','Manual Therapy','McKenzie Exercises','Core Stabilization','Stretching','Mobilization','Dry Needling','SWD','Kinesio Taping','Neural Mobilization','Home Exercise Program'],
-      'Shoulder':         ['TENS','Ultrasound','Hot Pack','Joint Mobilization','Codman Exercises','Rotator Cuff Strengthening','Scapular Stabilization','Stretching','Manual Therapy','Kinesio Taping','Pulley Exercises','Home Exercise Program'],
-      'Elbow':            ['TENS','Ultrasound','Friction Massage','Stretching','Eccentric Strengthening','Bracing','Ice','Kinesio Taping'],
-      'Wrist & Hand':     ['TENS','Ultrasound','Splinting','Strengthening','Stretching','Mobilization','Nerve Gliding','Tendon Gliding'],
-      'Hip':              ['TENS','Hot Pack','Hip Strengthening','Stretching','Manual Therapy','Gait Training','Mobilization','Core Stabilization','Home Exercise Program'],
-      'Knee':             ['TENS','Ultrasound','Hot Pack','Quad Strengthening','VMO Exercises','Hamstring Stretching','Patellar Taping','Mobilization','Kinesio Taping','Balance Training','Gait Training','Home Exercise Program'],
-      'Ankle & Foot':     ['TENS','Ultrasound','Ice','Calf Strengthening','Stretching','Balance Training','Taping','Orthotics Advice','Manual Therapy','Proprioception Training'],
+      'Shoulder R': S(shoulderTx),  'Shoulder L': S(shoulderTx),
+      'Elbow R':    S(elbowTx),     'Elbow L':    S(elbowTx),
+      'Wrist & Hand R': S(wristTx), 'Wrist & Hand L': S(wristTx),
+      'Hip R':      S(hipTx),       'Hip L':      S(hipTx),
+      'Knee R':     S(kneeTx),      'Knee L':     S(kneeTx),
+      'Ankle & Foot R': S(ankleTx), 'Ankle & Foot L': S(ankleTx),
       'TMJ':              ['TENS','Ultrasound','Manual Therapy','TMJ Mobilization','Jaw Stretching','Postural Correction','Patient Education'],
       'Sacroiliac Joint': ['TENS','Manual Therapy','SI Belt','Stabilization Exercises','Stretching','Hot Pack','Pelvic Floor Exercises'],
     },
