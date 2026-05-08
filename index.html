@@ -2275,13 +2275,15 @@ function getDefaultOptions() {
 
   return {
     regions: [
-      'Cervical Spine','Thoracic Spine','Lumbar Spine','Sacroiliac Joint','TMJ',
+      'Cervical Spine','Thoracic Spine','Lumbar Spine',
       'Shoulder R','Shoulder L',
       'Elbow R','Elbow L',
       'Wrist & Hand R','Wrist & Hand L',
       'Hip R','Hip L',
       'Knee R','Knee L',
-      'Ankle & Foot R','Ankle & Foot L'
+      'Ankle & Foot R','Ankle & Foot L',
+      'TMJ R','TMJ L',
+      'Sacroiliac Joint R','Sacroiliac Joint L'
     ],
     diagnoses: {
       'Cervical Spine':    ['Cervical Disc Herniation','Cervical Spondylosis','Cervical Radiculopathy','Cervical Myelopathy','Neck Strain / Whiplash','Cervicogenic Headache','Cervical Facet Syndrome','Torticollis','Cervical Stenosis','Thoracic Outlet Syndrome'],
@@ -2293,8 +2295,8 @@ function getDefaultOptions() {
       'Hip R':      S(hipDx),      'Hip L':      S(hipDx),
       'Knee R':     S(kneeDx),     'Knee L':     S(kneeDx),
       'Ankle & Foot R': S(ankleDx), 'Ankle & Foot L': S(ankleDx),
-      'TMJ':              ['TMJ Dysfunction','TMJ Disc Displacement','Bruxism-Related TMJ','Myofascial TMJ Pain'],
-      'Sacroiliac Joint': ['SI Joint Dysfunction','Sacroiliitis','Ankylosing Spondylitis','Pelvic Girdle Pain','Post-Partum SI Pain'],
+      'TMJ R': ['TMJ Dysfunction','TMJ Disc Displacement','Bruxism-Related TMJ','Myofascial TMJ Pain'], 'TMJ L': ['TMJ Dysfunction','TMJ Disc Displacement','Bruxism-Related TMJ','Myofascial TMJ Pain'],
+      'Sacroiliac Joint R': ['SI Joint Dysfunction','Sacroiliitis','Ankylosing Spondylitis','Pelvic Girdle Pain','Post-Partum SI Pain'], 'Sacroiliac Joint L': ['SI Joint Dysfunction','Sacroiliitis','Ankylosing Spondylitis','Pelvic Girdle Pain','Post-Partum SI Pain'],
     },
     complaints: {
       'Cervical Spine':    ['Neck pain','Morning stiffness','Cervicogenic headache','Radiating arm pain','Finger numbness / tingling','Dizziness','Interscapular pain','Limited ROM','Pain on rotation','Pain on extension'],
@@ -2306,8 +2308,8 @@ function getDefaultOptions() {
       'Hip R':      S(hipCmp),      'Hip L':      S(hipCmp),
       'Knee R':     S(kneeCmp),     'Knee L':     S(kneeCmp),
       'Ankle & Foot R': S(ankleCmp), 'Ankle & Foot L': S(ankleCmp),
-      'TMJ':              ['Jaw pain','Clicking on opening','Limited mouth opening','Difficulty chewing','Facial headache'],
-      'Sacroiliac Joint': ['Sacral pain','Pain radiating to buttock','Pain on prolonged standing','Pain on transitional movements','Pelvic asymmetry'],
+      'TMJ R': ['Jaw pain','Clicking on opening','Limited mouth opening','Difficulty chewing','Facial headache'], 'TMJ L': ['Jaw pain','Clicking on opening','Limited mouth opening','Difficulty chewing','Facial headache'],
+      'Sacroiliac Joint R': ['Sacral pain','Pain radiating to buttock','Pain on prolonged standing','Pain on transitional movements','Pelvic asymmetry'], 'Sacroiliac Joint L': ['Sacral pain','Pain radiating to buttock','Pain on prolonged standing','Pain on transitional movements','Pelvic asymmetry'],
     },
     findings: {
       'Cervical Spine':    ['Limited Flexion','Limited Extension','Limited Rotation R','Limited Rotation L','Limited Lat. Flexion R','Limited Lat. Flexion L','Spurling Test +','Distraction Test +','Muscle weakness','Forward Head Posture','Upper Crossed Syndrome','Trigger points'],
@@ -2319,8 +2321,8 @@ function getDefaultOptions() {
       'Hip R':      S(hipFnd),      'Hip L':      S(hipFnd),
       'Knee R':     S(kneeFnd),     'Knee L':     S(kneeFnd),
       'Ankle & Foot R': S(ankleFnd), 'Ankle & Foot L': S(ankleFnd),
-      'TMJ':              ['Limited mouth opening','Jaw deviation','TMJ Clicking','Joint tenderness','Masticatory muscle tightness'],
-      'Sacroiliac Joint': ['FABER +','Gaenslen Test +','Compression Test +','Distraction Test +','SI joint tenderness','Pelvic asymmetry'],
+      'TMJ R': ['Limited mouth opening','Jaw deviation','TMJ Clicking','Joint tenderness','Masticatory muscle tightness'], 'TMJ L': ['Limited mouth opening','Jaw deviation','TMJ Clicking','Joint tenderness','Masticatory muscle tightness'],
+      'Sacroiliac Joint R': ['FABER +','Gaenslen Test +','Compression Test +','Distraction Test +','SI joint tenderness','Pelvic asymmetry'], 'Sacroiliac Joint L': ['FABER +','Gaenslen Test +','Compression Test +','Distraction Test +','SI joint tenderness','Pelvic asymmetry'],
     },
     treatment: {
       'Cervical Spine':    ['TENS','Ultrasound','Hot Pack','Cervical Traction','Manual Therapy','Mobilization','Strengthening','Stretching','Postural Correction','Dry Needling','Kinesio Taping','DNF Strengthening','Home Exercise Program'],
@@ -2332,8 +2334,8 @@ function getDefaultOptions() {
       'Hip R':      S(hipTx),       'Hip L':      S(hipTx),
       'Knee R':     S(kneeTx),      'Knee L':     S(kneeTx),
       'Ankle & Foot R': S(ankleTx), 'Ankle & Foot L': S(ankleTx),
-      'TMJ':              ['TENS','Ultrasound','Manual Therapy','TMJ Mobilization','Jaw Stretching','Postural Correction','Patient Education'],
-      'Sacroiliac Joint': ['TENS','Manual Therapy','SI Belt','Stabilization Exercises','Stretching','Hot Pack','Pelvic Floor Exercises'],
+      'TMJ R': ['TENS','Ultrasound','Manual Therapy','TMJ Mobilization','Jaw Stretching','Postural Correction','Patient Education'], 'TMJ L': ['TENS','Ultrasound','Manual Therapy','TMJ Mobilization','Jaw Stretching','Postural Correction','Patient Education'],
+      'Sacroiliac Joint R': ['TENS','Manual Therapy','SI Belt','Stabilization Exercises','Stretching','Hot Pack','Pelvic Floor Exercises'], 'Sacroiliac Joint L': ['TENS','Manual Therapy','SI Belt','Stabilization Exercises','Stretching','Hot Pack','Pelvic Floor Exercises'],
     },
     problems: ['Pain','Stiffness','Limited ROM','Muscle weakness','Balance deficit','Gait impairment','Swelling / Oedema','Numbness / Tingling','Functional limitation','Postural dysfunction','Nerve Entrapment','Muscle Imbalance','Reduced proprioception','Decreased endurance'],
   };
