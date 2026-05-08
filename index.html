@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
@@ -827,7 +826,37 @@ let assessNotes  = '';
 // ─────────────────────────────────────────
 async function readOptions() {
   const snap = await getDoc(doc(DB, 'config', 'options'));
-  return snap.exists() ? snap.data() : getDefaultOptions();
+  if (!snap.exists()) return getDefaultOptions();
+
+  const saved    = snap.data();
+  const defaults = getDefaultOptions();
+
+  // Merge: add any new default regions not in saved
+  const savedRegions   = saved.regions || [];
+  const mergedRegions  = [...savedRegions];
+  defaults.regions.forEach(r => {
+    if (!mergedRegions.includes(r)) mergedRegions.push(r);
+  });
+
+  // Merge per-region options so new R/L regions get their defaults
+  const mergedDx  = Object.assign({}, defaults.diagnoses,  saved.diagnoses  || {});
+  const mergedCmp = Object.assign({}, defaults.complaints,  saved.complaints || {});
+  const mergedFnd = Object.assign({}, defaults.findings,    saved.findings   || {});
+  const mergedTx  = Object.assign({}, defaults.treatment,   saved.treatment  || {});
+
+  const merged = {
+    ...saved,
+    regions:    mergedRegions,
+    diagnoses:  mergedDx,
+    complaints: mergedCmp,
+    findings:   mergedFnd,
+    treatment:  mergedTx,
+    problems:   saved.problems || defaults.problems,
+  };
+
+  // Save merged back to Firebase
+  await setDoc(doc(DB, 'config', 'options'), merged);
+  return merged;
 }
 
 async function writeOptions(opts) {
