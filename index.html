@@ -562,6 +562,20 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 
 /* ===== SCHEDULE ===== */
 .schedule-grid { display: grid; gap: 8px; }
+.schedule-columns { display: grid; gap: 12px; }
+.doctor-column { background: white; border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+.doctor-column-header { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); color: white; padding: 12px 16px; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: space-between; }
+.doctor-column-body { padding: 10px; display: flex; flex-direction: column; gap: 8px; min-height: 80px; }
+.appt-mini { background: var(--bg); border-radius: var(--radius-sm); padding: 10px 12px; border-left: 3px solid var(--border); }
+.appt-mini.status-scheduled  { border-left-color: #3498db; }
+.appt-mini.status-confirmed  { border-left-color: var(--accent); }
+.appt-mini.status-attended   { border-left-color: var(--green); }
+.appt-mini.status-cancelled  { border-left-color: var(--red); opacity: 0.6; }
+.appt-mini-time { font-size: 12px; font-weight: 700; color: var(--primary-dark); }
+.appt-mini-name { font-size: 13px; font-weight: 600; color: var(--text); margin-top: 2px; }
+.appt-mini-sub  { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.appt-mini-actions { display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap; }
+@media (min-width: 769px) { .schedule-columns { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); } }
 .appt-slot {
   background: white;
   border-radius: var(--radius-sm);
@@ -720,6 +734,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
             <input type="date" class="form-control" id="schedule-date-picker" style="width:160px">
+            <select class="form-control" id="schedule-doctor-filter" style="width:180px"><option value="all">👥 All Doctors</option></select>
             <button class="btn btn-primary" id="btn-new-appt">+ New Appointment</button>
           </div>
         </div>
@@ -914,6 +929,10 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
       <div class="form-group">
         <label class="form-label">Patient *</label>
         <select class="form-control" id="appt-patient-select"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Doctor *</label>
+        <select class="form-control" id="appt-doctor-select"></select>
       </div>
       <div class="form-row">
         <div class="form-group">
@@ -1688,6 +1707,7 @@ function openProfile(pid) {
         ${(initial?.regions || []).map(r => `<span class="profile-tag gold">${r.region}</span>`).join('')}
         ${initial ? `<span class="profile-tag">📅 ${initial.date}</span>` : ''}
         ${visits.filter(v => v.type === 'followup').length ? `<span class="profile-tag">🔄 ${visits.filter(v => v.type === 'followup').length} Follow-up(s)</span>` : ''}
+        ${(p.sessions||[]).length ? `<span class="profile-tag" style="background:var(--green);color:white">✓ ${(p.sessions||[]).length} Session${(p.sessions||[]).length!==1?'s':''} Attended</span>` : ''}
       </div>
     </div>
   `;
@@ -1863,6 +1883,15 @@ function openProfile(pid) {
 
     page.appendChild(card);
   });
+
+  // Session Ledger
+  if (isDoctor) {
+    const ledgerCard = document.createElement('div');
+    ledgerCard.className = 'card';
+    ledgerCard.style.marginTop = '14px';
+    renderSessionLedger(p, ledgerCard);
+    page.appendChild(ledgerCard);
+  }
 
   showPage('profile');
 }
@@ -2603,81 +2632,137 @@ document.getElementById('btn-save-settings').addEventListener('click', async () 
 // ═══════════════════════════════════════════
 // SCHEDULE
 // ═══════════════════════════════════════════
+// Doctor list for schedule
+let allDoctors = [];
+
+async function loadDoctorsForSchedule() {
+  const snap = await getDocs(collection(DB,'users'));
+  allDoctors = snap.docs.map(d=>({id:d.id,...d.data()})).filter(u=>u.role==='doctor');
+  const sel = document.getElementById('schedule-doctor-filter');
+  if (!sel) return;
+  const current = sel.value;
+  sel.innerHTML = '<option value="all">👥 All Doctors</option>';
+  allDoctors.forEach(d => {
+    const op = document.createElement('option');
+    op.value = d.id;
+    op.textContent = '👨‍⚕️ ' + (d.name || d.email);
+    if (d.id === current) op.selected = true;
+    sel.appendChild(op);
+  });
+}
+
 async function renderSchedule() {
   if (!scheduleDate) scheduleDate = todayStr();
-  const picker = document.getElementById('schedule-date-picker');
-  picker.value = scheduleDate;
+  document.getElementById('schedule-date-picker').value = scheduleDate;
   document.getElementById('schedule-date-label').textContent =
     new Date(scheduleDate + 'T00:00:00').toLocaleDateString('en-GB', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+  await loadDoctorsForSchedule();
 
   const body = document.getElementById('schedule-body');
   body.innerHTML = '<div class="loading"><div class="spinner"></div><span>Loading...</span></div>';
 
   const q = query(collection(DB, 'appointments'), orderBy('time', 'asc'));
   const snap = await getDocs(q);
-  const appts = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(a => a.date === scheduleDate);
+  const doctorFilter = document.getElementById('schedule-doctor-filter')?.value || 'all';
+  const allAppts = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(a => a.date === scheduleDate);
 
   body.innerHTML = '';
 
-  if (!appts.length) {
-    body.innerHTML = '<div class="empty-state"><span class="icon">📅</span><h3>No appointments</h3><p>Click New Appointment to add one</p></div>';
+  if (!allAppts.length) {
+    body.innerHTML = '<div class="empty-state"><span class="icon">&#128197;</span><h3>No appointments</h3><p>Click New Appointment to add one</p></div>';
     return;
   }
 
-  const grid = document.createElement('div');
-  grid.className = 'schedule-grid';
+  const activeDoctorIds = [...new Set(allAppts.map(a => a.doctorId).filter(Boolean))];
+  const hasUnassigned = allAppts.some(a => !a.doctorId);
+  let doctorsToShow = allDoctors.filter(d => activeDoctorIds.includes(d.id));
+  if (doctorFilter !== 'all') doctorsToShow = doctorsToShow.filter(d => d.id === doctorFilter);
 
-  appts.forEach(a => {
-    const p = patients.find(x => x.id === a.patientId);
-    const pName = p ? p.name : (a.patientName || 'Unknown');
+  const columns = document.createElement('div');
+  columns.className = 'schedule-columns';
+
+  const renderApptMini = (a, pName) => {
     const statusLabels = { scheduled:'Scheduled', confirmed:'Confirmed', attended:'Attended', cancelled:'Cancelled', rescheduled:'Rescheduled' };
-    const slot = document.createElement('div');
-    slot.className = `appt-slot status-${a.status || 'scheduled'}`;
-    slot.innerHTML = `
-      <div class="appt-time">${a.time || '--:--'}</div>
-      <div class="appt-info">
-        <div class="appt-name">${pName}</div>
-        <div class="appt-sub">${a.type === 'initial' ? '🔵 Initial Assessment' : '🟡 Follow-up'}${a.notes ? ' · ' + a.notes : ''}</div>
+    const isDone = a.status === 'attended' || a.status === 'cancelled';
+    const mini = document.createElement('div');
+    mini.className = `appt-mini status-${a.status || 'scheduled'}`;
+    mini.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span class="appt-mini-time">${a.time || '--:--'}</span>
+        <span class="status-pill sp-${a.status || 'scheduled'}" style="font-size:10px">${statusLabels[a.status] || 'Scheduled'}</span>
       </div>
-      <span class="status-pill sp-${a.status || 'scheduled'}">${statusLabels[a.status] || 'Scheduled'}</span>
-      <div class="appt-actions">
-        ${a.status !== 'attended' && a.status !== 'cancelled' ? `
-          <button class="btn btn-sm btn-primary" onclick="updateApptStatus('${a.id}','attended')">✓ Attended</button>
-          <button class="btn btn-sm btn-ghost" onclick="updateApptStatus('${a.id}','confirmed')">Confirm</button>
-          <button class="btn btn-sm btn-danger" onclick="updateApptStatus('${a.id}','cancelled')">Cancel</button>
+      <div class="appt-mini-name">${pName}</div>
+      <div class="appt-mini-sub">${a.type === 'initial' ? '&#128309; Initial' : '&#128257; Follow-up'}${a.notes ? ' &middot; ' + a.notes : ''}</div>
+      <div class="appt-mini-actions">
+        ${!isDone ? `
+          <button class="btn btn-sm btn-primary" style="font-size:11px;padding:4px 8px" onclick="window.updateApptStatus('${a.id}','attended')">&#10003; Attended</button>
+          <button class="btn btn-sm btn-ghost" style="font-size:11px;padding:4px 8px" onclick="window.updateApptStatus('${a.id}','confirmed')">Confirm</button>
+          <button class="btn btn-sm btn-danger" style="font-size:11px;padding:4px 8px" onclick="window.updateApptStatus('${a.id}','cancelled')">Cancel</button>
         ` : ''}
-        <button class="btn btn-sm btn-ghost" onclick="openEditAppt('${a.id}')">✏️</button>
-        <button class="btn btn-sm btn-danger" onclick="deleteAppt('${a.id}')">🗑</button>
+        <button class="btn btn-sm btn-ghost" style="font-size:11px;padding:4px 8px" onclick="window.openEditAppt('${a.id}')">&#9999;</button>
+        <button class="btn btn-sm btn-danger" style="font-size:11px;padding:4px 8px" onclick="window.deleteAppt('${a.id}')">&#128465;</button>
       </div>`;
-    grid.appendChild(slot);
-  });
-  body.appendChild(grid);
+    return mini;
+  };
 
-  // Summary
-  const attended  = appts.filter(a => a.status === 'attended').length;
-  const cancelled = appts.filter(a => a.status === 'cancelled').length;
+  doctorsToShow.forEach(dr => {
+    const drAppts = allAppts.filter(a => a.doctorId === dr.id);
+    if (!drAppts.length && doctorFilter === 'all') return;
+    const col = document.createElement('div'); col.className = 'doctor-column';
+    const attended = drAppts.filter(a => a.status === 'attended').length;
+    col.innerHTML = `<div class="doctor-column-header">
+      <span>&#128104;&#8205;&#9877;&#65039; ${dr.name || dr.email}</span>
+      <span style="font-size:12px;opacity:0.8">${drAppts.length} appt${drAppts.length!==1?'s':''} &middot; &#10003;${attended}</span>
+    </div>`;
+    const colBody = document.createElement('div'); colBody.className = 'doctor-column-body';
+    if (!drAppts.length) {
+      const empty = document.createElement('div');
+      empty.style.cssText = 'color:var(--muted);font-size:13px;text-align:center;padding:20px';
+      empty.textContent = 'No appointments';
+      colBody.appendChild(empty);
+    } else {
+      drAppts.forEach(a => {
+        const pt = patients.find(x => x.id === a.patientId);
+        colBody.appendChild(renderApptMini(a, pt ? pt.name : (a.patientName || 'Unknown')));
+      });
+    }
+    col.appendChild(colBody); columns.appendChild(col);
+  });
+
+  if (hasUnassigned && doctorFilter === 'all') {
+    const unAppts = allAppts.filter(a => !a.doctorId);
+    const col = document.createElement('div'); col.className = 'doctor-column';
+    col.innerHTML = `<div class="doctor-column-header"><span>&#128203; Unassigned</span><span style="font-size:12px;opacity:0.8">${unAppts.length} appt${unAppts.length!==1?'s':''}</span></div>`;
+    const colBody = document.createElement('div'); colBody.className = 'doctor-column-body';
+    unAppts.forEach(a => {
+      const pt = patients.find(x => x.id === a.patientId);
+      colBody.appendChild(renderApptMini(a, pt ? pt.name : (a.patientName || 'Unknown')));
+    });
+    col.appendChild(colBody); columns.appendChild(col);
+  }
+
+  body.appendChild(columns);
+
+  const totalAttended  = allAppts.filter(a => a.status === 'attended').length;
+  const totalCancelled = allAppts.filter(a => a.status === 'cancelled').length;
   const summary = document.createElement('div');
   summary.style.cssText = 'margin-top:16px;display:flex;gap:10px;flex-wrap:wrap';
   summary.innerHTML = `
-    <div class="card" style="flex:1;min-width:120px;text-align:center;padding:14px">
-      <div style="font-size:22px;font-weight:700;color:var(--primary-dark)">${appts.length}</div>
-      <div style="font-size:12px;color:var(--muted)">Total</div>
-    </div>
-    <div class="card" style="flex:1;min-width:120px;text-align:center;padding:14px">
-      <div style="font-size:22px;font-weight:700;color:var(--green)">${attended}</div>
-      <div style="font-size:12px;color:var(--muted)">Attended</div>
-    </div>
-    <div class="card" style="flex:1;min-width:120px;text-align:center;padding:14px">
-      <div style="font-size:22px;font-weight:700;color:var(--red)">${cancelled}</div>
-      <div style="font-size:12px;color:var(--muted)">Cancelled</div>
-    </div>`;
+    <div class="card" style="flex:1;min-width:100px;text-align:center;padding:14px"><div style="font-size:22px;font-weight:700;color:var(--primary-dark)">${allAppts.length}</div><div style="font-size:12px;color:var(--muted)">Total</div></div>
+    <div class="card" style="flex:1;min-width:100px;text-align:center;padding:14px"><div style="font-size:22px;font-weight:700;color:var(--green)">${totalAttended}</div><div style="font-size:12px;color:var(--muted)">Attended</div></div>
+    <div class="card" style="flex:1;min-width:100px;text-align:center;padding:14px"><div style="font-size:22px;font-weight:700;color:var(--red)">${totalCancelled}</div><div style="font-size:12px;color:var(--muted)">Cancelled</div></div>`;
   body.appendChild(summary);
 }
+
+
 
 document.getElementById('schedule-date-picker').addEventListener('change', e => {
   scheduleDate = e.target.value;
   renderSchedule();
 });
+
+document.getElementById('schedule-doctor-filter').addEventListener('change', () => renderSchedule());
 
 document.getElementById('btn-new-appt').addEventListener('click', () => openNewAppt());
 document.getElementById('close-appt').addEventListener('click', () => closeModal('modal-appt'));
@@ -2694,6 +2779,9 @@ function openNewAppt() {
   // fill patient select
   const sel = document.getElementById('appt-patient-select');
   sel.innerHTML = patients.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+  // fill doctor select
+  const dsel = document.getElementById('appt-doctor-select');
+  dsel.innerHTML = allDoctors.map(d => `<option value="${d.id}" ${d.id === currentUser.uid ? 'selected' : ''}>${d.name || d.email}</option>`).join('');
   openModal('modal-appt');
 }
 
@@ -2710,6 +2798,8 @@ window.openEditAppt = async function(id) {
   document.getElementById('appt-type').value  = a.type  || 'followup';
   const sel = document.getElementById('appt-patient-select');
   sel.innerHTML = patients.map(p => `<option value="${p.id}" ${p.id === a.patientId ? 'selected' : ''}>${p.name}</option>`).join('');
+  const dsel = document.getElementById('appt-doctor-select');
+  dsel.innerHTML = allDoctors.map(d => `<option value="${d.id}" ${d.id === a.doctorId ? 'selected' : ''}>${d.name || d.email}</option>`).join('');
   openModal('modal-appt');
 }
 
@@ -2717,14 +2807,16 @@ document.getElementById('save-appt').addEventListener('click', async () => {
   const date     = document.getElementById('appt-date').value;
   const time     = document.getElementById('appt-time').value;
   const patientId= document.getElementById('appt-patient-select').value;
+  const doctorId  = document.getElementById('appt-doctor-select').value;
   const type     = document.getElementById('appt-type').value;
   const notes    = document.getElementById('appt-notes').value.trim();
   const price    = parseFloat(document.getElementById('appt-price').value) || clinicSettings.sessionPrice || 0;
   if (!date || !time || !patientId) { showToast('Please fill required fields', true); return; }
   const p = patients.find(x => x.id === patientId);
-  const data = { date, time, patientId, patientName: p?.name || '', type, notes, price, status: 'scheduled', createdAt: Date.now() };
+  const dr = allDoctors.find(x => x.id === doctorId);
+  const data = { date, time, patientId, patientName: p?.name || '', doctorId, doctorName: dr?.name || dr?.email || '', type, notes, price, status: 'scheduled', createdAt: Date.now() };
   if (editApptId) {
-    await updateDoc(doc(DB, 'appointments', editApptId), { date, time, patientId, patientName: p?.name || '', type, notes, price });
+    await updateDoc(doc(DB, 'appointments', editApptId), { date, time, patientId, patientName: p?.name || '', doctorId, doctorName: dr?.name || dr?.email || '', type, notes, price });
     showToast('Appointment updated ✅');
   } else {
     await addDoc(collection(DB, 'appointments'), data);
