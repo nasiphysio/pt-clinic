@@ -957,7 +957,21 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
       </div>
       <div class="form-group">
         <label class="form-label">Patient *</label>
-        <select class="form-control" id="appt-patient-select"></select>
+        <div style="position:relative">
+          <input class="form-control" type="text" id="appt-patient-search"
+            placeholder="Search by name or phone..."
+            autocomplete="off">
+          <div id="appt-patient-dropdown"
+            style="display:none;position:absolute;top:100%;left:0;right:0;z-index:999;
+                   background:white;border:1.5px solid var(--primary);border-radius:var(--radius-sm);
+                   max-height:200px;overflow-y:auto;box-shadow:var(--shadow-lg)">
+          </div>
+        </div>
+        <input type="hidden" id="appt-patient-id">
+        <div id="appt-patient-selected"
+          style="display:none;margin-top:6px;background:var(--green-light);color:var(--green);
+                 padding:5px 12px;border-radius:var(--radius-sm);font-size:13px;font-weight:600">
+        </div>
       </div>
       <div class="form-group">
         <label class="form-label">Doctor *</label>
@@ -2900,6 +2914,56 @@ function openNewApptAt(time, doctorId) {
 }
 
 
+// ── Patient Search in Appointment Modal ──
+document.getElementById('appt-patient-search').addEventListener('input', function() {
+  const q = this.value.trim().toLowerCase();
+  const dropdown = document.getElementById('appt-patient-dropdown');
+  const idField  = document.getElementById('appt-patient-id');
+  const selLabel = document.getElementById('appt-patient-selected');
+
+  // reset selection if user types again
+  idField.value = '';
+  selLabel.style.display = 'none';
+
+  if (!q) { dropdown.style.display = 'none'; return; }
+
+  const matches = patients.filter(p =>
+    p.name.toLowerCase().includes(q) ||
+    (p.phone && p.phone.includes(q))
+  ).slice(0, 8);
+
+  if (!matches.length) {
+    dropdown.innerHTML = '<div style="padding:10px 14px;color:var(--muted);font-size:13px">No patients found</div>';
+    dropdown.style.display = 'block';
+    return;
+  }
+
+  dropdown.innerHTML = '';
+  matches.forEach(p => {
+    const item = document.createElement('div');
+    item.style.cssText = 'padding:9px 14px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border);transition:background 0.15s';
+    item.innerHTML = `<span style="font-weight:600">${p.name}</span> <span style="color:var(--muted);font-size:11px">${p.age ? p.age + ' y/o' : ''} ${p.phone ? '· ' + p.phone : ''}</span>`;
+    item.addEventListener('mouseenter', () => item.style.background = '#f0f7f4');
+    item.addEventListener('mouseleave', () => item.style.background = '');
+    item.addEventListener('mousedown', (e) => {
+      e.preventDefault(); // منع blur من يغلق الـ dropdown قبل الاختيار
+      document.getElementById('appt-patient-search').value = p.name;
+      idField.value = p.id;
+      selLabel.textContent = '✓ ' + p.name;
+      selLabel.style.display = 'block';
+      dropdown.style.display = 'none';
+    });
+    dropdown.appendChild(item);
+  });
+  dropdown.style.display = 'block';
+});
+
+document.getElementById('appt-patient-search').addEventListener('blur', () => {
+  setTimeout(() => {
+    document.getElementById('appt-patient-dropdown').style.display = 'none';
+  }, 150);
+});
+
 document.getElementById('schedule-date-picker').addEventListener('change', e => {
   scheduleDate = e.target.value;
   renderSchedule();
@@ -2919,9 +2983,11 @@ function openNewAppt() {
   document.getElementById('appt-price').value = clinicSettings.sessionPrice || '';
   document.getElementById('appt-notes').value = '';
   document.getElementById('appt-type').value  = 'followup';
-  // fill patient select
-  const sel = document.getElementById('appt-patient-select');
-  sel.innerHTML = patients.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+  // Reset patient search
+  document.getElementById('appt-patient-search').value = '';
+  document.getElementById('appt-patient-id').value = '';
+  document.getElementById('appt-patient-selected').style.display = 'none';
+  document.getElementById('appt-patient-dropdown').style.display = 'none';
   // fill doctor select
   const dsel = document.getElementById('appt-doctor-select');
   const schDocs = clinicSettings.scheduleDoctors || [];
@@ -2942,8 +3008,19 @@ window.openEditAppt = async function(id) {
   document.getElementById('appt-price').value = a.price || '';
   document.getElementById('appt-notes').value = a.notes || '';
   document.getElementById('appt-type').value  = a.type  || 'followup';
-  const sel = document.getElementById('appt-patient-select');
-  sel.innerHTML = patients.map(p => `<option value="${p.id}" ${p.id === a.patientId ? 'selected' : ''}>${p.name}</option>`).join('');
+  // Fill patient search with existing patient
+  const existingPt = patients.find(x => x.id === a.patientId);
+  const searchEl = document.getElementById('appt-patient-search');
+  const selEl    = document.getElementById('appt-patient-selected');
+  searchEl.value = existingPt ? existingPt.name : (a.patientName || '');
+  document.getElementById('appt-patient-id').value = a.patientId || '';
+  document.getElementById('appt-patient-dropdown').style.display = 'none';
+  if (existingPt) {
+    selEl.style.display = 'block';
+    selEl.textContent = '✓ ' + existingPt.name;
+  } else {
+    selEl.style.display = 'none';
+  }
   const dsel = document.getElementById('appt-doctor-select');
   const schDocs2 = clinicSettings.scheduleDoctors || [];
   dsel.innerHTML = schDocs2.length
@@ -2955,7 +3032,8 @@ window.openEditAppt = async function(id) {
 document.getElementById('save-appt').addEventListener('click', async () => {
   const date     = document.getElementById('appt-date').value;
   const time     = document.getElementById('appt-time').value;
-  const patientId= document.getElementById('appt-patient-select').value;
+  const patientId = document.getElementById('appt-patient-id').value;
+  if (!patientId) { showToast('Please select a patient', true); return; }
   const doctorId  = document.getElementById('appt-doctor-select').value;
   const type     = document.getElementById('appt-type').value;
   const notes    = document.getElementById('appt-notes').value.trim();
@@ -3052,7 +3130,7 @@ function renderSessionLedger(patient, container) {
   const receiptBtn = document.createElement('button');
   receiptBtn.className = 'btn btn-ghost btn-sm';
   receiptBtn.style.marginTop = '12px';
-  receiptBtn.textContent = '🧾 Print Receipt';
+  receiptBtn.textContent = '🧾 Download Sessions PDF';
   receiptBtn.addEventListener('click', () => printReceipt(patient));
   wrap.appendChild(receiptBtn);
 
@@ -3085,78 +3163,90 @@ function buildClinicHeader() {
 // ═══════════════════════════════════════════
 // PDF — إيصال الكشف الحساب
 // ═══════════════════════════════════════════
-function printReceipt(patient) {
+async function printReceipt(patient) {
   const s = clinicSettings;
   const sessions = patient.sessions || [];
+  showToast('Generating PDF...');
 
-  const html = `<!DOCTYPE html>
-<html><head><meta charset="UTF-8">
-<style>
-  @page { size: A4; margin: 20mm; }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: Arial, sans-serif; color: #162820; font-size: 13px; }
-  .header { display:flex; align-items:center; justify-content:space-between;
-            border-bottom:2px solid #1a5c4a; padding-bottom:14px; margin-bottom:18px; }
-  .logo { height:55px; object-fit:contain; }
-  .clinic-info h2 { font-size:17px; color:#0d3d2e; margin-bottom:3px; }
-  .clinic-info p  { font-size:11px; color:#5a7a6e; margin:1px 0; }
-  .report-label { font-size:13px; font-weight:700; color:#0d3d2e; }
-  .report-date  { font-size:11px; color:#5a7a6e; margin-top:3px; }
-  .patient-box { background:#eef2f0; border-radius:7px; padding:10px 14px; margin-bottom:16px; }
-  .patient-box h3 { font-size:15px; color:#0d3d2e; margin-bottom:3px; }
-  .patient-box p  { font-size:11px; color:#5a7a6e; }
-  table { width:100%; border-collapse:collapse; margin-top:4px; }
-  th { background:#0d3d2e; color:white; padding:8px 10px; text-align:left; font-size:12px; }
-  td { padding:7px 10px; border-bottom:1px solid #ccddd6; font-size:12px; }
-  tr:nth-child(even) td { background:#f4f8f6; }
-  .total-row td { font-weight:700; background:#e0f2ea; color:#0d3d2e; font-size:13px; }
-  .footer { margin-top:20px; text-align:center; font-size:10px; color:#5a7a6e;
-            border-top:1px solid #ccddd6; padding-top:10px; }
-</style></head><body>
-
-<div class="header">
-  <div style="display:flex;align-items:center;gap:12px">
-    ${s.logoUrl ? `<img class="logo" src="${s.logoUrl}">` : ''}
-    <div class="clinic-info">
-      <h2>${s.clinicName || 'Physiclinic'}</h2>
-      ${s.doctorName ? `<p>${s.doctorName}</p>` : ''}
-      ${s.address    ? `<p>${s.address}</p>` : ''}
-      ${s.phone      ? `<p>📞 ${s.phone}</p>` : ''}
+  const html = `
+<div style="font-family:Arial,sans-serif;padding:24px;max-width:794px;color:#162820">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;border-bottom:2px solid #0d3d2e;padding-bottom:14px;margin-bottom:16px">
+    <div style="display:flex;align-items:center;gap:12px">
+      ${s.logoUrl ? `<img src="${s.logoUrl}" style="height:55px;object-fit:contain">` : ''}
+      <div>
+        <div style="font-size:17px;font-weight:700;color:#0d3d2e">${s.clinicName || 'Physiclinic'}</div>
+        ${s.doctorName ? `<div style="font-size:12px;color:#1a5c4a;font-weight:600">${s.doctorName}</div>` : ''}
+        ${s.address    ? `<div style="font-size:11px;color:#5a7a6e">${s.address}</div>` : ''}
+        ${s.phone      ? `<div style="font-size:11px;color:#5a7a6e">☎️ ${s.phone}</div>` : ''}
+      </div>
+    </div>
+    <div style="text-align:right">
+      <div style="font-size:13px;font-weight:700;color:#0d3d2e">📋 Session Report</div>
+      <div style="font-size:11px;color:#5a7a6e;margin-top:3px">${todayStr()}</div>
     </div>
   </div>
-  <div style="text-align:right">
-    <div class="report-label">📋 Session Report</div>
-    <div class="report-date">${new Date().toLocaleDateString('en-GB')}</div>
+  <div style="background:#eef2f0;border-radius:7px;padding:10px 14px;margin-bottom:16px">
+    <div style="font-size:15px;font-weight:700;color:#0d3d2e">${patient.name}</div>
+    <div style="font-size:11px;color:#5a7a6e;margin-top:2px">${patient.age ? patient.age + ' y/o' : ''} ${patient.gender || ''} ${patient.phone ? '· ' + patient.phone : ''}</div>
   </div>
-</div>
+  <table style="width:100%;border-collapse:collapse">
+    <thead>
+      <tr>
+        <th style="background:#0d3d2e;color:white;padding:8px 10px;text-align:left;font-size:12px;width:40px">#</th>
+        <th style="background:#0d3d2e;color:white;padding:8px 10px;text-align:left;font-size:12px">Date</th>
+        <th style="background:#0d3d2e;color:white;padding:8px 10px;text-align:left;font-size:12px">Time</th>
+        <th style="background:#0d3d2e;color:white;padding:8px 10px;text-align:left;font-size:12px">Session Type</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${sessions.map((ses, i) => `
+        <tr>
+          <td style="padding:7px 10px;border-bottom:1px solid #ccddd6;font-size:12px;background:${i%2===0?'white':'#f4f8f6'}">${i+1}</td>
+          <td style="padding:7px 10px;border-bottom:1px solid #ccddd6;font-size:12px;background:${i%2===0?'white':'#f4f8f6'}">${ses.date || ''}</td>
+          <td style="padding:7px 10px;border-bottom:1px solid #ccddd6;font-size:12px;background:${i%2===0?'white':'#f4f8f6'}">${ses.time || ''}</td>
+          <td style="padding:7px 10px;border-bottom:1px solid #ccddd6;font-size:12px;background:${i%2===0?'white':'#f4f8f6'}">${ses.type === 'initial' ? 'Initial Assessment' : 'Follow-up'}</td>
+        </tr>`).join('')}
+      <tr>
+        <td colspan="3" style="padding:8px 10px;font-weight:700;background:#e0f2ea;color:#0d3d2e;font-size:13px">Total Sessions</td>
+        <td style="padding:8px 10px;font-weight:700;background:#e0f2ea;color:#0d3d2e;font-size:13px">${sessions.length} session${sessions.length !== 1 ? 's' : ''}</td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="margin-top:18px;padding-top:10px;border-top:1px solid #ccddd6;font-size:10px;color:#5a7a6e;text-align:center">
+    ${s.clinicName || 'Physiclinic'} &nbsp;&middot;&nbsp; ${s.address || ''} &nbsp;&middot;&nbsp; ${s.phone || ''}
+  </div>
+</div>`;
 
-<div class="patient-box">
-  <h3>${patient.name}</h3>
-  <p>${patient.age ? patient.age + ' yrs' : ''} ${patient.gender || ''} ${patient.phone ? '· ' + patient.phone : ''}</p>
-</div>
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  div.style.cssText = 'position:fixed;left:-9999px;top:0;background:white;width:794px;z-index:-1;font-family:Arial,sans-serif;';
+  document.body.appendChild(div);
 
-<table>
-  <tr><th>#</th><th>Date</th><th>Time</th><th>Session Type</th></tr>
-  ${sessions.map((ses, i) => `
-    <tr>
-      <td>${i + 1}</td>
-      <td>${ses.date || ''}</td>
-      <td>${ses.time || ''}</td>
-      <td>${ses.type === 'initial' ? 'Initial Assessment' : 'Follow-up'}</td>
-    </tr>`).join('')}
-  <tr class="total-row">
-    <td colspan="3">Total Sessions</td>
-    <td>${sessions.length} session${sessions.length !== 1 ? 's' : ''}</td>
-  </tr>
-</table>
-
-<div class="footer">${s.clinicName || 'Physiclinic'} &nbsp;&middot;&nbsp; ${s.address || ''} &nbsp;&middot;&nbsp; ${s.phone || ''}</div>
-</body></html>`;
-
-  const win = window.open('', '_blank');
-  win.document.write(html);
-  win.document.close();
-  setTimeout(() => win.print(), 500);
+  try {
+    const canvas = await html2canvas(div, { scale:2, useCORS:true, backgroundColor:'#ffffff', logging:false });
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+    const pW = pdf.internal.pageSize.getWidth() - 20;
+    const pH = pdf.internal.pageSize.getHeight() - 20;
+    const iH = (canvas.height * pW) / canvas.width;
+    let srcY = 0, page = 0;
+    while (srcY < iH) {
+      if (page > 0) pdf.addPage();
+      const sliceH = Math.min(pH, iH - srcY);
+      const sc = document.createElement('canvas');
+      sc.width  = canvas.width;
+      sc.height = Math.round((sliceH / iH) * canvas.height);
+      sc.getContext('2d').drawImage(canvas, 0, Math.round((srcY/iH)*canvas.height), canvas.width, sc.height, 0, 0, canvas.width, sc.height);
+      pdf.addImage(sc.toDataURL('image/jpeg', 0.92), 'JPEG', 10, 10, pW, sliceH);
+      srcY += sliceH; page++;
+    }
+    pdf.save(`Sessions_${patient.name.replace(/\s+/g,'_')}_${todayStr()}.pdf`);
+    showToast('PDF downloaded ✅');
+  } catch(e) {
+    showToast('PDF error: ' + e.message, true);
+  } finally {
+    document.body.removeChild(div);
+  }
 }
 
 </script>
