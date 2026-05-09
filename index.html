@@ -981,6 +981,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
         <div class="form-group">
           <label class="form-label">Session Type</label>
           <select class="form-control" id="appt-type">
+            <option value="session">Session</option>
             <option value="followup">Follow-up</option>
             <option value="initial">Initial Assessment</option>
           </select>
@@ -2814,7 +2815,7 @@ async function renderSchedule() {
           card.className = `tg-appt-card status-${a.status || 'scheduled'}`;
           card.innerHTML = `
             <div class="tac-name">${pName}</div>
-            <div class="tac-type">${a.type === 'initial' ? '&#128309; Initial' : '&#128257; F/U'}</div>`;
+            <div class="tac-type">${a.type === 'initial' ? '&#128309; Initial' : a.type === 'session' ? '&#128336; Session' : '&#128257; F/U'}</div>`;
           // click لتغيير الحالة
           card.addEventListener('click', () => showApptActions(a, pName));
           cell.appendChild(card);
@@ -2915,22 +2916,25 @@ function openNewApptAt(time, doctorId) {
 
 
 // ── Patient Search in Appointment Modal ──
-document.getElementById('appt-patient-search').addEventListener('input', function() {
-  const q = this.value.trim().toLowerCase();
-  const dropdown = document.getElementById('appt-patient-dropdown');
-  const idField  = document.getElementById('appt-patient-id');
+let patientSearchTimeout = null;
+
+function selectPatient(p) {
+  document.getElementById('appt-patient-search').value = p.name;
+  document.getElementById('appt-patient-id').value = p.id;
   const selLabel = document.getElementById('appt-patient-selected');
+  selLabel.textContent = '✓ ' + p.name + (p.phone ? '  ·  ' + p.phone : '');
+  selLabel.style.display = 'block';
+  document.getElementById('appt-patient-dropdown').style.display = 'none';
+}
 
-  // reset selection if user types again
-  idField.value = '';
-  selLabel.style.display = 'none';
-
+function renderPatientDropdown(q) {
+  const dropdown = document.getElementById('appt-patient-dropdown');
   if (!q) { dropdown.style.display = 'none'; return; }
 
   const matches = patients.filter(p =>
-    p.name.toLowerCase().includes(q) ||
+    p.name.toLowerCase().includes(q.toLowerCase()) ||
     (p.phone && p.phone.includes(q))
-  ).slice(0, 8);
+  ).slice(0, 10);
 
   if (!matches.length) {
     dropdown.innerHTML = '<div style="padding:10px 14px;color:var(--muted);font-size:13px">No patients found</div>';
@@ -2941,27 +2945,37 @@ document.getElementById('appt-patient-search').addEventListener('input', functio
   dropdown.innerHTML = '';
   matches.forEach(p => {
     const item = document.createElement('div');
-    item.style.cssText = 'padding:9px 14px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border);transition:background 0.15s';
-    item.innerHTML = `<span style="font-weight:600">${p.name}</span> <span style="color:var(--muted);font-size:11px">${p.age ? p.age + ' y/o' : ''} ${p.phone ? '· ' + p.phone : ''}</span>`;
+    item.style.cssText = 'padding:10px 14px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border)';
+    item.innerHTML = `<span style="font-weight:600">${p.name}</span>`
+      + (p.age  ? ` <span style="color:var(--muted);font-size:11px">${p.age} y/o</span>` : '')
+      + (p.phone? ` <span style="color:var(--muted);font-size:11px">· ${p.phone}</span>` : '');
+    item.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      selectPatient(p);
+    });
     item.addEventListener('mouseenter', () => item.style.background = '#f0f7f4');
     item.addEventListener('mouseleave', () => item.style.background = '');
-    item.addEventListener('mousedown', (e) => {
-      e.preventDefault(); // منع blur من يغلق الـ dropdown قبل الاختيار
-      document.getElementById('appt-patient-search').value = p.name;
-      idField.value = p.id;
-      selLabel.textContent = '✓ ' + p.name;
-      selLabel.style.display = 'block';
-      dropdown.style.display = 'none';
-    });
     dropdown.appendChild(item);
   });
   dropdown.style.display = 'block';
+}
+
+document.getElementById('appt-patient-search').addEventListener('input', function() {
+  // reset selection
+  document.getElementById('appt-patient-id').value = '';
+  document.getElementById('appt-patient-selected').style.display = 'none';
+  clearTimeout(patientSearchTimeout);
+  patientSearchTimeout = setTimeout(() => renderPatientDropdown(this.value.trim()), 150);
 });
 
 document.getElementById('appt-patient-search').addEventListener('blur', () => {
   setTimeout(() => {
     document.getElementById('appt-patient-dropdown').style.display = 'none';
-  }, 150);
+  }, 200);
+});
+
+document.getElementById('appt-patient-search').addEventListener('focus', function() {
+  if (this.value.trim()) renderPatientDropdown(this.value.trim());
 });
 
 document.getElementById('schedule-date-picker').addEventListener('change', e => {
@@ -3033,12 +3047,12 @@ document.getElementById('save-appt').addEventListener('click', async () => {
   const date     = document.getElementById('appt-date').value;
   const time     = document.getElementById('appt-time').value;
   const patientId = document.getElementById('appt-patient-id').value;
-  if (!patientId) { showToast('Please select a patient', true); return; }
-  const doctorId  = document.getElementById('appt-doctor-select').value;
+  const doctorId  = document.getElementById('appt-doctor-select')?.value || '';
   const type     = document.getElementById('appt-type').value;
   const notes    = document.getElementById('appt-notes').value.trim();
   const price    = parseFloat(document.getElementById('appt-price').value) || clinicSettings.sessionPrice || 0;
-  if (!date || !time || !patientId) { showToast('Please fill required fields', true); return; }
+  if (!date || !time) { showToast('Please fill date and time', true); return; }
+  if (!patientId)     { showToast('Please select a patient from the list', true); return; }
   const p = patients.find(x => x.id === patientId);
   const dr = allDoctors.find(x => x.id === doctorId);
   const data = { date, time, patientId, patientName: p?.name || '', doctorId, doctorName: dr?.name || dr?.email || '', type, notes, price, status: 'scheduled', createdAt: Date.now() };
@@ -3204,7 +3218,7 @@ async function printReceipt(patient) {
           <td style="padding:7px 10px;border-bottom:1px solid #ccddd6;font-size:12px;background:${i%2===0?'white':'#f4f8f6'}">${i+1}</td>
           <td style="padding:7px 10px;border-bottom:1px solid #ccddd6;font-size:12px;background:${i%2===0?'white':'#f4f8f6'}">${ses.date || ''}</td>
           <td style="padding:7px 10px;border-bottom:1px solid #ccddd6;font-size:12px;background:${i%2===0?'white':'#f4f8f6'}">${ses.time || ''}</td>
-          <td style="padding:7px 10px;border-bottom:1px solid #ccddd6;font-size:12px;background:${i%2===0?'white':'#f4f8f6'}">${ses.type === 'initial' ? 'Initial Assessment' : 'Follow-up'}</td>
+          <td style="padding:7px 10px;border-bottom:1px solid #ccddd6;font-size:12px;background:${i%2===0?'white':'#f4f8f6'}">${ses.type === 'initial' ? 'Initial Assessment' : ses.type === 'session' ? 'Session' : 'Follow-up'}</td>
         </tr>`).join('')}
       <tr>
         <td colspan="3" style="padding:8px 10px;font-weight:700;background:#e0f2ea;color:#0d3d2e;font-size:13px">Total Sessions</td>
