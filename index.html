@@ -562,6 +562,27 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 
 /* ===== SCHEDULE ===== */
 .schedule-grid { display: grid; gap: 8px; }
+
+/* TIME GRID SCHEDULE */
+.time-grid-wrap { overflow-x: auto; border-radius: var(--radius); box-shadow: var(--shadow); background: white; }
+.time-grid { display: grid; border-collapse: collapse; min-width: 600px; }
+.time-grid-header { display: contents; }
+.tg-corner { background: var(--primary-dark); padding: 12px 16px; font-size: 12px; color: rgba(255,255,255,0.6); font-weight: 600; border-right: 1px solid rgba(255,255,255,0.1); }
+.tg-doc-header { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); color: white; padding: 12px 16px; font-size: 13px; font-weight: 700; text-align: center; border-right: 1px solid rgba(255,255,255,0.15); }
+.tg-time-label { background: var(--primary-dark); color: rgba(255,255,255,0.75); padding: 8px 12px; font-size: 12px; font-weight: 600; border-right: 1px solid rgba(255,255,255,0.1); border-top: 1px solid rgba(255,255,255,0.06); white-space: nowrap; }
+.tg-cell { border-right: 1px solid var(--border); border-top: 1px solid var(--border); padding: 4px; min-height: 52px; position: relative; background: white; transition: background 0.15s; }
+.tg-cell:hover { background: #f0f9f5; }
+.tg-cell.has-appt { background: #f8fffe; }
+.tg-appt-card { background: var(--primary); color: white; border-radius: 6px; padding: 5px 8px; font-size: 11px; margin-bottom: 3px; cursor: pointer; }
+.tg-appt-card.status-confirmed  { background: #c87d00; }
+.tg-appt-card.status-attended   { background: var(--green); }
+.tg-appt-card.status-cancelled  { background: var(--red); opacity: 0.7; }
+.tg-appt-card .tac-name { font-weight: 700; }
+.tg-appt-card .tac-type { opacity: 0.85; margin-top: 1px; }
+.tg-add-btn { width: 100%; height: 100%; min-height: 44px; background: none; border: none; cursor: pointer; opacity: 0; transition: opacity 0.15s; display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 18px; }
+.tg-cell:hover .tg-add-btn { opacity: 1; }
+@media (max-width: 768px) { .time-grid { min-width: 400px; } }
+
 .schedule-columns { display: grid; gap: 12px; }
 .doctor-column { background: white; border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
 .doctor-column-header { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); color: white; padding: 12px 16px; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: space-between; }
@@ -806,6 +827,15 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
           <div class="form-group">
             <label class="form-label">Default Session Price</label>
             <input class="form-control" type="number" id="set-session-price" placeholder="e.g. 300">
+          </div>
+        </div>
+        <div class="settings-section">
+          <div class="settings-section-title">👨‍⚕️ Schedule Doctors</div>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Add doctors that appear as columns in the daily schedule.</p>
+          <div id="doctors-list" style="margin-bottom:12px"></div>
+          <div class="add-option-row">
+            <input type="text" id="new-doctor-name" placeholder="Doctor name e.g. Dr. Ahmed">
+            <button id="btn-add-doctor">+ Add</button>
           </div>
         </div>
       </div>
@@ -1142,26 +1172,18 @@ onAuthStateChanged(AUTH, async (user) => {
 
 let navSetupDone = false;
 function setupNav() {
-  const isDoctor = currentUser.role === 'doctor';
-
+  // All users have full access
   if (!navSetupDone) {
     navSetupDone = true;
     document.getElementById('nav-patients').addEventListener('click', () => showPage('patients'));
     document.getElementById('nav-schedule').addEventListener('click', () => showPage('schedule'));
-    document.getElementById('nav-manage').addEventListener('click', () => { if (currentUser.role === 'doctor') showPage('manage'); });
-    document.getElementById('nav-users').addEventListener('click', () => { if (currentUser.role === 'doctor') showPage('users'); });
-    document.getElementById('nav-settings').addEventListener('click', () => { if (currentUser.role === 'doctor') showPage('settings'); });
+    document.getElementById('nav-manage').addEventListener('click', () => showPage('manage'));
+    document.getElementById('nav-users').addEventListener('click',   () => showPage('users'));
+    document.getElementById('nav-settings').addEventListener('click',() => showPage('settings'));
   }
-
-  if (isDoctor) {
-    document.getElementById('nav-manage').classList.remove('disabled');
-    document.getElementById('nav-users').classList.remove('disabled');
-    document.getElementById('btn-export-all').style.display = '';
-  } else {
-    document.getElementById('nav-manage').classList.add('disabled');
-    document.getElementById('nav-users').classList.add('disabled');
-    document.getElementById('btn-export-all').style.display = 'none';
-  }
+  document.getElementById('nav-manage').classList.remove('disabled');
+  document.getElementById('nav-users').classList.remove('disabled');
+  document.getElementById('btn-export-all').style.display = '';
 }
 
 // ─────────────────────────────────────────
@@ -1198,7 +1220,6 @@ function renderPatientList() {
   }
 
   grid.innerHTML = '';
-  const isDoctor = currentUser.role === 'doctor';
   filtered.forEach(p => {
     const initial = (p.visits || []).find(v => v.type === 'initial');
     const followups = (p.visits || []).filter(v => v.type === 'followup');
@@ -1230,25 +1251,23 @@ function renderPatientList() {
     viewBtn.addEventListener('click', () => openProfile(p.id));
     actions.appendChild(viewBtn);
 
-    if (isDoctor) {
-      // Assessment button
-      const assessBtn = document.createElement('button');
-      assessBtn.className = 'btn btn-ghost btn-sm';
-      assessBtn.textContent = '✏️ Assessment';
-      assessBtn.addEventListener('click', () => openAssessment(p.id, 'initial'));
-      actions.appendChild(assessBtn);
+    // Assessment button
+    const assessBtn = document.createElement('button');
+    assessBtn.className = 'btn btn-ghost btn-sm';
+    assessBtn.textContent = '✏️ Assessment';
+    assessBtn.addEventListener('click', () => openAssessment(p.id, 'initial'));
+    actions.appendChild(assessBtn);
 
-      // Delete button
-      const delBtn = document.createElement('button');
-      delBtn.className = 'btn btn-danger btn-sm';
-      delBtn.textContent = '🗑️';
-      delBtn.addEventListener('click', () => confirmAction(
-        'Delete Patient',
-        `Delete "${p.name}"? This cannot be undone.`,
-        async () => { await deleteDoc(doc(DB, 'patients', p.id)); showToast('Patient deleted'); }
-      ));
-      actions.appendChild(delBtn);
-    }
+    // Delete button
+    const delBtn = document.createElement('button');
+    delBtn.className = 'btn btn-danger btn-sm';
+    delBtn.textContent = '🗑️';
+    delBtn.addEventListener('click', () => confirmAction(
+      'Delete Patient',
+      `Delete "${p.name}"? This cannot be undone.`,
+      async () => { await deleteDoc(doc(DB, 'patients', p.id)); showToast('Patient deleted'); }
+    ));
+    actions.appendChild(delBtn);
 
     grid.appendChild(card);
   });
@@ -1284,7 +1303,7 @@ document.getElementById('save-new-patient').addEventListener('click', async () =
     });
     closeModal('modal-new-patient');
     showToast('Patient added ✅');
-    if (currentUser.role === 'doctor') setTimeout(() => openAssessment(ref.id, 'initial'), 300);
+    setTimeout(() => openAssessment(ref.id, 'initial'), 300);
   } catch(e) { showToast('Error: ' + e.message, true); }
 });
 
@@ -1295,7 +1314,6 @@ document.getElementById('search-input').addEventListener('input', renderPatientL
 // ASSESSMENT MODAL
 // ─────────────────────────────────────────
 async function openAssessment(pid, type, fuId = null) {
-  if (currentUser.role !== 'doctor') { showToast('Doctor access only', true); return; }
 
   assessPid   = pid;
   assessType  = type;
@@ -1677,7 +1695,7 @@ function openProfile(pid) {
   const p = patients.find(x => x.id === pid);
   if (!p) return;
 
-  const isDoctor = currentUser.role === 'doctor';
+  const isDoctor = true; // all users have full access
   const visits = [...(p.visits || [])].sort((a, b) => {
     if (a.type === 'initial') return -1;
     if (b.type === 'initial') return 1;
@@ -2586,8 +2604,10 @@ async function loadClinicSettings() {
   const snap = await getDoc(doc(DB, 'config', 'clinic'));
   clinicSettings = snap.exists() ? snap.data() : {
     clinicName: 'Physiclinic', doctorName: '', address: '', phone: '',
-    logoUrl: '', workStart: '09:00', workEnd: '21:00', sessionDur: 45, sessionPrice: 0
+    logoUrl: '', workStart: '09:00', workEnd: '21:00', sessionDur: 45, sessionPrice: 0,
+    scheduleDoctors: [] // list of {id, name} for the schedule grid
   };
+  if (!clinicSettings.scheduleDoctors) clinicSettings.scheduleDoctors = [];
 }
 
 function renderSettings() {
@@ -2602,7 +2622,48 @@ function renderSettings() {
   document.getElementById('set-session-dur').value    = String(s.sessionDur || 45);
   document.getElementById('set-session-price').value  = s.sessionPrice || '';
   updateLogoPreview(s.logoUrl);
+  renderDoctorsList();
 }
+
+function renderDoctorsList() {
+  const list = document.getElementById('doctors-list');
+  if (!list) return;
+  const docs = clinicSettings.scheduleDoctors || [];
+  list.innerHTML = '';
+  if (!docs.length) {
+    list.innerHTML = '<p style="color:var(--muted);font-size:13px">No doctors added yet.</p>';
+    return;
+  }
+  docs.forEach((d, i) => {
+    const row = document.createElement('div');
+    row.className = 'option-item';
+    row.innerHTML = `
+      <span style="font-size:18px">👨‍⚕️</span>
+      <span style="flex:1;font-weight:600">${d.name}</span>
+      <button class="option-remove-btn" onclick="removeScheduleDoctor(${i})">&#10005; Remove</button>`;
+    list.appendChild(row);
+  });
+}
+
+window.removeScheduleDoctor = async function(idx) {
+  clinicSettings.scheduleDoctors.splice(idx, 1);
+  await setDoc(doc(DB, 'config', 'clinic'), clinicSettings);
+  renderDoctorsList();
+  showToast('Doctor removed');
+};
+
+document.getElementById('btn-add-doctor').addEventListener('click', async () => {
+  const inp = document.getElementById('new-doctor-name');
+  const name = inp.value.trim();
+  if (!name) { showToast('Enter doctor name', true); return; }
+  if (!clinicSettings.scheduleDoctors) clinicSettings.scheduleDoctors = [];
+  const newDoc = { id: generateId(), name };
+  clinicSettings.scheduleDoctors.push(newDoc);
+  await setDoc(doc(DB, 'config', 'clinic'), clinicSettings);
+  inp.value = '';
+  renderDoctorsList();
+  showToast('Doctor added ✅');
+});
 
 function updateLogoPreview(url) {
   const prev = document.getElementById('logo-preview');
@@ -2615,6 +2676,7 @@ document.getElementById('set-logo-url').addEventListener('input', e => updateLog
 
 document.getElementById('btn-save-settings').addEventListener('click', async () => {
   clinicSettings = {
+    ...clinicSettings, // keep scheduleDoctors
     clinicName:   document.getElementById('set-clinic-name').value.trim(),
     doctorName:   document.getElementById('set-doctor-name').value.trim(),
     address:      document.getElementById('set-address').value.trim(),
@@ -2636,8 +2698,8 @@ document.getElementById('btn-save-settings').addEventListener('click', async () 
 let allDoctors = [];
 
 async function loadDoctorsForSchedule() {
-  const snap = await getDocs(collection(DB,'users'));
-  allDoctors = snap.docs.map(d=>({id:d.id,...d.data()})).filter(u=>u.role==='doctor');
+  // الدكاترة من clinicSettings.scheduleDoctors (مش Firebase users)
+  allDoctors = clinicSettings.scheduleDoctors || [];
   const sel = document.getElementById('schedule-doctor-filter');
   if (!sel) return;
   const current = sel.value;
@@ -2645,7 +2707,7 @@ async function loadDoctorsForSchedule() {
   allDoctors.forEach(d => {
     const op = document.createElement('option');
     op.value = d.id;
-    op.textContent = '👨‍⚕️ ' + (d.name || d.email);
+    op.textContent = '👨‍⚕️ ' + d.name;
     if (d.id === current) op.selected = true;
     sel.appendChild(op);
   });
@@ -2655,7 +2717,8 @@ async function renderSchedule() {
   if (!scheduleDate) scheduleDate = todayStr();
   document.getElementById('schedule-date-picker').value = scheduleDate;
   document.getElementById('schedule-date-label').textContent =
-    new Date(scheduleDate + 'T00:00:00').toLocaleDateString('en-GB', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+    new Date(scheduleDate + 'T00:00:00').toLocaleDateString('en-GB',
+      { weekday:'long', year:'numeric', month:'long', day:'numeric' });
 
   await loadDoctorsForSchedule();
 
@@ -2665,96 +2728,180 @@ async function renderSchedule() {
   const q = query(collection(DB, 'appointments'), orderBy('time', 'asc'));
   const snap = await getDocs(q);
   const doctorFilter = document.getElementById('schedule-doctor-filter')?.value || 'all';
-  const allAppts = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(a => a.date === scheduleDate);
+  const allAppts = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+    .filter(a => a.date === scheduleDate);
 
   body.innerHTML = '';
 
-  if (!allAppts.length) {
-    body.innerHTML = '<div class="empty-state"><span class="icon">&#128197;</span><h3>No appointments</h3><p>Click New Appointment to add one</p></div>';
+  // ساعات العمل من clinicSettings
+  const workStart = clinicSettings.workStart || '09:00';
+  const workEnd   = clinicSettings.workEnd   || '21:00';
+  const slotMins  = clinicSettings.sessionDur || 30;
+
+  const toMins = t => { const [h,m] = t.split(':').map(Number); return h*60+m; };
+  const toTime = m => { const h=Math.floor(m/60), mn=m%60; return `${String(h).padStart(2,'0')}:${String(mn).padStart(2,'0')}`; };
+
+  const startMins = toMins(workStart);
+  const endMins   = toMins(workEnd);
+  const slots = [];
+  for (let m = startMins; m < endMins; m += slotMins) slots.push(toTime(m));
+
+  // الدكاترة المختارة
+  let doctors = allDoctors.length ? allDoctors : [];
+  if (doctorFilter !== 'all') doctors = doctors.filter(d => d.id === doctorFilter);
+
+  if (!doctors.length) {
+    body.innerHTML = `<div class="empty-state"><span class="icon">&#128104;&#8205;&#9877;&#65039;</span>
+      <h3>No doctors in schedule</h3>
+      <p>Go to <strong>Clinic Settings</strong> and add doctors first.</p></div>`;
     return;
   }
 
-  const activeDoctorIds = [...new Set(allAppts.map(a => a.doctorId).filter(Boolean))];
-  const hasUnassigned = allAppts.some(a => !a.doctorId);
-  let doctorsToShow = allDoctors.filter(d => activeDoctorIds.includes(d.id));
-  if (doctorFilter !== 'all') doctorsToShow = doctorsToShow.filter(d => d.id === doctorFilter);
+  // الجدول الشبكي
+  const totalCols = 1 + doctors.length; // col 0 = time labels
+  const gridCols = `60px repeat(${doctors.length}, 1fr)`;
 
-  const columns = document.createElement('div');
-  columns.className = 'schedule-columns';
+  const wrap = document.createElement('div');
+  wrap.className = 'time-grid-wrap';
+  const grid = document.createElement('div');
+  grid.className = 'time-grid';
+  grid.style.gridTemplateColumns = gridCols;
 
-  const renderApptMini = (a, pName) => {
-    const statusLabels = { scheduled:'Scheduled', confirmed:'Confirmed', attended:'Attended', cancelled:'Cancelled', rescheduled:'Rescheduled' };
-    const isDone = a.status === 'attended' || a.status === 'cancelled';
-    const mini = document.createElement('div');
-    mini.className = `appt-mini status-${a.status || 'scheduled'}`;
-    mini.innerHTML = `
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <span class="appt-mini-time">${a.time || '--:--'}</span>
-        <span class="status-pill sp-${a.status || 'scheduled'}" style="font-size:10px">${statusLabels[a.status] || 'Scheduled'}</span>
-      </div>
-      <div class="appt-mini-name">${pName}</div>
-      <div class="appt-mini-sub">${a.type === 'initial' ? '&#128309; Initial' : '&#128257; Follow-up'}${a.notes ? ' &middot; ' + a.notes : ''}</div>
-      <div class="appt-mini-actions">
-        ${!isDone ? `
-          <button class="btn btn-sm btn-primary" style="font-size:11px;padding:4px 8px" onclick="window.updateApptStatus('${a.id}','attended')">&#10003; Attended</button>
-          <button class="btn btn-sm btn-ghost" style="font-size:11px;padding:4px 8px" onclick="window.updateApptStatus('${a.id}','confirmed')">Confirm</button>
-          <button class="btn btn-sm btn-danger" style="font-size:11px;padding:4px 8px" onclick="window.updateApptStatus('${a.id}','cancelled')">Cancel</button>
-        ` : ''}
-        <button class="btn btn-sm btn-ghost" style="font-size:11px;padding:4px 8px" onclick="window.openEditAppt('${a.id}')">&#9999;</button>
-        <button class="btn btn-sm btn-danger" style="font-size:11px;padding:4px 8px" onclick="window.deleteAppt('${a.id}')">&#128465;</button>
-      </div>`;
-    return mini;
-  };
-
-  doctorsToShow.forEach(dr => {
-    const drAppts = allAppts.filter(a => a.doctorId === dr.id);
-    if (!drAppts.length && doctorFilter === 'all') return;
-    const col = document.createElement('div'); col.className = 'doctor-column';
-    const attended = drAppts.filter(a => a.status === 'attended').length;
-    col.innerHTML = `<div class="doctor-column-header">
-      <span>&#128104;&#8205;&#9877;&#65039; ${dr.name || dr.email}</span>
-      <span style="font-size:12px;opacity:0.8">${drAppts.length} appt${drAppts.length!==1?'s':''} &middot; &#10003;${attended}</span>
-    </div>`;
-    const colBody = document.createElement('div'); colBody.className = 'doctor-column-body';
-    if (!drAppts.length) {
-      const empty = document.createElement('div');
-      empty.style.cssText = 'color:var(--muted);font-size:13px;text-align:center;padding:20px';
-      empty.textContent = 'No appointments';
-      colBody.appendChild(empty);
-    } else {
-      drAppts.forEach(a => {
-        const pt = patients.find(x => x.id === a.patientId);
-        colBody.appendChild(renderApptMini(a, pt ? pt.name : (a.patientName || 'Unknown')));
-      });
-    }
-    col.appendChild(colBody); columns.appendChild(col);
+  // Header row
+  const corner = document.createElement('div');
+  corner.className = 'tg-corner'; corner.textContent = 'Time';
+  grid.appendChild(corner);
+  doctors.forEach(dr => {
+    const h = document.createElement('div');
+    h.className = 'tg-doc-header';
+    h.textContent = dr.name;
+    grid.appendChild(h);
   });
 
-  if (hasUnassigned && doctorFilter === 'all') {
-    const unAppts = allAppts.filter(a => !a.doctorId);
-    const col = document.createElement('div'); col.className = 'doctor-column';
-    col.innerHTML = `<div class="doctor-column-header"><span>&#128203; Unassigned</span><span style="font-size:12px;opacity:0.8">${unAppts.length} appt${unAppts.length!==1?'s':''}</span></div>`;
-    const colBody = document.createElement('div'); colBody.className = 'doctor-column-body';
-    unAppts.forEach(a => {
-      const pt = patients.find(x => x.id === a.patientId);
-      colBody.appendChild(renderApptMini(a, pt ? pt.name : (a.patientName || 'Unknown')));
+  // Slot rows
+  slots.forEach(slotTime => {
+    // Time label
+    const label = document.createElement('div');
+    label.className = 'tg-time-label'; label.textContent = slotTime;
+    grid.appendChild(label);
+
+    // Doctor cells
+    doctors.forEach(dr => {
+      const cell = document.createElement('div');
+      cell.className = 'tg-cell';
+
+      // المواعيد في الخلية دي
+      const cellAppts = allAppts.filter(a =>
+        a.doctorId === dr.id && a.time === slotTime
+      );
+
+      if (cellAppts.length) {
+        cell.classList.add('has-appt');
+        cellAppts.forEach(a => {
+          const pt = patients.find(x => x.id === a.patientId);
+          const pName = pt ? pt.name : (a.patientName || 'Unknown');
+          const card = document.createElement('div');
+          card.className = `tg-appt-card status-${a.status || 'scheduled'}`;
+          card.innerHTML = `
+            <div class="tac-name">${pName}</div>
+            <div class="tac-type">${a.type === 'initial' ? '&#128309; Initial' : '&#128257; F/U'}</div>`;
+          // click لتغيير الحالة
+          card.addEventListener('click', () => showApptActions(a, pName));
+          cell.appendChild(card);
+        });
+      } else {
+        // زر إضافة موعد في الخلية الفاضية
+        const addBtn = document.createElement('button');
+        addBtn.className = 'tg-add-btn';
+        addBtn.title = `Add appointment at ${slotTime} for ${dr.name}`;
+        addBtn.textContent = '+';
+        addBtn.addEventListener('click', () => {
+          openNewApptAt(slotTime, dr.id);
+        });
+        cell.appendChild(addBtn);
+      }
+      grid.appendChild(cell);
     });
-    col.appendChild(colBody); columns.appendChild(col);
-  }
+  });
 
-  body.appendChild(columns);
+  wrap.appendChild(grid);
+  body.appendChild(wrap);
 
-  const totalAttended  = allAppts.filter(a => a.status === 'attended').length;
-  const totalCancelled = allAppts.filter(a => a.status === 'cancelled').length;
+  // Summary bar
+  const attended  = allAppts.filter(a => a.status === 'attended').length;
+  const cancelled = allAppts.filter(a => a.status === 'cancelled').length;
   const summary = document.createElement('div');
-  summary.style.cssText = 'margin-top:16px;display:flex;gap:10px;flex-wrap:wrap';
+  summary.style.cssText = 'margin-top:14px;display:flex;gap:10px;flex-wrap:wrap';
   summary.innerHTML = `
-    <div class="card" style="flex:1;min-width:100px;text-align:center;padding:14px"><div style="font-size:22px;font-weight:700;color:var(--primary-dark)">${allAppts.length}</div><div style="font-size:12px;color:var(--muted)">Total</div></div>
-    <div class="card" style="flex:1;min-width:100px;text-align:center;padding:14px"><div style="font-size:22px;font-weight:700;color:var(--green)">${totalAttended}</div><div style="font-size:12px;color:var(--muted)">Attended</div></div>
-    <div class="card" style="flex:1;min-width:100px;text-align:center;padding:14px"><div style="font-size:22px;font-weight:700;color:var(--red)">${totalCancelled}</div><div style="font-size:12px;color:var(--muted)">Cancelled</div></div>`;
+    <div class="card" style="flex:1;min-width:90px;text-align:center;padding:12px">
+      <div style="font-size:20px;font-weight:700;color:var(--primary-dark)">${allAppts.length}</div>
+      <div style="font-size:11px;color:var(--muted)">Total</div></div>
+    <div class="card" style="flex:1;min-width:90px;text-align:center;padding:12px">
+      <div style="font-size:20px;font-weight:700;color:var(--green)">${attended}</div>
+      <div style="font-size:11px;color:var(--muted)">Attended</div></div>
+    <div class="card" style="flex:1;min-width:90px;text-align:center;padding:12px">
+      <div style="font-size:20px;font-weight:700;color:var(--red)">${cancelled}</div>
+      <div style="font-size:11px;color:var(--muted)">Cancelled</div></div>`;
   body.appendChild(summary);
 }
 
+// Popup تصرفات الموعد لما تضغط على الكارت
+function showApptActions(a, pName) {
+  const isDone = a.status === 'attended' || a.status === 'cancelled';
+  const statusLabels = { scheduled:'Scheduled', confirmed:'Confirmed', attended:'Attended', cancelled:'Cancelled' };
+  confirmAction(
+    pName + ' — ' + (a.time||''),
+    `Status: ${statusLabels[a.status]||'Scheduled'}. What would you like to do?`,
+    async () => {}
+  );
+  // Override confirm button
+  const okBtn = document.getElementById('confirm-ok');
+  okBtn.textContent = '✓ Attended';
+  okBtn.style.background = 'var(--green)'; okBtn.style.color = 'white';
+  okBtn.onclick = async () => { closeConfirm(); await window.updateApptStatus(a.id,'attended'); };
+
+  // أضف أزرار إضافية
+  const box = document.querySelector('.confirm-box');
+  // شيل الأزرار الإضافية القديمة
+  const extraBtns = box.querySelector('.extra-appt-btns');
+  if (extraBtns) extraBtns.remove();
+  const extra = document.createElement('div');
+  extra.className = 'extra-appt-btns';
+  extra.style.cssText = 'display:flex;gap:6px;justify-content:center;margin-top:8px;flex-wrap:wrap';
+  if (!isDone) {
+    const confirmBtn = document.createElement('button');
+    confirmBtn.className = 'btn btn-ghost btn-sm';
+    confirmBtn.textContent = 'Confirm';
+    confirmBtn.onclick = async () => { closeConfirm(); await window.updateApptStatus(a.id,'confirmed'); };
+    extra.appendChild(confirmBtn);
+    const cancelBtn = document.createElement('button');
+    cancelBtn.className = 'btn btn-danger btn-sm';
+    cancelBtn.textContent = 'Cancel Appt';
+    cancelBtn.onclick = async () => { closeConfirm(); await window.updateApptStatus(a.id,'cancelled'); };
+    extra.appendChild(cancelBtn);
+  }
+  const editBtn = document.createElement('button');
+  editBtn.className = 'btn btn-ghost btn-sm';
+  editBtn.textContent = '&#9999; Edit';
+  editBtn.onclick = async () => { closeConfirm(); await window.openEditAppt(a.id); };
+  extra.appendChild(editBtn);
+  const delBtn = document.createElement('button');
+  delBtn.className = 'btn btn-danger btn-sm';
+  delBtn.textContent = '&#128465; Delete';
+  delBtn.onclick = async () => { closeConfirm(); await window.deleteAppt(a.id); };
+  extra.appendChild(delBtn);
+  box.appendChild(extra);
+}
+
+// فتح modal موعد جديد مع تحديد الوقت والدكتور مسبقاً
+function openNewApptAt(time, doctorId) {
+  openNewAppt();
+  document.getElementById('appt-time').value = time;
+  const dsel = document.getElementById('appt-doctor-select');
+  if (dsel) {
+    Array.from(dsel.options).forEach(o => { o.selected = o.value === doctorId; });
+  }
+}
 
 
 document.getElementById('schedule-date-picker').addEventListener('change', e => {
@@ -2781,7 +2928,10 @@ function openNewAppt() {
   sel.innerHTML = patients.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
   // fill doctor select
   const dsel = document.getElementById('appt-doctor-select');
-  dsel.innerHTML = allDoctors.map(d => `<option value="${d.id}" ${d.id === currentUser.uid ? 'selected' : ''}>${d.name || d.email}</option>`).join('');
+  const schDocs = clinicSettings.scheduleDoctors || [];
+  dsel.innerHTML = schDocs.length
+    ? schDocs.map(d => `<option value="${d.id}">${d.name}</option>`).join('')
+    : '<option value="">No doctors — add in Settings</option>';
   openModal('modal-appt');
 }
 
@@ -2799,7 +2949,10 @@ window.openEditAppt = async function(id) {
   const sel = document.getElementById('appt-patient-select');
   sel.innerHTML = patients.map(p => `<option value="${p.id}" ${p.id === a.patientId ? 'selected' : ''}>${p.name}</option>`).join('');
   const dsel = document.getElementById('appt-doctor-select');
-  dsel.innerHTML = allDoctors.map(d => `<option value="${d.id}" ${d.id === a.doctorId ? 'selected' : ''}>${d.name || d.email}</option>`).join('');
+  const schDocs2 = clinicSettings.scheduleDoctors || [];
+  dsel.innerHTML = schDocs2.length
+    ? schDocs2.map(d => `<option value="${d.id}" ${d.id === a.doctorId ? 'selected' : ''}>${d.name}</option>`).join('')
+    : '<option value="">No doctors — add in Settings</option>';
   openModal('modal-appt');
 }
 
