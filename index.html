@@ -691,7 +691,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
         <button class="nav-item active" id="nav-patients">👥 Patients</button>
         <button class="nav-item" id="nav-schedule">📅 Schedule</button>
         <button class="nav-item" id="nav-manage">⚙️ Manage Options</button>
-        <button class="nav-item" id="nav-users">👤 Manage Users</button>
         <button class="nav-item" id="nav-settings">🏥 Clinic Settings</button>
       </nav>
       <div class="sidebar-footer">
@@ -1178,11 +1177,9 @@ function setupNav() {
     document.getElementById('nav-patients').addEventListener('click', () => showPage('patients'));
     document.getElementById('nav-schedule').addEventListener('click', () => showPage('schedule'));
     document.getElementById('nav-manage').addEventListener('click', () => showPage('manage'));
-    document.getElementById('nav-users').addEventListener('click',   () => showPage('users'));
     document.getElementById('nav-settings').addEventListener('click',() => showPage('settings'));
   }
   document.getElementById('nav-manage').classList.remove('disabled');
-  document.getElementById('nav-users').classList.remove('disabled');
   document.getElementById('btn-export-all').style.display = '';
 }
 
@@ -2277,7 +2274,7 @@ window.exportPDF = async function(pid) {
 
   const div = document.createElement('div');
   div.innerHTML = html;
-  div.style.cssText = 'position:fixed;left:-9999px;top:0;background:white;width:700px;z-index:-1';
+  div.style.cssText = 'position:fixed;left:-9999px;top:0;background:white;width:794px;z-index:-1;font-family:Arial,sans-serif;';
   document.body.appendChild(div);
 
   try {
@@ -2409,10 +2406,9 @@ window.showPage = function(name) {
   });
   document.getElementById('page-' + name).style.display = 'block';
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  const navMap = { patients:'nav-patients', manage:'nav-manage', users:'nav-users', schedule:'nav-schedule', settings:'nav-settings' };
+  const navMap = { patients:'nav-patients', manage:'nav-manage', schedule:'nav-schedule', settings:'nav-settings' };
   if (navMap[name]) document.getElementById(navMap[name]).classList.add('active');
   if (name === 'manage')   renderManage();
-  if (name === 'users')    renderUsers();
   if (name === 'schedule') renderSchedule();
   if (name === 'settings') renderSettings();
   closeSidebar();
@@ -3090,60 +3086,77 @@ function buildClinicHeader() {
 // PDF — إيصال الكشف الحساب
 // ═══════════════════════════════════════════
 function printReceipt(patient) {
-  const s       = clinicSettings;
+  const s = clinicSettings;
   const sessions = patient.sessions || [];
-  const price   = s.sessionPrice || 0;
-  const total   = sessions.reduce((sum, x) => sum + (x.price || price), 0);
 
-  const html = `
-    <html><head><meta charset="UTF-8">
-    <style>
-      body { font-family: Arial, sans-serif; padding: 30px; color: #162820; }
-      .header { display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #1a5c4a;padding-bottom:14px;margin-bottom:20px }
-      .logo { height:55px;object-fit:contain }
-      .clinic-info h2 { font-size:18px;color:#0d3d2e;margin:0 }
-      .clinic-info p  { font-size:12px;color:#5a7a6e;margin:2px 0 }
-      table { width:100%;border-collapse:collapse;margin-top:16px }
-      th { background:#0d3d2e;color:white;padding:8px 12px;text-align:left;font-size:13px }
-      td { padding:8px 12px;border-bottom:1px solid #ccddd6;font-size:13px }
-      tr:nth-child(even) td { background:#eef2f0 }
-      .total-row td { font-weight:700;background:#eaf7f0;color:#0d3d2e;font-size:14px }
-      .patient-box { background:#eef2f0;border-radius:8px;padding:12px 16px;margin-bottom:16px }
-      .patient-box h3 { margin:0 0 4px;font-size:16px;color:#0d3d2e }
-      .patient-box p  { margin:0;font-size:13px;color:#5a7a6e }
-      .footer { margin-top:24px;text-align:center;font-size:11px;color:#5a7a6e;border-top:1px solid #ccddd6;padding-top:12px }
-    </style></head><body>
-    <div class="header">
-      <div style="display:flex;align-items:center;gap:12px">
-        ${s.logoUrl ? `<img class="logo" src="${s.logoUrl}">` : ''}
-        <div class="clinic-info">
-          <h2>${s.clinicName || 'Physiclinic'}</h2>
-          ${s.doctorName ? `<p>${s.doctorName}</p>` : ''}
-          ${s.address ? `<p>${s.address}</p>` : ''}
-          ${s.phone ? `<p>📞 ${s.phone}</p>` : ''}
-        </div>
-      </div>
-      <div style="text-align:right;font-size:12px;color:#5a7a6e">
-        <div style="font-weight:700;font-size:15px;color:#0d3d2e">🧾 Receipt</div>
-        <div>${new Date().toLocaleDateString('en-GB')}</div>
-      </div>
+  const html = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<style>
+  @page { size: A4; margin: 20mm; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; color: #162820; font-size: 13px; }
+  .header { display:flex; align-items:center; justify-content:space-between;
+            border-bottom:2px solid #1a5c4a; padding-bottom:14px; margin-bottom:18px; }
+  .logo { height:55px; object-fit:contain; }
+  .clinic-info h2 { font-size:17px; color:#0d3d2e; margin-bottom:3px; }
+  .clinic-info p  { font-size:11px; color:#5a7a6e; margin:1px 0; }
+  .report-label { font-size:13px; font-weight:700; color:#0d3d2e; }
+  .report-date  { font-size:11px; color:#5a7a6e; margin-top:3px; }
+  .patient-box { background:#eef2f0; border-radius:7px; padding:10px 14px; margin-bottom:16px; }
+  .patient-box h3 { font-size:15px; color:#0d3d2e; margin-bottom:3px; }
+  .patient-box p  { font-size:11px; color:#5a7a6e; }
+  table { width:100%; border-collapse:collapse; margin-top:4px; }
+  th { background:#0d3d2e; color:white; padding:8px 10px; text-align:left; font-size:12px; }
+  td { padding:7px 10px; border-bottom:1px solid #ccddd6; font-size:12px; }
+  tr:nth-child(even) td { background:#f4f8f6; }
+  .total-row td { font-weight:700; background:#e0f2ea; color:#0d3d2e; font-size:13px; }
+  .footer { margin-top:20px; text-align:center; font-size:10px; color:#5a7a6e;
+            border-top:1px solid #ccddd6; padding-top:10px; }
+</style></head><body>
+
+<div class="header">
+  <div style="display:flex;align-items:center;gap:12px">
+    ${s.logoUrl ? `<img class="logo" src="${s.logoUrl}">` : ''}
+    <div class="clinic-info">
+      <h2>${s.clinicName || 'Physiclinic'}</h2>
+      ${s.doctorName ? `<p>${s.doctorName}</p>` : ''}
+      ${s.address    ? `<p>${s.address}</p>` : ''}
+      ${s.phone      ? `<p>📞 ${s.phone}</p>` : ''}
     </div>
-    <div class="patient-box">
-      <h3>${patient.name}</h3>
-      <p>${patient.age ? patient.age + ' yrs' : ''} ${patient.gender || ''} ${patient.phone ? '· 📞 ' + patient.phone : ''}</p>
-    </div>
-    <table>
-      <tr><th>#</th><th>Date</th><th>Type</th><th>Price</th></tr>
-      ${sessions.map((s, i) => `<tr><td>${i+1}</td><td>${s.date||''} ${s.time||''}</td><td>${s.type==='initial'?'Initial Assessment':'Follow-up'}</td><td>${s.price||price} EGP</td></tr>`).join('')}
-      <tr class="total-row"><td colspan="3">Total (${sessions.length} sessions)</td><td>${total} EGP</td></tr>
-    </table>
-    <div class="footer">${s.clinicName || 'Physiclinic'} · ${s.address || ''} · ${s.phone || ''}</div>
-    </body></html>`;
+  </div>
+  <div style="text-align:right">
+    <div class="report-label">📋 Session Report</div>
+    <div class="report-date">${new Date().toLocaleDateString('en-GB')}</div>
+  </div>
+</div>
+
+<div class="patient-box">
+  <h3>${patient.name}</h3>
+  <p>${patient.age ? patient.age + ' yrs' : ''} ${patient.gender || ''} ${patient.phone ? '· ' + patient.phone : ''}</p>
+</div>
+
+<table>
+  <tr><th>#</th><th>Date</th><th>Time</th><th>Session Type</th></tr>
+  ${sessions.map((ses, i) => `
+    <tr>
+      <td>${i + 1}</td>
+      <td>${ses.date || ''}</td>
+      <td>${ses.time || ''}</td>
+      <td>${ses.type === 'initial' ? 'Initial Assessment' : 'Follow-up'}</td>
+    </tr>`).join('')}
+  <tr class="total-row">
+    <td colspan="3">Total Sessions</td>
+    <td>${sessions.length} session${sessions.length !== 1 ? 's' : ''}</td>
+  </tr>
+</table>
+
+<div class="footer">${s.clinicName || 'Physiclinic'} &nbsp;&middot;&nbsp; ${s.address || ''} &nbsp;&middot;&nbsp; ${s.phone || ''}</div>
+</body></html>`;
 
   const win = window.open('', '_blank');
   win.document.write(html);
   win.document.close();
-  win.print();
+  setTimeout(() => win.print(), 500);
 }
 
 </script>
