@@ -1,0 +1,6 @@
+# Patient data must never be committed
+Physiclinic_Backup_*.json
+*.csv
+*.xlsx
+secrets.local.json
+__pycache__/

@@ -1,0 +1,46 @@
+rules_version = '2';
+// Physiclinic — recommended Firestore rules (project physiclinic-4a8d1)
+// Paste into: Firebase console → Firestore Database → Rules → Publish
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function me() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
+    function hasProfile() { return signedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)); }
+    function isStaff() {
+      return hasProfile() && me().get('disabled', false) != true && me().role in ['doctor', 'receptionist'];
+    }
+    function isDoctor() { return isStaff() && me().role == 'doctor'; }
+
+    // Staff accounts. A new sign-in may only create its own profile as "pending";
+    // only doctors can approve, change roles or remove staff.
+    match /users/{uid} {
+      allow read: if isStaff() || (signedIn() && request.auth.uid == uid);
+      allow create: if isDoctor()
+        || (signedIn() && request.auth.uid == uid && request.resource.data.role == 'pending');
+      allow update, delete: if isDoctor();
+    }
+
+    // Patients: all staff can read and update (receptionists record payments);
+    // only doctors can delete.
+    match /patients/{id} {
+      allow read, create, update: if isStaff();
+      allow delete: if isDoctor();
+    }
+
+    match /appointments/{id} {
+      allow read, write: if isStaff();
+    }
+
+    // Expenses and finance: doctors only
+    match /expenses/{id} {
+      allow read, write: if isDoctor();
+    }
+
+    // Clinic settings and assessment options
+    match /config/{docId} {
+      allow read: if isStaff();
+      allow write: if isDoctor();
+    }
+  }
+}
