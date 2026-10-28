@@ -17,6 +17,7 @@ import {
   collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc,
   onSnapshot, query, where, orderBy, limit, writeBatch, arrayUnion
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { setupQuickSheet } from "./quick-sheet.js?v=4";
 
 const fbApp = initializeApp({
   apiKey: "AIzaSyBV6--Y8VTOIm0XhU1h-6GSJmJiWwbBMd8",
@@ -1075,6 +1076,26 @@ $('save-assess').addEventListener('click', async () => {
 });
 
 // ═══════════════════════════════════════════
+// SHORTCUT SHEET (quick-sheet.js) — one-page sheet with voice typing
+// ═══════════════════════════════════════════
+const QS = setupQuickSheet({
+  el, btn, showToast, errMsg, getPatient, todayStr, generateId, fmtDate, regionsOf,
+  saveVisit: async (pid, visit, patientUpdates) => {
+    const p = getPatient(pid);
+    const visits = [...(p?.visits || [])];
+    visit.savedBy = me.name || me.email;
+    const i = visits.findIndex(v => v.id === visit.id);
+    if (i >= 0) visits[i] = visit; else if (visit.type === 'initial') visits.unshift(visit); else visits.push(visit);
+    await updateDoc(doc(DB, 'patients', pid), { ...patientUpdates, visits, updatedAt: Date.now() });
+  },
+  afterSave: pid => showPage('profile', { id: pid, tab: 'visits' })
+});
+function openShortcut(pid, visitId) {
+  if (!isDoctor()) { showToast('Only doctors can edit assessments', true); return; }
+  QS.open(pid, visitId);
+}
+
+// ═══════════════════════════════════════════
 // PATIENT PROFILE
 // ═══════════════════════════════════════════
 const PROFILE_TABS = [['overview', '📋 Overview'], ['visits', '🩺 Assessments'], ['billing', '💰 Sessions & Payments'], ['hep', '🏋️ Home Exercises'], ['appts', '📅 Appointments']];
@@ -1115,6 +1136,7 @@ function renderProfile() {
   actions.appendChild(btn('📅 Book', 'btn-accent btn-sm', () => openNewAppt({ patientId: p.id })));
   if (p.phone) actions.appendChild(btn('💬 WhatsApp', 'btn-green btn-sm', () => openWa(p.phone, '')));
   if (isDoctor()) {
+    actions.appendChild(btn('⚡ Shortcut', 'btn-accent btn-sm', () => openShortcut(p.id)));
     if (ini) actions.appendChild(btn('+ Follow-up', 'btn-primary btn-sm', () => openAssessment(p.id, 'followup'), { style: 'background:white;color:var(--primary)' }));
     if (ini && st !== 'discharged') actions.appendChild(btn('🏁 Discharge', 'btn-ghost btn-sm', () => openAssessment(p.id, 'discharge'), { style: 'background:white' }));
     actions.appendChild(btn('📄 Report PDF', 'btn-pdf btn-sm', () => exportPDF(p.id)));
@@ -1217,12 +1239,15 @@ function profileVisits(p, c) {
   const visits = sortedVisits(p).reverse(); // newest first
   if (!visits.length) {
     const empty = el('div', { class: 'card', style: 'text-align:center;padding:40px;color:var(--muted)', html: '<div style="font-size:40px;margin-bottom:10px">📋</div><p style="font-weight:600">No assessment yet</p>' });
-    if (isDoctor()) empty.appendChild(btn('Start Initial Assessment', 'btn-primary', () => openAssessment(p.id, 'initial'), { style: 'margin-top:14px' }));
+    if (isDoctor()) empty.appendChild(el('div', { style: 'display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:14px' },
+      btn('Start Initial Assessment', 'btn-primary', () => openAssessment(p.id, 'initial')),
+      btn('⚡ Shortcut sheet', 'btn-accent', () => openShortcut(p.id))));
     c.appendChild(empty);
     return;
   }
   if (isDoctor()) {
     const bar = el('div', { style: 'display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap' },
+      btn('⚡ Shortcut', 'btn-accent btn-sm', () => openShortcut(p.id)),
       btn('+ Follow-up', 'btn-primary btn-sm', () => openAssessment(p.id, 'followup')),
       btn('📄 PDF', 'btn-pdf btn-sm', () => exportPDF(p.id)),
       btn('📊 CSV', 'btn-green btn-sm', () => exportCSV(p.id)));
@@ -1240,7 +1265,7 @@ function visitCard(p, v) {
       await updateDoc(doc(DB, 'patients', p.id), { visits: (fresh.visits || []).filter(x => x.id !== v.id) });
       showToast('Deleted');
     }) }, '🗑️'));
-    card.appendChild(el('button', { class: 'visit-edit-btn', onclick: () => openAssessment(p.id, v.type, v.id) }, '✏️ Edit'));
+    card.appendChild(el('button', { class: 'visit-edit-btn', onclick: () => v.quick ? openShortcut(p.id, v.id) : openAssessment(p.id, v.type, v.id) }, '✏️ Edit'));
   }
   const head = el('div', { style: 'display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px;padding-right:90px' });
   head.appendChild(el('span', { class: 'visit-type-badge ' + (isInit ? 'initial' : 'followup'), style: v.type === 'discharge' ? 'background:#ebf5fb;color:#2980b9' : '' },
@@ -1250,6 +1275,7 @@ function visitCard(p, v) {
   if (v.progress) head.appendChild(el('span', { class: 'badge ' + (/better/i.test(v.progress) ? 'b-active' : /worse/i.test(v.progress) ? 'b-debt' : 'b-onhold') }, v.progress));
   if (v.savedBy) head.appendChild(el('span', { style: 'font-size:11px;color:var(--muted)' }, 'by ' + v.savedBy));
   card.appendChild(head);
+  if (v.quick) card.appendChild(QS.extras(v));
 
   (v.regions || []).forEach(r => {
     const rc = el('div', { class: 'region-card' });

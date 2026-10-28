@@ -14,6 +14,7 @@ Plain static files on GitHub Pages (no build step), data in Firebase.
 | `index.html` | Page structure (login, pages, pop-up windows) |
 | `styles.css` | All styling |
 | `app.js` | All app logic (Firebase, pages, PDFs, exports) |
+| `quick-sheet.js` | ⚡ Shortcut sheet: the clinic's one-page assessment sheet with a mic next to each field (voice typing). Saved as a normal visit with extra fields in `visit.quick` |
 | `manifest.webmanifest`, `sw.js`, `*.png` | Install on the phone as an app; offline shell |
 | `firestore.rules` | Recommended security rules — paste them in the Firebase console |
 
