@@ -92,7 +92,7 @@ const TERMS = [
   ['افيوجن|ايفيوجن|افيوشن', 'effusion'], ['اديما|ايديما', 'edema'], ['كريبيتس|كريبيتيشن', 'crepitus'],
   ['بوستشر|بوسشر', 'posture'], ['جايت', 'gait'], ['بالانس', 'balance'], ['بروبريوسيبشن|بروبريوسبشن', 'proprioception'],
   ['سيرفيكال', 'cervical'], ['ثوراسيك', 'thoracic'], ['لمبر|لومبار|لامبر', 'lumbar'], ['ساكرال', 'sacral'],
-  ['شولدر', 'shoulder'], ['البو', 'elbow'], ['ريست', 'wrist'], ['انكل', 'ankle'], ['ني', 'knee'],
+  ['شولدر', 'shoulder'], ['البو', 'elbow'], ['ريست جوينت', 'wrist joint'], ['انكل', 'ankle'], ['ني', 'knee'],
   ['تينز', 'TENS'], ['الترا ساوند|الترساوند|التراساوند', 'ultrasound'], ['هوت باك|هوت باكس', 'hot pack'],
   ['فايبريشن|فيبريشن', 'vibration'], ['موبيلايزيشن|موبليزيشن|موبلايزيشن|موبيليزيشن', 'mobilization'],
   ['مانيبيوليشن|مانيبوليشن', 'manipulation'], ['دراي نيدلنج|دراي نيدلينج', 'dry needling'], ['نيدلنج|نيدلينج', 'needling'],
@@ -122,7 +122,8 @@ export function fixTerms(text) {
 }
 
 const vasColor = v => v <= 3 ? '#27ae60' : v <= 6 ? '#e8a020' : '#d94f4f';
-const lines = t => String(t || '').split('\n').map(s => s.replace(/^[-•*\d.)\s]+/, '').trim()).filter(Boolean);
+// Split text into lines and drop list markers ("-", "•", "1.", "2)") but keep real numbers like "10 min TENS".
+const lines = t => String(t || '').split('\n').map(s => s.replace(/^\s*(?:[-•*]+|\d{1,2}[.)])\s+/, '').trim()).filter(Boolean);
 
 /**
  * deps: el, btn, showToast, errMsg, getPatient, todayStr, generateId, fmtDate,
