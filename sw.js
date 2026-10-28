@@ -1,5 +1,5 @@
 // Bump the number on EVERY change so phones pick up the new version.
-const CACHE='ptclinic-v10';
+const CACHE='ptclinic-v11';
 const SHELL=['./','./index.html','./styles.css?v=6','./app.js?v=10','./quick-sheet.js?v=10','./manifest.webmanifest'];
 
 self.addEventListener('install',e=>e.waitUntil(
