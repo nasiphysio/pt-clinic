@@ -8,7 +8,7 @@
 // ═══════════════════════════════════════════════════════════
 
 const MODALITIES = ['TENS', 'US', 'Vib', 'HP', 'Needle', 'Mobilization'];
-const KINDS = [['initial', 'Initial'], ['re1', 'Re-assessment 1'], ['re2', 'Re-assessment 2'], ['re3', 'Re-assessment 3']];
+const KINDS = [['initial', 'Initial'], ['re1', 'Re-assessment 1'], ['re2', 'Re-assessment 2'], ['re3', 'Re-assessment 3'], ['fu', 'Follow-up']];
 export const KIND_LABEL = Object.fromEntries(KINDS);
 
 const STYLE = `
@@ -55,6 +55,67 @@ const STYLE = `
 
 const MIC_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4"/></svg>';
 
+// ── Arabic dictation → English medical terms ──────────────────
+// The phone's voice typing hears one language at a time. In Arabic mode it writes
+// English words in Arabic letters ("ماكموري"), so we turn the common ones back
+// into English. Patterns are written plainly; letter variants (أ/إ/ا, ة/ه, ى/ي) are handled.
+const TERMS = [
+  ['تنس البو|تينس البو', 'tennis elbow'], ['جولفرز البو', "golfer's elbow"], ['فروزن شولدر', 'frozen shoulder'],
+  ['كاربال تانل', 'carpal tunnel'], ['دي كيرفان|دي كرفان', 'De Quervain'], ['بلانتر فاشيايتس|بلانتر فاشيتس', 'plantar fasciitis'],
+  ['روتيتور كاف|روتاتور كاف', 'rotator cuff'], ['امبينجمنت|امبنجمنت', 'impingement'],
+  ['ستريت ليج ريز|ستريت لج ريز|اس ال ار', 'SLR'], ['ماكموري|مكموري|ماك موري', 'McMurray'], ['لاكمان|لاخمان', 'Lachman'],
+  ['سبيرلنج|سبرلنج|سبيرلينج', 'Spurling'], ['هوكنز|هوكينز', 'Hawkins'], ['فابر', 'FABER'], ['توماس تست', 'Thomas test'],
+  ['دروب ارم', 'drop arm'], ['ابلي|ابليز', 'Apley'], ['فينكلشتاين|فنكلستين', 'Finkelstein'], ['فالين|فالينز', 'Phalen'],
+  ['تينيل|تينلز', 'Tinel'], ['اينتيريور دروار|انتيريور دروار', 'anterior drawer'], ['تست', 'test'],
+  ['بوزيتيف|بوزتيف', 'positive'], ['نيجاتيف|نيجتيف|نجاتيف', 'negative'],
+  ['فليكشن|فلكشن|فليكشين', 'flexion'], ['اكستنشن|اكستينشن|اكستنشين', 'extension'], ['هايبر اكستنشن', 'hyperextension'],
+  ['ابدكشن|ابداكشن', 'abduction'], ['ادكشن|اداكشن', 'adduction'], ['روتيشن|روتيشين', 'rotation'],
+  ['انترنال|انتيرنال', 'internal'], ['اكسترنال|اكستيرنال', 'external'], ['لاترال فليكشن', 'lateral flexion'],
+  ['دورسي فليكشن|دورسيفليكشن', 'dorsiflexion'], ['بلانتر فليكشن|بلانتارفليكشن', 'plantarflexion'],
+  ['انفيرجن|انفيرشن', 'inversion'], ['ايفيرجن|ايفيرشن', 'eversion'], ['سوبينيشن', 'supination'], ['برونيشن', 'pronation'],
+  ['ار او ام|رينج اوف موشن', 'ROM'], ['ام ام تي', 'MMT'], ['في اي اس|في ايه اس', 'VAS'],
+  ['كوادريسبس|كوادز|كوادرز', 'quadriceps'], ['هامسترنج|هامسترينج|هامسترنجز', 'hamstrings'], ['جلوتس|جلوتيس|جلوتيال', 'glutes'],
+  ['كاف مسلز|كاف ماسل', 'calf muscles'], ['ابر ترابيزيس|ابر ترابيزس', 'upper trapezius'], ['ترابيزيس|ترابيزس', 'trapezius'],
+  ['ديلتويد', 'deltoid'], ['بايسبس', 'biceps'], ['ترايسبس', 'triceps'], ['ايليوبسواس|ايليو بسواس', 'iliopsoas'],
+  ['بيريفورميس|بريفورمس', 'piriformis'], ['كور', 'core'], ['اي تي باند', 'IT band'],
+  ['مينيسكس|منيسكس|مينسكس', 'meniscus'], ['ميديال', 'medial'], ['لاترال', 'lateral'], ['ليجامنت|ليجمنت', 'ligament'],
+  ['تيندون|تندون', 'tendon'], ['تندونايتس|تيندونايتس|تندينايتس', 'tendinitis'], ['تندينوباثي|تيندينوباثي', 'tendinopathy'],
+  ['تير', 'tear'], ['ديسك', 'disc'], ['هيرنييشن|هيرنيا', 'herniation'], ['بروليبس|برولابس', 'prolapse'],
+  ['سياتيكا', 'sciatica'], ['راديكيولوباثي|راديكولوباثي', 'radiculopathy'], ['اوستيوارثرايتس|اوستيو ارثرايتس', 'osteoarthritis'],
+  ['اوستيوبوروسيس', 'osteoporosis'], ['سبوندايلوسيس|سبونديلوسيس', 'spondylosis'], ['بيرسايتس|برسايتس', 'bursitis'],
+  ['سبرين', 'sprain'], ['سترين', 'strain'], ['سبازم|اسبازم', 'spasm'], ['تندرنس|تيندرنس', 'tenderness'],
+  ['افيوجن|ايفيوجن|افيوشن', 'effusion'], ['اديما|ايديما', 'edema'], ['كريبيتس|كريبيتيشن', 'crepitus'],
+  ['بوستشر|بوسشر', 'posture'], ['جايت', 'gait'], ['بالانس', 'balance'], ['بروبريوسيبشن|بروبريوسبشن', 'proprioception'],
+  ['سيرفيكال', 'cervical'], ['ثوراسيك', 'thoracic'], ['لمبر|لومبار|لامبر', 'lumbar'], ['ساكرال', 'sacral'],
+  ['شولدر', 'shoulder'], ['البو', 'elbow'], ['ريست', 'wrist'], ['انكل', 'ankle'], ['ني', 'knee'],
+  ['تينز', 'TENS'], ['الترا ساوند|الترساوند|التراساوند', 'ultrasound'], ['هوت باك|هوت باكس', 'hot pack'],
+  ['فايبريشن|فيبريشن', 'vibration'], ['موبيلايزيشن|موبليزيشن|موبلايزيشن|موبيليزيشن', 'mobilization'],
+  ['مانيبيوليشن|مانيبوليشن', 'manipulation'], ['دراي نيدلنج|دراي نيدلينج', 'dry needling'], ['نيدلنج|نيدلينج', 'needling'],
+  ['كينزيو تيب|كينيسيو تيب|تيبنج', 'kinesio taping'], ['ترآكشن|تراكشن', 'traction'], ['شوك ويف', 'shock wave'],
+  ['ستريتشنج|ستريتشينج|استرتشنج', 'stretching'], ['سترينثنينج|سترينجثنينج|سترنجثنج', 'strengthening'],
+  ['اكسرسايز|اكسرسيز|اكسيرسايز', 'exercise'], ['ايزوميتريك|ايزومتريك', 'isometric'], ['سيتس|ستس', 'sets'],
+  ['ريبس|ريبتيشنز', 'reps'], ['هوم بروجرام', 'home program'], ['ماكينزي|مكنزي|ماكنزي', 'McKenzie'],
+  ['ستابيليزيشن|ستبلايزيشن', 'stabilization'], ['نيرف جلايدنج|نيرف جلايدينج', 'nerve gliding'],
+  ['ماسل اينرجي|ماسل انرجي', 'muscle energy'], ['مالجان|مالجين|موليجان', 'Mulligan'], ['ميتلاند|ميتلاندز', 'Maitland'],
+  ['فرونت', 'front'], ['باك', 'back'], ['رايت', 'right'], ['ليفت', 'left'],
+];
+const ARABIC_VARIANT = ch => ({ 'ا': '[اأإآ]', 'ه': '[هة]', 'ي': '[يى]', 'ة': '[هة]', 'ى': '[يى]' }[ch] || ch);
+const TERM_RULES = TERMS.map(([pat, en]) => {
+  const alts = pat.split('|').sort((a, b) => b.length - a.length).map(a => [...a].map(ARABIC_VARIANT).join('').replace(/ /g, '\\s+'));
+  // optional "و" (and) kept; "ال / بال / لل" dropped. Risky everyday words are left out on purpose.
+  return [new RegExp(`(^|[\\s،,.؛:()/\\-])(و)?(?:ال|بال|لل)?(?:${alts.join('|')})(?=$|[\\s،,.؛:()/\\-])`, 'g'), en];
+});
+const AR_DIGITS = { '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4', '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9' };
+export function fixTerms(text) {
+  let t = String(text || '').replace(/[٠-٩]/g, d => AR_DIGITS[d]);
+  for (const [re, en] of TERM_RULES) t = t.replace(re, (m, pre, wa) => `${pre}${wa ? 'و ' : ''}${en}`);
+  return t
+    .replace(/(\d+)\s*(?:على|من|اوف|over|out of)\s*(\d+)/g, '$1/$2')
+    .replace(/(\d+)\s*(?:درج[هة]|درجات|degrees?)/g, '$1°')
+    .replace(/(\d)\s*(?:بلس|زائد|plus)(?=$|\s)/g, '$1+')
+    .replace(/(\d)\s*(?:ماينس|ناقص|minus)(?=$|\s)/g, '$1-');
+}
+
 const vasColor = v => v <= 3 ? '#27ae60' : v <= 6 ? '#e8a020' : '#d94f4f';
 const lines = t => String(t || '').split('\n').map(s => s.replace(/^[-•*\d.)\s]+/, '').trim()).filter(Boolean);
 
@@ -97,7 +158,7 @@ export function setupQuickSheet(deps) {
       r.onresult = e => {
         let txt = '';
         for (let i = 0; i < e.results.length; i++) txt += e.results[i][0].transcript;
-        input.value = base + sep + txt.trim();
+        input.value = base + sep + fixTerms(txt.trim());
         input.dispatchEvent(new Event('input'));
       };
       r.onerror = e => {
@@ -137,9 +198,7 @@ export function setupQuickSheet(deps) {
   function nextKind(p) {
     const qs = (p.visits || []).filter(v => v.quick);
     const hasInitial = (p.visits || []).some(v => v.type === 'initial');
-    if (!hasInitial) return 'initial';
-    const used = qs.map(v => v.quick.kind);
-    return ['re1', 're2', 're3'].find(k => !used.includes(k)) || 're3';
+    return hasInitial ? 'fu' : 'initial';
   }
 
   function open(pid, visitId = null) {
@@ -156,10 +215,15 @@ export function setupQuickSheet(deps) {
     S.onset = S.onset ?? S.onsetDate ?? '';
     S.goals = S.goals || '';
     const info = { date: existing?.date || todayStr() };
-    // A new re-assessment starts from the last sheet's onset, history, diagnosis, problems and goals.
+    // A new follow-up / re-assessment starts from the last sheet: onset, history,
+    // diagnosis, problems, goals and the treatment given last time.
     if (!existing && S.kind !== 'initial') {
-      const prev = [...(p.visits || [])].filter(v => v.quick).sort((a, b) => (a.date || '').localeCompare(b.date || '')).pop();
-      if (prev) for (const k of ['onset', 'ho', 'diagnosis', 'problems', 'goals']) S[k] = prev.quick[k] || (k === 'onset' ? prev.quick.onsetDate : '') || '';
+      const sorted = [...(p.visits || [])].sort((a, b) => (a.date || '').localeCompare(b.date || '') || (a.savedAt || 0) - (b.savedAt || 0));
+      const prevFull = [...sorted].reverse().find(v => v.quick && v.quick.kind !== 'fu');
+      const prevAny = [...sorted].reverse().find(v => v.quick);
+      if (prevFull) for (const k of ['onset', 'ho', 'diagnosis', 'problems', 'goals']) S[k] = prevFull.quick[k] || (k === 'onset' ? prevFull.quick.onsetDate : '') || '';
+      else S.diagnosis = (sorted.find(v => v.type === 'initial')?.regions || []).flatMap(r => r.diagnoses || []).join(', ');
+      if (prevAny) { S.modalities = [...(prevAny.quick.modalities || [])]; S.treatment = prevAny.quick.treatment || ''; }
     }
 
     const overlay = el('div', { class: 'modal-overlay dynamic open', style: 'z-index:250' });
@@ -176,14 +240,15 @@ export function setupQuickSheet(deps) {
       el('button', { type: 'button', 'data-l': 'en', onclick: () => setLang('en') }, 'English'));
     setLang(lang);
 
+    const title = el('div', { class: 'modal-title' }, '⚡ Assessment sheet — ' + p.name);
     const header = el('div', { class: 'modal-header' },
-      el('div', { class: 'modal-title' }, '⚡ Assessment sheet — ' + p.name),
+      title,
       el('div', { class: 'qs-head-tools' }, el('span', { style: 'font-size:12px;color:var(--muted)' }, '🎤'), langBox),
       el('button', { class: 'modal-close', type: 'button', onclick: close }, '✕'));
 
     const body = el('div', { class: 'modal-body' });
     body.appendChild(el('div', { class: 'qs-hint', dir: 'rtl' },
-      'دوس 🎤 جنب أي خانة واتكلم، والكلام هيتكتب فيها. اختار "English" فوق لما تقول مصطلحات إنجليزي.'));
+      'دوس 🎤 جنب أي خانة واتكلم. اتكلم عربي عادي، والمصطلحات زي "فليكشن" و"ماكموري" هتتكتب إنجليزي لوحدها، و"4 على 5" تبقى 4/5. لو هتقول جملة كلها إنجليزي، اختار "English" فوق.'));
 
     // Patient info: entered by the receptionist, shown here read-only.
     const infoItem = (k, v) => el('div', { class: 'qs-info-item' }, el('span', {}, k), el('b', { dir: 'auto' }, v || '—'));
@@ -203,15 +268,22 @@ export function setupQuickSheet(deps) {
         kinds.appendChild(el('button', { type: 'button', class: S.kind === k ? 'on' : '', disabled, title: disabled ? 'This patient already has an initial assessment' : null,
           onclick: () => { S.kind = k; drawKinds(); } }, l));
       });
+      // A follow-up only needs progression, pain, treatment and a note.
+      const fu = S.kind === 'fu';
+      fullParts.forEach(x => { x.hidden = fu; });
+      title.textContent = (fu ? '⚡ Follow-up — ' : '⚡ Assessment sheet — ') + p.name;
     };
-    drawKinds();
-    body.appendChild(kinds);
+    const fullParts = [];
+    const full = node => { fullParts.push(node); return node; };
 
+    body.appendChild(kinds);
+    body.appendChild(full(el('div', { class: 'qs-grid', style: 'margin-top:12px' },
+      field('Onset', S, 'onset', { mic: true, wide: true }))));
     body.appendChild(el('div', { class: 'qs-grid', style: 'margin-top:12px' },
-      field('Onset', S, 'onset', { mic: true, wide: true }),
-      field('Progression', S, 'progression', { mic: true, wide: true }),
+      field('Progression', S, 'progression', { mic: true, wide: true })));
+    body.appendChild(full(el('div', { class: 'qs-grid', style: 'margin-top:12px' },
       field('H/O', S, 'ho', { mic: true, wide: true }),
-      field('Chief complaint', S, 'complaint', { mic: true, area: true, wide: true, rows: 2 })));
+      field('Chief complaint', S, 'complaint', { mic: true, area: true, wide: true, rows: 2 }))));
 
     // VAS 0-10
     const vas = el('div', { class: 'qs-vas', role: 'group', 'aria-label': 'Pain VAS 0 to 10' });
@@ -226,13 +298,13 @@ export function setupQuickSheet(deps) {
     drawVas();
     body.appendChild(el('div', { class: 'qs-f', style: 'margin-top:12px' }, el('label', {}, 'Pain (VAS 0–10)'), vas));
 
-    body.appendChild(el('div', { class: 'qs-grid', style: 'margin-top:12px' },
-      field('Diagnosis', S, 'diagnosis', { mic: true, wide: true })));
+    body.appendChild(full(el('div', { class: 'qs-grid', style: 'margin-top:12px' },
+      field('Diagnosis', S, 'diagnosis', { mic: true, wide: true }))));
 
     // Problem list + treatment goals side by side (stacked on a phone)
-    body.appendChild(el('div', { class: 'qs-two', style: 'margin-top:12px' },
+    body.appendChild(full(el('div', { class: 'qs-two', style: 'margin-top:12px' },
       field('Problem list (one per line)', S, 'problems', { mic: true, area: true, rows: 6 }),
-      field('Treatment goals', S, 'goals', { mic: true, area: true, rows: 6 })));
+      field('Treatment goals', S, 'goals', { mic: true, area: true, rows: 6 }))));
 
     // Treatment
     const chips = el('div', { class: 'qs-chips', role: 'group', 'aria-label': 'Treatment modalities' });
@@ -258,15 +330,19 @@ export function setupQuickSheet(deps) {
         showToast('This patient already has an initial assessment — choose a re-assessment.', true); return;
       }
       const region = existing?.regions?.[0]?.region || regionsOf(fresh)[0] || 'General';
-      const quick = { ...S, problems: (S.problems || '').trim(), treatment: (S.treatment || '').trim() };
+      const isFu = S.kind === 'fu';
+      // A follow-up keeps only what it shows; the diagnosis is carried so the file still reads well.
+      const quick = isFu
+        ? { kind: 'fu', progression: S.progression, vas: S.vas, diagnosis: S.diagnosis, modalities: S.modalities, treatment: (S.treatment || '').trim(), note: S.note }
+        : { ...S, problems: (S.problems || '').trim(), treatment: (S.treatment || '').trim() };
       const visit = {
         id: existing?.id || generateId(), type, date: info.date || todayStr(),
-        duration: (S.onset || '').trim(), onset: '', progress: '',
-        notes: [S.ho && 'H/O: ' + S.ho.trim(), (S.note || '').trim()].filter(Boolean).join('\n'),
-        goalsShort: (S.goals || '').trim(), goalsLong: '', measures: [],
+        duration: isFu ? '' : (S.onset || '').trim(), onset: '', progress: '',
+        notes: [!isFu && S.ho && 'H/O: ' + S.ho.trim(), (S.note || '').trim()].filter(Boolean).join('\n'),
+        goalsShort: isFu ? '' : (S.goals || '').trim(), goalsLong: '', measures: [],
         regions: [{
-          region, diagnoses: S.diagnosis.trim() ? [S.diagnosis.trim()] : [], complaints: S.complaint.trim() ? [S.complaint.trim()] : [],
-          findings: [], problems: lines(S.problems), treatment: [...S.modalities, ...lines(S.treatment)],
+          region, diagnoses: (S.diagnosis || '').trim() ? [S.diagnosis.trim()] : [], complaints: !isFu && (S.complaint || '').trim() ? [S.complaint.trim()] : [],
+          findings: [], problems: isFu ? [] : lines(S.problems), treatment: [...S.modalities, ...lines(S.treatment)],
           vas: S.vas, measurements: '', sessionsPlanned: existing?.regions?.[0]?.sessionsPlanned || '', freq: existing?.regions?.[0]?.freq || ''
         }],
         quick, savedAt: Date.now()
@@ -282,6 +358,7 @@ export function setupQuickSheet(deps) {
       finally { saveBtn.disabled = false; }
     });
     const footer = el('div', { class: 'modal-footer' }, btn('Cancel', 'btn-ghost', close), saveBtn);
+    drawKinds();
 
     overlay.appendChild(el('div', { class: 'modal qs-modal' }, header, body, footer));
     document.body.appendChild(overlay);

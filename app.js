@@ -17,7 +17,7 @@ import {
   collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc,
   onSnapshot, query, where, orderBy, limit, writeBatch, arrayUnion
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { setupQuickSheet } from "./quick-sheet.js?v=5";
+import { setupQuickSheet } from "./quick-sheet.js?v=6";
 
 const fbApp = initializeApp({
   apiKey: "AIzaSyBV6--Y8VTOIm0XhU1h-6GSJmJiWwbBMd8",
