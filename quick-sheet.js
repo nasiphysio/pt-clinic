@@ -13,6 +13,7 @@ export const KIND_LABEL = Object.fromEntries(KINDS);
 
 const STYLE = `
 .qs-modal{max-width:760px}
+.qs-modal [hidden]{display:none!important}
 .qs-head-tools{display:flex;gap:6px;align-items:center;margin-inline-start:auto;margin-inline-end:10px}
 .qs-lang{display:inline-flex;border:1px solid var(--border);border-radius:20px;overflow:hidden}
 .qs-lang button{border:0;background:transparent;padding:5px 11px;font:inherit;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer}
@@ -23,7 +24,6 @@ const STYLE = `
 .qs-f>label{font-size:12px;font-weight:600;color:var(--muted)}
 .qs-in{display:flex;gap:6px;align-items:flex-start}
 .qs-in .form-control{flex:1;min-width:0}
-.qs-in textarea.form-control{min-height:64px}
 .qs-mic{flex:0 0 auto;width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--card);color:var(--primary);display:grid;place-items:center;cursor:pointer}
 .qs-mic svg{width:18px;height:18px}
 .qs-mic:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
@@ -34,6 +34,11 @@ const STYLE = `
 .qs-info-item{display:flex;flex-direction:column;min-width:0}
 .qs-info-item span{font-size:11px;color:var(--muted);font-weight:600}
 .qs-info-item b{font-size:14px;overflow-wrap:anywhere}
+.qs-last{display:flex;gap:8px;align-items:flex-start;font-size:12px;color:var(--muted);background:var(--bg);border-inline-start:3px solid var(--accent);border-radius:6px;padding:6px 8px}
+.qs-last-txt{flex:1;min-width:0;white-space:pre-wrap;overflow-wrap:anywhere;max-height:90px;overflow:auto}
+.qs-last-txt span{font-weight:700}
+.qs-last button{flex:0 0 auto;border:1px solid var(--border);background:var(--card);border-radius:14px;padding:3px 10px;font:inherit;font-size:12px;cursor:pointer;color:var(--primary);font-weight:600}
+.qs-in textarea.form-control{resize:vertical;line-height:1.5}
 .qs-sep{border:0;border-top:1px solid var(--border);margin:16px 0}
 .qs-kinds{display:flex;flex-wrap:wrap;gap:6px}
 .qs-kinds button{border:1px solid var(--border);background:var(--card);border-radius:20px;padding:7px 14px;font:inherit;font-size:13px;cursor:pointer;color:var(--text)}
@@ -153,13 +158,15 @@ export function setupQuickSheet(deps) {
       r.interimResults = true;
       r.continuous = false;
       r.maxAlternatives = 1;
+      // Each time the mic is used, the new words start on their own line.
       const base = input.value.replace(/\s+$/, '');
-      const sep = base ? (multiline ? '\n' : ' ') : '';
+      const sep = base ? '\n' : '';
       r.onresult = e => {
         let txt = '';
         for (let i = 0; i < e.results.length; i++) txt += e.results[i][0].transcript;
         input.value = base + sep + fixTerms(txt.trim());
         input.dispatchEvent(new Event('input'));
+        input.scrollTop = input.scrollHeight;
       };
       r.onerror = e => {
         if (e.error === 'not-allowed' || e.error === 'service-not-allowed') showToast('Allow the microphone for this site, then try again.', true);
@@ -179,20 +186,29 @@ export function setupQuickSheet(deps) {
     return b;
   }
 
-  // One labelled field. mic: add a mic button; area: textarea.
-  function field(label, obj, key, { mic = false, area = false, type = 'text', wide = false, placeholder = '', rows = 3, dir = 'auto' } = {}) {
-    const input = area
-      ? el('textarea', { class: 'form-control', rows, placeholder, dir })
+  // Grow a textarea with its text so nothing hides behind a scrollbar.
+  function autoGrow(t) { t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight + 2, 320) + 'px'; }
+
+  // One labelled field. Fields with a mic are always multi-line (each dictation adds a line).
+  // last: what was written here last visit — shown above the empty field, with a button to reuse it.
+  function field(label, obj, key, { mic = false, area = false, type = 'text', wide = false, placeholder = '', rows = 2, dir = 'auto', last = '' } = {}) {
+    const multi = mic || area;
+    const input = multi
+      ? el('textarea', { class: 'form-control', rows: area ? rows : 1, placeholder, dir })
       : el('input', { class: 'form-control', type, placeholder, dir: type === 'text' ? dir : null });
     input.value = obj[key] ?? '';
-    const sync = () => { obj[key] = input.value; };
+    const sync = () => { obj[key] = input.value; if (multi) autoGrow(input); };
     input.addEventListener('input', sync);
     input.addEventListener('change', sync);
+    if (multi) requestAnimationFrame(() => autoGrow(input));
     const row = el('div', { class: 'qs-in' }, input);
-    if (mic) row.appendChild(micFor(input, row, area));
+    if (mic) row.appendChild(micFor(input, row, true));
     const id = 'qs-' + key;
     input.id = id;
-    return el('div', { class: 'qs-f' + (wide ? ' wide' : '') }, el('label', { for: id }, label), row);
+    const lastBox = last ? el('div', { class: 'qs-last' },
+      el('div', { class: 'qs-last-txt', dir: 'auto' }, el('span', {}, 'Last time: '), last),
+      el('button', { type: 'button', onclick: () => { input.value = last; sync(); input.focus(); } }, '↺ زي آخر مرة')) : null;
+    return el('div', { class: 'qs-f' + (wide ? ' wide' : '') }, el('label', { for: id }, label), lastBox, row);
   }
 
   function nextKind(p) {
@@ -215,15 +231,22 @@ export function setupQuickSheet(deps) {
     S.onset = S.onset ?? S.onsetDate ?? '';
     S.goals = S.goals || '';
     const info = { date: existing?.date || todayStr() };
-    // A new follow-up / re-assessment starts from the last sheet: onset, history,
-    // diagnosis, problems, goals and the treatment given last time.
+    // A new follow-up / re-assessment starts EMPTY. What was written last time is
+    // shown above each field ("Last time: …") with a button to reuse it.
+    const last = {};
     if (!existing && S.kind !== 'initial') {
       const sorted = [...(p.visits || [])].sort((a, b) => (a.date || '').localeCompare(b.date || '') || (a.savedAt || 0) - (b.savedAt || 0));
       const prevFull = [...sorted].reverse().find(v => v.quick && v.quick.kind !== 'fu');
       const prevAny = [...sorted].reverse().find(v => v.quick);
-      if (prevFull) for (const k of ['onset', 'ho', 'diagnosis', 'problems', 'goals']) S[k] = prevFull.quick[k] || (k === 'onset' ? prevFull.quick.onsetDate : '') || '';
-      else S.diagnosis = (sorted.find(v => v.type === 'initial')?.regions || []).flatMap(r => r.diagnoses || []).join(', ');
-      if (prevAny) { S.modalities = [...(prevAny.quick.modalities || [])]; S.treatment = prevAny.quick.treatment || ''; }
+      if (prevFull) for (const k of ['onset', 'ho', 'complaint', 'diagnosis', 'problems', 'goals']) last[k] = prevFull.quick[k] || (k === 'onset' ? prevFull.quick.onsetDate : '') || '';
+      if (!last.diagnosis) last.diagnosis = (sorted.find(v => v.type === 'initial')?.regions || []).flatMap(r => r.diagnoses || []).join('\n');
+      if (prevAny) {
+        last.progression = prevAny.quick.progression || '';
+        last.treatment = prevAny.quick.treatment || '';
+        last.note = prevAny.quick.note || '';
+        last.modalities = prevAny.quick.modalities || [];
+        last.vas = prevAny.quick.vas;
+      }
     }
 
     const overlay = el('div', { class: 'modal-overlay dynamic open', style: 'z-index:250' });
@@ -278,12 +301,12 @@ export function setupQuickSheet(deps) {
 
     body.appendChild(kinds);
     body.appendChild(full(el('div', { class: 'qs-grid', style: 'margin-top:12px' },
-      field('Onset', S, 'onset', { mic: true, wide: true }))));
+      field('Onset', S, 'onset', { mic: true, wide: true, last: last.onset }))));
     body.appendChild(el('div', { class: 'qs-grid', style: 'margin-top:12px' },
-      field('Progression', S, 'progression', { mic: true, wide: true })));
+      field('Progression', S, 'progression', { mic: true, wide: true, last: last.progression })));
     body.appendChild(full(el('div', { class: 'qs-grid', style: 'margin-top:12px' },
-      field('H/O', S, 'ho', { mic: true, wide: true }),
-      field('Chief complaint', S, 'complaint', { mic: true, area: true, wide: true, rows: 2 }))));
+      field('H/O', S, 'ho', { mic: true, wide: true, last: last.ho }),
+      field('Chief complaint', S, 'complaint', { mic: true, area: true, wide: true, rows: 2, last: last.complaint }))));
 
     // VAS 0-10
     const vas = el('div', { class: 'qs-vas', role: 'group', 'aria-label': 'Pain VAS 0 to 10' });
@@ -296,15 +319,15 @@ export function setupQuickSheet(deps) {
       }
     };
     drawVas();
-    body.appendChild(el('div', { class: 'qs-f', style: 'margin-top:12px' }, el('label', {}, 'Pain (VAS 0–10)'), vas));
+    body.appendChild(el('div', { class: 'qs-f', style: 'margin-top:12px' }, el('label', {}, 'Pain (VAS 0–10)' + (last.vas != null ? `  ·  last time ${last.vas}/10` : '')), vas));
 
     body.appendChild(full(el('div', { class: 'qs-grid', style: 'margin-top:12px' },
-      field('Diagnosis', S, 'diagnosis', { mic: true, wide: true }))));
+      field('Diagnosis', S, 'diagnosis', { mic: true, wide: true, last: last.diagnosis }))));
 
     // Problem list + treatment goals side by side (stacked on a phone)
     body.appendChild(full(el('div', { class: 'qs-two', style: 'margin-top:12px' },
-      field('Problem list (one per line)', S, 'problems', { mic: true, area: true, rows: 6 }),
-      field('Treatment goals', S, 'goals', { mic: true, area: true, rows: 6 }))));
+      field('Problem list (one per line)', S, 'problems', { mic: true, area: true, rows: 5, last: last.problems }),
+      field('Treatment goals', S, 'goals', { mic: true, area: true, rows: 5, last: last.goals }))));
 
     // Treatment
     const chips = el('div', { class: 'qs-chips', role: 'group', 'aria-label': 'Treatment modalities' });
@@ -316,10 +339,13 @@ export function setupQuickSheet(deps) {
     };
     drawChips();
     body.appendChild(el('hr', { class: 'qs-sep' }));
-    body.appendChild(el('div', { class: 'qs-f' }, el('label', {}, 'Treatment'), chips));
+    const lastMods = (last.modalities || []).length ? el('div', { class: 'qs-last' },
+      el('div', { class: 'qs-last-txt' }, el('span', {}, 'Last time: '), last.modalities.join(', ')),
+      el('button', { type: 'button', onclick: () => { S.modalities = [...last.modalities]; drawChips(); } }, '↺ زي آخر مرة')) : null;
+    body.appendChild(el('div', { class: 'qs-f' }, el('label', {}, 'Treatment'), lastMods, chips));
     body.appendChild(el('div', { class: 'qs-grid' },
-      field('Treatment details (exercises, parameters…)', S, 'treatment', { mic: true, area: true, wide: true, rows: 4 }),
-      field('Note', S, 'note', { mic: true, area: true, wide: true, rows: 2 })));
+      field('Treatment details (exercises, parameters…)', S, 'treatment', { mic: true, area: true, wide: true, rows: 3, last: last.treatment }),
+      field('Note', S, 'note', { mic: true, area: true, wide: true, rows: 2, last: last.note })));
 
     // Footer
     const saveBtn = btn('💾 Save', 'btn-primary', async () => {
@@ -331,9 +357,10 @@ export function setupQuickSheet(deps) {
       }
       const region = existing?.regions?.[0]?.region || regionsOf(fresh)[0] || 'General';
       const isFu = S.kind === 'fu';
+      const diagnosis = (S.diagnosis || '').trim() || (isFu ? (last.diagnosis || '').trim() : '');
       // A follow-up keeps only what it shows; the diagnosis is carried so the file still reads well.
       const quick = isFu
-        ? { kind: 'fu', progression: S.progression, vas: S.vas, diagnosis: S.diagnosis, modalities: S.modalities, treatment: (S.treatment || '').trim(), note: S.note }
+        ? { kind: 'fu', progression: S.progression, vas: S.vas, diagnosis, modalities: S.modalities, treatment: (S.treatment || '').trim(), note: S.note }
         : { ...S, problems: (S.problems || '').trim(), treatment: (S.treatment || '').trim() };
       const visit = {
         id: existing?.id || generateId(), type, date: info.date || todayStr(),
@@ -341,7 +368,7 @@ export function setupQuickSheet(deps) {
         notes: [!isFu && S.ho && 'H/O: ' + S.ho.trim(), (S.note || '').trim()].filter(Boolean).join('\n'),
         goalsShort: isFu ? '' : (S.goals || '').trim(), goalsLong: '', measures: [],
         regions: [{
-          region, diagnoses: (S.diagnosis || '').trim() ? [S.diagnosis.trim()] : [], complaints: !isFu && (S.complaint || '').trim() ? [S.complaint.trim()] : [],
+          region, diagnoses: lines(diagnosis), complaints: !isFu && (S.complaint || '').trim() ? [S.complaint.trim()] : [],
           findings: [], problems: isFu ? [] : lines(S.problems), treatment: [...S.modalities, ...lines(S.treatment)],
           vas: S.vas, measurements: '', sessionsPlanned: existing?.regions?.[0]?.sessionsPlanned || '', freq: existing?.regions?.[0]?.freq || ''
         }],
