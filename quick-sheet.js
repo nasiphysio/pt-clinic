@@ -55,7 +55,7 @@ const STYLE = `
 .qs-hint{font-size:12px;color:var(--muted);background:var(--bg);border-radius:var(--radius-sm);padding:8px 10px;margin-bottom:12px}
 .qs-extra{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;margin-top:8px}
 .qs-extra .qs-meta{flex:1;min-width:180px;font-size:13px;display:grid;gap:4px}
-.qs-badge{display:inline-block;background:#efe7dc;color:#1f5449;border-radius:12px;padding:2px 10px;font-size:11px;font-weight:700}
+.qs-badge{display:inline-block;background:#e3f1ef;color:#1f6f78;border-radius:12px;padding:2px 10px;font-size:11px;font-weight:700}
 `;
 
 const MIC_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4"/></svg>';
