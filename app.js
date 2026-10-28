@@ -17,7 +17,7 @@ import {
   collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc,
   onSnapshot, query, where, orderBy, limit, writeBatch, arrayUnion
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { setupQuickSheet } from "./quick-sheet.js?v=7";
+import { setupQuickSheet } from "./quick-sheet.js?v=8";
 
 const fbApp = initializeApp({
   apiKey: "AIzaSyBV6--Y8VTOIm0XhU1h-6GSJmJiWwbBMd8",
@@ -1201,7 +1201,7 @@ function profileOverview(p, c) {
   c.appendChild(prog);
 }
 
-const CHART_COLORS = ['#1f6f78', '#e8a020', '#d94f4f', '#2980b9', '#8e44ad', '#16a085'];
+const CHART_COLORS = ['#1f5449', '#e8a020', '#d94f4f', '#2980b9', '#8e44ad', '#16a085'];
 function vasChart(p) {
   const visits = sortedVisits(p);
   const regions = [...new Set(visits.flatMap(v => (v.regions || []).filter(r => r.vas != null).map(r => r.region)))];
@@ -1211,8 +1211,8 @@ function vasChart(p) {
   const x = i => points.length === 1 ? (L + W - R) / 2 : L + i * (W - L - R) / (points.length - 1);
   const y = v => T + (10 - v) * (H - T - B) / 10;
   let svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="VAS chart" style="display:block">`;
-  [0, 5, 10].forEach(v => svg += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="#cddfe1" stroke-dasharray="3 3"/><text x="${L - 6}" y="${y(v) + 4}" font-size="10" text-anchor="end" fill="#56717a">${v}</text>`);
-  points.forEach((v, i) => svg += `<text x="${x(i)}" y="${H - 8}" font-size="10" text-anchor="middle" fill="#56717a">${esc(fmtDate(v.date, { day: 'numeric', month: 'short' }))}</text>`);
+  [0, 5, 10].forEach(v => svg += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="#dcd5ca" stroke-dasharray="3 3"/><text x="${L - 6}" y="${y(v) + 4}" font-size="10" text-anchor="end" fill="#5e6f69">${v}</text>`);
+  points.forEach((v, i) => svg += `<text x="${x(i)}" y="${H - 8}" font-size="10" text-anchor="middle" fill="#5e6f69">${esc(fmtDate(v.date, { day: 'numeric', month: 'short' }))}</text>`);
   regions.forEach((rg, ri) => {
     const col = CHART_COLORS[ri % CHART_COLORS.length];
     const pts = points.map((v, i) => { const r = (v.regions || []).find(z => z.region === rg && z.vas != null); return r ? [x(i), y(r.vas), r.vas] : null; }).filter(Boolean);
@@ -1562,34 +1562,34 @@ async function profileAppts(p, c) {
 // ═══════════════════════════════════════════
 function pdfHeader(title) {
   const s = clinic;
-  return `<div style="display:flex;align-items:flex-start;justify-content:space-between;border-bottom:3px solid #0f2846;padding-bottom:14px;margin-bottom:16px;gap:12px">
+  return `<div style="display:flex;align-items:flex-start;justify-content:space-between;border-bottom:3px solid #142725;padding-bottom:14px;margin-bottom:16px;gap:12px">
     <div style="display:flex;align-items:center;gap:12px">
       ${s.logoUrl ? `<img src="${esc(s.logoUrl)}" crossorigin="anonymous" style="height:55px;object-fit:contain">` : ''}
       <div>
-        <div style="font-size:18px;font-weight:700;color:#0f2846">${esc(s.clinicName || 'Physiclinic')}</div>
-        ${s.doctorName ? `<div style="font-size:12px;font-weight:600;color:#1f6f78">${esc(s.doctorName)}</div>` : ''}
-        ${s.address ? `<div style="font-size:11px;color:#56717a">${esc(s.address)}</div>` : ''}
-        ${s.phone ? `<div style="font-size:11px;color:#56717a">📞 ${esc(s.phone)}</div>` : ''}
+        <div style="font-size:18px;font-weight:700;color:#142725">${esc(s.clinicName || 'Physiclinic')}</div>
+        ${s.doctorName ? `<div style="font-size:12px;font-weight:600;color:#1f5449">${esc(s.doctorName)}</div>` : ''}
+        ${s.address ? `<div style="font-size:11px;color:#5e6f69">${esc(s.address)}</div>` : ''}
+        ${s.phone ? `<div style="font-size:11px;color:#5e6f69">📞 ${esc(s.phone)}</div>` : ''}
       </div>
     </div>
     <div style="text-align:right">
-      <div style="font-size:13px;font-weight:700;color:#0f2846">${esc(title)}</div>
-      <div style="font-size:11px;color:#56717a;margin-top:3px">Date: ${esc(fmtDate(todayStr()))}</div>
+      <div style="font-size:13px;font-weight:700;color:#142725">${esc(title)}</div>
+      <div style="font-size:11px;color:#5e6f69;margin-top:3px">Date: ${esc(fmtDate(todayStr()))}</div>
     </div>
   </div>`;
 }
 function pdfPatientBox(p) {
   return `<div style="background:#f0f7f4;border-radius:8px;padding:10px 14px;margin-bottom:14px">
-    <div style="font-size:15px;font-weight:700;color:#0f2846">${esc(p.name)} ${p.fileNo ? `<span style="font-size:11px;color:#56717a">· File #${esc(p.fileNo)}</span>` : ''}</div>
-    <div style="font-size:12px;color:#56717a;margin-top:2px">${esc(p.age)} y/o ${esc(p.gender || '')} ${p.job ? '· ' + esc(p.job) : ''} ${p.phone ? '· 📞 ' + esc(p.phone) : ''}</div>
+    <div style="font-size:15px;font-weight:700;color:#142725">${esc(p.name)} ${p.fileNo ? `<span style="font-size:11px;color:#5e6f69">· File #${esc(p.fileNo)}</span>` : ''}</div>
+    <div style="font-size:12px;color:#5e6f69;margin-top:2px">${esc(p.age)} y/o ${esc(p.gender || '')} ${p.job ? '· ' + esc(p.job) : ''} ${p.phone ? '· 📞 ' + esc(p.phone) : ''}</div>
   </div>`;
 }
 function pdfFooter() {
   const s = clinic;
-  return `<div style="margin-top:20px;padding-top:10px;border-top:1px solid #d0e4de;font-size:10px;color:#56717a;text-align:center">${esc([s.clinicName || 'Physiclinic', s.address, s.phone].filter(Boolean).join(' · '))}</div>`;
+  return `<div style="margin-top:20px;padding-top:10px;border-top:1px solid #d0e4de;font-size:10px;color:#5e6f69;text-align:center">${esc([s.clinicName || 'Physiclinic', s.address, s.phone].filter(Boolean).join(' · '))}</div>`;
 }
-const TH = 'background:#0f2846;color:white;padding:7px 9px;text-align:left;font-size:11px';
-const TD = i => `padding:6px 9px;border-bottom:1px solid #cddfe1;font-size:11px;background:${i % 2 ? '#f4f8f6' : 'white'}`;
+const TH = 'background:#142725;color:white;padding:7px 9px;text-align:left;font-size:11px';
+const TD = i => `padding:6px 9px;border-bottom:1px solid #dcd5ca;font-size:11px;background:${i % 2 ? '#f4f8f6' : 'white'}`;
 
 async function renderPdf(innerHtml, filename) {
   if (!window.html2canvas || !window.jspdf) { showToast('PDF tools did not load — check the internet connection', true); return; }
@@ -1629,28 +1629,28 @@ function exportPDF(pid) {
   if (!p) return;
   const hx = p.history || {};
   const pill = (x, bg, bc, tc) => `<span style="background:${bg};border:1px solid ${bc};padding:3px 9px;border-radius:12px;font-size:11px;color:${tc};display:inline-block;margin:2px">${esc(x)}</span>`;
-  const sec = (t, arr, type = '') => arr?.length ? `<div style="margin-bottom:8px"><div style="font-size:10px;font-weight:700;color:#1f6f78;text-transform:uppercase;margin-bottom:4px">${t}</div><div>${arr.map(x => type === 'dx' ? pill(x, '#eafaf1', '#27ae60', '#1a6b40') : type === 'prob' ? pill(x, '#fdeaea', '#d94f4f', '#d94f4f') : pill(x, '#eef2f0', '#cddfe1', '#162820')).join('')}</div></div>` : '';
-  const txt = (t, v) => v ? `<div style="margin-bottom:8px"><div style="font-size:10px;font-weight:700;color:#1f6f78;text-transform:uppercase;margin-bottom:3px">${t}</div><div style="font-size:11px;white-space:pre-wrap">${esc(v)}</div></div>` : '';
+  const sec = (t, arr, type = '') => arr?.length ? `<div style="margin-bottom:8px"><div style="font-size:10px;font-weight:700;color:#1f5449;text-transform:uppercase;margin-bottom:4px">${t}</div><div>${arr.map(x => type === 'dx' ? pill(x, '#eafaf1', '#27ae60', '#1a6b40') : type === 'prob' ? pill(x, '#fdeaea', '#d94f4f', '#d94f4f') : pill(x, '#eef2f0', '#dcd5ca', '#162820')).join('')}</div></div>` : '';
+  const txt = (t, v) => v ? `<div style="margin-bottom:8px"><div style="font-size:10px;font-weight:700;color:#1f5449;text-transform:uppercase;margin-bottom:3px">${t}</div><div style="font-size:11px;white-space:pre-wrap">${esc(v)}</div></div>` : '';
 
   let html = pdfHeader('PT Assessment Report') + pdfPatientBox(p);
   const hxRows = [['Chronic diseases', hx.chronic], ['Medications', hx.meds], ['Surgeries', hx.surgeries], ['Allergies', hx.allergies], ['Investigations', hx.imaging], ['Red flags / precautions', hx.redFlags]].filter(r => r[1]);
-  if (hxRows.length) html += `<div style="margin-bottom:14px;font-size:11px"><div style="font-size:10px;font-weight:700;color:#1f6f78;text-transform:uppercase;margin-bottom:4px">Medical history</div>${hxRows.map(r => `<div><strong>${r[0]}:</strong> ${esc(r[1])}</div>`).join('')}</div>`;
+  if (hxRows.length) html += `<div style="margin-bottom:14px;font-size:11px"><div style="font-size:10px;font-weight:700;color:#1f5449;text-transform:uppercase;margin-bottom:4px">Medical history</div>${hxRows.map(r => `<div><strong>${r[0]}:</strong> ${esc(r[1])}</div>`).join('')}</div>`;
   if (p.referral || p.refDoctor) html += `<div style="font-size:11px;margin-bottom:12px"><strong>Referral:</strong> ${esc([p.referral, p.refDoctor].filter(Boolean).join(' — '))}</div>`;
 
   sortedVisits(p).forEach(v => {
-    const color = v.type === 'initial' ? '#1f6f78' : v.type === 'discharge' ? '#2980b9' : '#e8a020';
+    const color = v.type === 'initial' ? '#1f5449' : v.type === 'discharge' ? '#2980b9' : '#e8a020';
     html += `<div style="margin-bottom:18px;border-left:3px solid ${color};padding-left:12px">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
         <span style="background:#f0f7f4;color:${color};padding:2px 10px;border-radius:12px;font-size:11px;font-weight:700">${VISIT_LABEL[v.type] || v.type}</span>
-        <span style="font-size:12px;font-weight:600;color:#56717a">📅 ${esc(fmtDate(v.date))}</span>
-        ${v.duration || v.onset ? `<span style="font-size:11px;color:#56717a">⏱ ${esc([v.duration, v.onset].filter(Boolean).join(' — '))}</span>` : ''}
-        ${v.progress ? `<span style="font-size:11px;color:#56717a">Response: ${esc(v.progress)}</span>` : ''}
+        <span style="font-size:12px;font-weight:600;color:#5e6f69">📅 ${esc(fmtDate(v.date))}</span>
+        ${v.duration || v.onset ? `<span style="font-size:11px;color:#5e6f69">⏱ ${esc([v.duration, v.onset].filter(Boolean).join(' — '))}</span>` : ''}
+        ${v.progress ? `<span style="font-size:11px;color:#5e6f69">Response: ${esc(v.progress)}</span>` : ''}
       </div>`;
     (v.regions || []).forEach(r => {
       html += `<div style="background:#f8faf9;border-radius:7px;padding:12px;margin-bottom:8px">
-        <div style="font-weight:700;color:#0f2846;font-size:12px;margin-bottom:8px">📍 ${esc(r.region)}${r.sessionsPlanned ? ` <span style="font-size:10px;color:#56717a;font-weight:400">— ${esc(r.sessionsPlanned)} sessions${r.freq ? ' · ' + esc(r.freq) : ''}</span>` : ''}</div>
+        <div style="font-weight:700;color:#142725;font-size:12px;margin-bottom:8px">📍 ${esc(r.region)}${r.sessionsPlanned ? ` <span style="font-size:10px;color:#5e6f69;font-weight:400">— ${esc(r.sessionsPlanned)} sessions${r.freq ? ' · ' + esc(r.freq) : ''}</span>` : ''}</div>
         ${sec('Diagnosis', r.diagnoses, 'dx')}${sec('Chief Complaints', r.complaints)}
-        ${r.vas != null ? `<div style="margin-bottom:8px"><div style="font-size:10px;font-weight:700;color:#1f6f78;text-transform:uppercase;margin-bottom:3px">VAS</div><span style="font-size:18px;font-weight:700;color:${r.vas <= 3 ? '#27ae60' : r.vas <= 6 ? '#e8a020' : '#d94f4f'}">${r.vas}/10</span></div>` : ''}
+        ${r.vas != null ? `<div style="margin-bottom:8px"><div style="font-size:10px;font-weight:700;color:#1f5449;text-transform:uppercase;margin-bottom:3px">VAS</div><span style="font-size:18px;font-weight:700;color:${r.vas <= 3 ? '#27ae60' : r.vas <= 6 ? '#e8a020' : '#d94f4f'}">${r.vas}/10</span></div>` : ''}
         ${sec('Assessment Findings', r.findings)}${txt('Measurements', r.measurements)}${sec('Problem List', r.problems, 'prob')}${sec('Treatment Plan', r.treatment)}
       </div>`;
     });
@@ -1658,7 +1658,7 @@ function exportPDF(pid) {
     html += txt('Short-term goals', v.goalsShort) + txt(v.type === 'discharge' ? 'Outcome' : 'Long-term goals', v.goalsLong) + txt('Notes', v.notes);
     html += '</div>';
   });
-  if (attendedCount(p)) html += `<div style="font-size:11px;color:#56717a">Sessions attended: <strong>${attendedCount(p)}</strong>${plannedSessions(p) ? ' of ' + plannedSessions(p) + ' planned' : ''}</div>`;
+  if (attendedCount(p)) html += `<div style="font-size:11px;color:#5e6f69">Sessions attended: <strong>${attendedCount(p)}</strong>${plannedSessions(p) ? ' of ' + plannedSessions(p) + ' planned' : ''}</div>`;
   renderPdf(html, `PT_${p.name}_${todayStr()}.pdf`);
 }
 
@@ -1667,15 +1667,15 @@ function statementPDF(p) {
   const sessions = [...(p.sessions || [])].sort((a, b) => (a.date + (a.time || '')).localeCompare(b.date + (b.time || '')));
   const payments = [...(p.payments || [])].sort((a, b) => (a.date || '').localeCompare(b.date || ''));
   let html = pdfHeader('Account Statement') + pdfPatientBox(p);
-  html += `<div style="font-size:12px;font-weight:700;color:#0f2846;margin-bottom:6px">Sessions</div>
+  html += `<div style="font-size:12px;font-weight:700;color:#142725;margin-bottom:6px">Sessions</div>
   <table style="width:100%;border-collapse:collapse;margin-bottom:16px"><thead><tr><th style="${TH};width:30px">#</th><th style="${TH}">Date</th><th style="${TH}">Time</th><th style="${TH}">Type</th><th style="${TH};text-align:right">Price</th></tr></thead><tbody>
   ${sessions.map((s, i) => `<tr><td style="${TD(i)}">${i + 1}</td><td style="${TD(i)}">${esc(fmtDate(s.date))}</td><td style="${TD(i)}">${esc(fmtTime(s.time))}</td><td style="${TD(i)}">${esc(typeLabel(s.type))}</td><td style="${TD(i)};text-align:right">${money(s.price)}</td></tr>`).join('') || `<tr><td colspan="5" style="${TD(0)}">No sessions</td></tr>`}
   </tbody></table>`;
-  if (payments.length) html += `<div style="font-size:12px;font-weight:700;color:#0f2846;margin-bottom:6px">Payments</div>
+  if (payments.length) html += `<div style="font-size:12px;font-weight:700;color:#142725;margin-bottom:6px">Payments</div>
   <table style="width:100%;border-collapse:collapse;margin-bottom:16px"><thead><tr><th style="${TH}">Date</th><th style="${TH}">Method</th><th style="${TH}">Note</th><th style="${TH};text-align:right">Amount</th></tr></thead><tbody>
   ${payments.map((x, i) => `<tr><td style="${TD(i)}">${esc(fmtDate(x.date))}</td><td style="${TD(i)}">${esc(x.method || '')}</td><td style="${TD(i)}">${esc(x.note || '')}</td><td style="${TD(i)};text-align:right">${money(x.amount)}</td></tr>`).join('')}
   </tbody></table>`;
-  const row = (l, v, strong) => `<tr><td style="padding:6px 10px;font-size:12px;${strong ? 'font-weight:700;background:#e0f2ea;color:#0f2846' : ''}">${l}</td><td style="padding:6px 10px;font-size:12px;text-align:right;${strong ? 'font-weight:700;background:#e0f2ea;color:#0f2846' : ''}">${v}</td></tr>`;
+  const row = (l, v, strong) => `<tr><td style="padding:6px 10px;font-size:12px;${strong ? 'font-weight:700;background:#e0f2ea;color:#142725' : ''}">${l}</td><td style="padding:6px 10px;font-size:12px;text-align:right;${strong ? 'font-weight:700;background:#e0f2ea;color:#142725' : ''}">${v}</td></tr>`;
   html += `<table style="width:300px;margin-left:auto;border-collapse:collapse">
     ${row('Sessions', sessions.length)}${row('Total charges', money(acc.charges + acc.legacy))}${row('Total paid', money(acc.paid + acc.legacy))}
     ${row(acc.balance >= 0 ? 'Balance due' : 'Credit', money(Math.abs(acc.balance)), true)}</table>`;
@@ -1688,12 +1688,12 @@ function receiptPDF(p, pay) {
     <table style="width:100%;border-collapse:collapse;margin:10px 0 18px">
       <tr><td style="${TD(0)};width:160px"><strong>Receipt no.</strong></td><td style="${TD(0)}">${esc(pay.id.slice(-8).toUpperCase())}</td></tr>
       <tr><td style="${TD(1)}"><strong>Date</strong></td><td style="${TD(1)}">${esc(fmtDate(pay.date))}</td></tr>
-      <tr><td style="${TD(0)}"><strong>Amount received</strong></td><td style="${TD(0)};font-size:16px;font-weight:700;color:#0f2846">${money(pay.amount)}</td></tr>
+      <tr><td style="${TD(0)}"><strong>Amount received</strong></td><td style="${TD(0)};font-size:16px;font-weight:700;color:#142725">${money(pay.amount)}</td></tr>
       <tr><td style="${TD(1)}"><strong>Method</strong></td><td style="${TD(1)}">${esc(pay.method || '')}</td></tr>
       ${pay.note ? `<tr><td style="${TD(0)}"><strong>For</strong></td><td style="${TD(0)}">${esc(pay.note)}</td></tr>` : ''}
       <tr><td style="${TD(1)}"><strong>${acc.balance >= 0 ? 'Remaining balance' : 'Credit remaining'}</strong></td><td style="${TD(1)}">${money(Math.abs(acc.balance))}</td></tr>
     </table>
-    <div style="display:flex;justify-content:space-between;margin-top:40px;font-size:11px;color:#56717a">
+    <div style="display:flex;justify-content:space-between;margin-top:40px;font-size:11px;color:#5e6f69">
       <div>Received by: ${esc(pay.by || '')}</div><div>Signature: ____________________</div>
     </div>`;
   renderPdf(html, `Receipt_${p.name}_${pay.date}.pdf`);
@@ -1705,7 +1705,7 @@ function hepPDF(p, items, advice) {
     <th style="${TH};width:30px">#</th><th style="${TH}">Exercise</th><th style="${TH}">Sets</th><th style="${TH}">Reps</th><th style="${TH}">Hold</th><th style="${TH}">Notes</th></tr></thead><tbody>
     ${items.map((x, i) => `<tr><td style="${TD(i)}">${i + 1}</td><td style="${TD(i)};font-weight:700">${esc(x.name)}</td><td style="${TD(i)}">${esc(x.sets)}</td><td style="${TD(i)}">${esc(x.reps)}</td><td style="${TD(i)}">${x.hold ? esc(x.hold) + ' s' : ''}</td><td style="${TD(i)}">${esc(x.notes)}</td></tr>`).join('')}
   </tbody></table>`;
-  if (advice) html += `<div style="background:#f0f7f4;border-left:3px solid #1f6f78;padding:10px 14px;font-size:12px;white-space:pre-wrap"><strong>Advice:</strong>\n${esc(advice)}</div>`;
+  if (advice) html += `<div style="background:#f0f7f4;border-left:3px solid #1f5449;padding:10px 14px;font-size:12px;white-space:pre-wrap"><strong>Advice:</strong>\n${esc(advice)}</div>`;
   html += `<div style="margin-top:14px;font-size:11px;color:#d94f4f">Stop any exercise that causes sharp or increasing pain and contact the clinic.</div>`;
   renderPdf(html, `Exercises_${p.name}_${todayStr()}.pdf`);
 }
@@ -2292,10 +2292,10 @@ function dailyChart(from, days, payments) {
   vals.forEach(([d, v], i) => {
     const h = v / max * (H - T - B);
     const x = L + i * bw;
-    svg += `<rect x="${x + bw * 0.15}" y="${H - B - h}" width="${bw * 0.7}" height="${Math.max(h, v ? 2 : 0)}" rx="3" fill="${d === todayStr() ? '#e8a020' : '#1f6f78'}"><title>${esc(fmtDate(d))}: ${Math.round(v)}</title></rect>`;
-    if (days <= 14 || i % Math.ceil(days / 10) === 0) svg += `<text x="${x + bw / 2}" y="${H - 6}" font-size="10" text-anchor="middle" fill="#56717a">${parseDate(d).getDate()}</text>`;
+    svg += `<rect x="${x + bw * 0.15}" y="${H - B - h}" width="${bw * 0.7}" height="${Math.max(h, v ? 2 : 0)}" rx="3" fill="${d === todayStr() ? '#e8a020' : '#1f5449'}"><title>${esc(fmtDate(d))}: ${Math.round(v)}</title></rect>`;
+    if (days <= 14 || i % Math.ceil(days / 10) === 0) svg += `<text x="${x + bw / 2}" y="${H - 6}" font-size="10" text-anchor="middle" fill="#5e6f69">${parseDate(d).getDate()}</text>`;
   });
-  svg += `<text x="${W - L}" y="${T - 2}" font-size="10" text-anchor="end" fill="#56717a">max ${Math.round(max).toLocaleString()}</text></svg>`;
+  svg += `<text x="${W - L}" y="${T - 2}" font-size="10" text-anchor="end" fill="#5e6f69">max ${Math.round(max).toLocaleString()}</text></svg>`;
   return el('div', { class: 'chart-box', html: svg });
 }
 
