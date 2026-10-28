@@ -1,6 +1,6 @@
 // Bump the number on EVERY change so phones pick up the new version.
-const CACHE='ptclinic-v4';
-const SHELL=['./','./index.html','./styles.css?v=2','./app.js?v=4','./quick-sheet.js?v=4','./manifest.webmanifest'];
+const CACHE='ptclinic-v5';
+const SHELL=['./','./index.html','./styles.css?v=3','./app.js?v=5','./quick-sheet.js?v=5','./manifest.webmanifest'];
 
 self.addEventListener('install',e=>e.waitUntil(
   caches.open(CACHE).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting())

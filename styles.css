@@ -1,20 +1,20 @@
 /* ===== VARIABLES ===== */
 :root {
-  --primary: #1a5c4a;
-  --primary-light: #22776a;
-  --primary-dark: #0d3d2e;
-  --accent: #e8a020;
-  --bg: #eef2f0;
+  --primary: #1f6f78;
+  --primary-light: #2b8a8f;
+  --primary-dark: #0f2846;
+  --accent: #8cc4a6;
+  --bg: #eef3f4;
   --card: #ffffff;
-  --text: #162820;
-  --muted: #5a7a6e;
-  --border: #ccddd6;
+  --text: #12222e;
+  --muted: #56717a;
+  --border: #cddfe1;
   --red: #d94f4f;
   --red-light: #fdeaea;
   --green: #27ae60;
   --green-light: #eafaf1;
-  --shadow: 0 2px 14px rgba(13,61,46,0.09);
-  --shadow-lg: 0 8px 36px rgba(13,61,46,0.15);
+  --shadow: 0 2px 14px rgba(15,40,70,0.09);
+  --shadow-lg: 0 8px 36px rgba(15,40,70,0.15);
   --radius: 14px;
   --radius-sm: 8px;
 }
@@ -31,8 +31,8 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   min-height: 100vh;
   background: var(--primary-dark);
   background-image:
-    radial-gradient(circle at 20% 80%, rgba(34,119,106,0.3) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(232,160,32,0.15) 0%, transparent 50%);
+    radial-gradient(circle at 20% 80%, rgba(31,111,120,0.35) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(140,196,166,0.18) 0%, transparent 50%);
 }
 .login-card {
   background: white;
@@ -227,7 +227,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(13,61,46,0.5);
+  background: rgba(15,40,70,0.5);
   z-index: 200;
   display: flex;
   align-items: center;
@@ -479,7 +479,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .confirm-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(13,61,46,0.5);
+  background: rgba(15,40,70,0.5);
   z-index: 500;
   display: flex;
   align-items: center;
